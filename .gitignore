@@ -7,3 +7,8 @@ build/
 *.iml
 .idea/libraries/
 .idea/modules/
+
+# H2 dev database (runtime-generated, not source)
+data/
+**/data/folio.mv.db
+**/data/folio.trace.db

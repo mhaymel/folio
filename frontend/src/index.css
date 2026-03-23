@@ -1,0 +1,84 @@
+/* Design tokens injected via JS in main.tsx */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--dt-color-background-base-default);
+  color: var(--dt-color-text-default);
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content {
+  padding: 24px;
+  max-width: 1400px;
+  width: 100%;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 8px;
+}
+
+.sidebar-nav-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  color: var(--dt-color-text-default);
+  font-size: 14px;
+  line-height: 1.5;
+  user-select: none;
+  transition: background-color 0.1s;
+}
+
+.sidebar-nav-item:hover {
+  background-color: var(--dt-color-background-container-neutral-accent);
+}
+
+.sidebar-nav-item--selected {
+  background-color: var(--dt-color-background-container-primary-accent);
+  color: var(--dt-color-text-primary-default);
+  font-weight: 600;
+}
+
+.sidebar-nav-item--selected:hover {
+  background-color: var(--dt-color-background-container-primary-accent);
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.import-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.chart-container {
+  margin-bottom: 24px;
+}

@@ -202,7 +202,7 @@ Records an actual dividend payment received for a security in a specific depot.
 UI should provide a file upload interface for the user to upload the `Transactions.csv` file exported from DeGiro. The system should parse the CSV file, extract transaction data, and store it in the database according to the defined data model. The system should handle any parsing errors gracefully and provide feedback to the user about the success or failure of the import process. The system should also ensure that ISINs are normalized and mapped correctly to the `isin` table, and that transactions are associated with the correct depot (DeGiro). before the data will be written to the table transactions all entries for the depot DeGiro should be deleted to avoid duplicates and to reflect any changes in the transaction history. 
 
 #### Import ZERO-orders.csv
-similar to the import of `Transactions.csv`, the UI should provide a file upload interface for the user to upload the `ZERO-orders-*.csv` file exported from Trade Republic. The system should parse the CSV file, extract transaction data, and store it in the database according to the defined data model. The system should handle any parsing errors gracefully and provide feedback to the user about the success or failure of the import process. The system should also ensure that ISINs are normalized and mapped correctly to the `isin` table, and that transactions are associated with the correct depot (Trade Republic). before the data will be written to the table transactions all entries for the depot Trade Republic should be deleted to avoid duplicates and to reflect any changes in the transaction history.
+similar to the import of `Transactions.csv`, the UI should provide a file upload interface for the user to upload the `ZERO-orders-*.csv` file exported from ZERO. The system should parse the CSV file, extract transaction data, and store it in the database according to the defined data model. The system should handle any parsing errors gracefully and provide feedback to the user about the success or failure of the import process. The system should also ensure that ISINs are normalized and mapped correctly to the `isin` table, and that transactions are associated with the correct depot (Trade Republic). before the data will be written to the table transactions all entries for the depot Trade Republic should be deleted to avoid duplicates and to reflect any changes in the transaction history.
 
 #### Import Account.csv
 The UI should provide a file upload interface for the user to upload the `Account.csv` file exported from DeGiro. The system should parse the CSV file and extract dividend payment records. Only rows where the description field equals `"Dividende"` are processed. Each valid row is stored as a `dividend_payment` entry associated with the DeGiro depot, using the valuta date as the payment timestamp and recording the currency. The system should handle parsing errors gracefully and provide feedback about the success or failure of the import. Before writing new records, all existing `dividend_payment` entries for the DeGiro depot should be deleted to avoid duplicates.
@@ -235,6 +235,12 @@ the UI should provide a file upload interface for the user to upload the `countr
 
 #### show branches
 the UI should provide a view that displays the branches. sorted alphabetically. The branches should be fetched from the backend via a REST API endpoint that retrieves branch data from the database.
+
+#### show currencies
+the UI should provide a view that displays the currencies. sorted alphabetically. The currencies should be fetched from the backend via a REST API endpoint that retrieves currency data from the database.
+
+#### show depots
+the UI should provide a view that displays the depots. sorted alphabetically. The depots should be fetched from the backend via a REST API endpoint that retrieves depot data from the database.
 
 #### import branches.csv
 the UI should provide a file upload interface for the user to upload the `branches.csv` file, which contains the mapping of ISINs to their respective industry branches. The system should parse the CSV file, extract the branch mapping data, and store it in the database according to the defined data model. The system should handle any parsing errors gracefully and provide feedback to the user about the success or failure of the import process. The system should also ensure that ISINs are normalized and mapped correctly to the `isin` table, and that the branch mapping is associated with the correct ISINs in the `isin_branch` table. If an isin already has a branch mapping, it should be updated with the new value from the CSV file. if an isin does not have a branch mapping yet, a new entry should be created in the `isin_branch` table. if an isin from the CSV file does not exist in the `isin` table, it should be added to the `isin` table and then mapped to the branch in the `isin_branch` table. 
@@ -316,12 +322,16 @@ clerk (https://clerk.com/) should be used for user management and authentication
 - backend should be designed with security in mind, with proper authentication and authorization mechanisms in place
 
 ### Frontend
-- react frontend with typescript
-- frontend should be a single page application that consumes the backend rest api
-- frontend should be responsive and work well on both desktop and mobile devices
-- frontend should have a clean and modern design, with a focus on usability and accessibility
-- Dynatrace Strato design system should be used as design library for the frontend (https://developer.dynatrace.com/design/about-strato-design-system/)
-- frontend should have a dark mode and a light mode, with the ability to switch between them
+- React 18 + TypeScript frontend, built with Vite
+- Single-page application consuming the backend REST API via Axios
+- Responsive design using the Strato `Page` + `Page.Sidebar` + `Page.Main` layout
+- **Strato design system:** `@dynatrace/strato-components` v3.1.1 with `@dynatrace/strato-design-tokens` for CSS custom properties
+  - Design tokens are injected via JS in `main.tsx` (CSS import not available)
+  - `AppRoot` from `@dynatrace/strato-components/core` wraps the app
+  - Navigation lives in `Page.Sidebar`; the `Page` component handles responsive collapse to a drawer
+  - Components imported from subpackage paths: `/layouts`, `/buttons`, `/forms`, `/tables`, `/typography`
+- Dark mode and light mode with the ability to switch between them (planned; tokens support it via `@media prefers-color-scheme`)
+- Clerk authentication planned (`@clerk/clerk-react`) — not yet integrated
 
 
 ### build tools

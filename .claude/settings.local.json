@@ -3,7 +3,32 @@
     "allow": [
       "Bash(gh auth:*)",
       "Bash(winget install:*)",
-      "Bash(export PATH=\"$PATH:/c/Program Files/GitHub CLI\")"
+      "Bash(export PATH=\"$PATH:/c/Program Files/GitHub CLI\")",
+      "Bash(./gradlew --version)",
+      "Bash(./gradlew compileJava)",
+      "Bash(npm create:*)",
+      "Bash(npm run:*)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -s http://localhost:8080/api/securities)",
+      "Bash(curl -s http://localhost:8080/api/quotes/settings)",
+      "Bash(java:*)",
+      "WebFetch(domain:developer.dynatrace.com)",
+      "Bash(npm info:*)",
+      "Bash(npm install:*)",
+      "Bash(node -e \"const s = require\\(''''@dynatrace/strato-components''''\\); console.log\\(Object.keys\\(s\\).filter\\(k => k.toLowerCase\\(\\).includes\\(''''provider''''\\) || k.toLowerCase\\(\\).includes\\(''''app''''\\) || k.toLowerCase\\(\\).includes\\(''''theme''''\\)\\).join\\(''''\\\\n''''\\)\\)\")",
+      "Bash(npx tsc:*)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\(''''exports'''', {}\\), indent=2\\)\\)\")",
+      "Bash(node:*)",
+      "Bash(head -5 node -e \"const f = require\\(''''fs''''\\).readFileSync\\(''''C:/daten/dev/folio/frontend/node_modules/@dynatrace/strato-design-tokens/esm/variables/index.js'''',''''utf8''''\\); console.log\\(f.substring\\(0,300\\)\\)\")",
+      "Bash(./gradlew bootRun)",
+      "Bash(taskkill:*)",
+      "Bash(powershell -Command \"Stop-Process -Name java -Force -ErrorAction SilentlyContinue; Write-Host 'done'\")",
+      "Bash(powershell -Command \"Stop-Process -Name java -Force -ErrorAction SilentlyContinue; Stop-Process -Name node -Force -ErrorAction SilentlyContinue; Write-Host 'done'\")",
+      "Bash(grep -v \"^//\")",
+      "Bash(mkdir -p /c/daten/dev/folio/docs)",
+      "Bash(mv /c/daten/dev/folio/plan.md /c/daten/dev/folio/docs/)",
+      "Bash(mv /c/daten/dev/folio/PROJECT.md /c/daten/dev/folio/docs/)",
+      "Bash(mv /c/daten/dev/folio/gaps.and.issues.md /c/daten/dev/folio/docs/)"
     ]
   }
 }

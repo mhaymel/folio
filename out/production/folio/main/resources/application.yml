@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: folio
+  profiles:
+    active: dev
+  jpa:
+    open-in-view: false
+
+server:
+  port: 8080
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

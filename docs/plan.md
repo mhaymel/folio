@@ -21,30 +21,31 @@ includeBuild('backend')
 
 **Directory:** `backend/`
 
-**`build.gradle` dependencies:**
+**`build.gradle` dependencies (as implemented):**
 - `spring-boot-starter-web`
 - `spring-boot-starter-data-jpa`
 - `spring-boot-starter-security`
 - `spring-boot-starter-validation`
-- `springdoc-openapi-starter-webmvc-ui` (Swagger)
+- `springdoc-openapi-starter-webmvc-ui:2.8.5` (Swagger)
 - `flyway-core`, `flyway-database-postgresql`
-- `postgresql` (runtime)
-- `lombok`
-- `opencsv` (CSV parsing)
-- `nimbus-jose-jwt` (Clerk JWT verification)
+- `postgresql` (runtimeOnly)
+- `com.opencsv:opencsv:5.9` (CSV parsing)
+- `com.h2database:h2` (runtimeOnly — dev + test)
 
-**Package structure:**
+**Note:** Lombok is NOT used. All Java code is written explicitly. `nimbus-jose-jwt` for Clerk JWT verification is planned but not yet added.
+
+**Package structure (as implemented):**
 ```
 com.folio
   ├── config/         # Security, OpenAPI, CORS config
   ├── controller/     # REST controllers
-  ├── service/        # Business logic
+  ├── service/        # Business logic (ImportService, PortfolioService)
   ├── repository/     # JPA repositories
-  ├── model/          # JPA entities + tiny types (Isin, Quote, Depot, …)
+  ├── model/          # JPA entities (explicit Java, no Lombok)
   ├── dto/            # Request/Response DTOs
-  ├── parser/         # CSV parsers per broker
-  ├── quote/          # IsinsQuoteLoader + per-source quote fetchers
-  └── exception/      # Global exception handler
+  ├── exception/      # Global exception handler
+  ├── parser/         # CSV parsers per broker (planned, not yet extracted)
+  └── quote/          # IsinsQuoteLoader + per-source quote fetchers (planned, not yet implemented)
 ```
 
 **Tiny types:** Domain values are wrapped in value types (e.g. `Isin`, `Quote`, `DepotName`) rather than raw `String`/`double`. Each tiny type encapsulates its validation and lives in `model/`.
@@ -80,21 +81,32 @@ spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
 
 **Directory:** `frontend/`
 
-**`package.json` dependencies:**
-- `react`, `react-dom`, `react-router-dom`
-- `@clerk/clerk-react`
-- `@dynatrace/strato-design-system`
-- `recharts` (charts)
-- `axios`
+**`package.json` dependencies (as installed):**
+- `react@18.3.1`, `react-dom`, `react-router-dom@7.13.1`
+- `@dynatrace/strato-components@3.1.1` (Strato UI components)
+- `@dynatrace/strato-design-tokens@1.3.1` (CSS custom properties injected via JS in `main.tsx`)
+- `@dynatrace/strato-icons@2.1.0`
+- `@dynatrace-sdk/*` (peer deps required by strato-components, installed with `--legacy-peer-deps`)
+- `recharts@3.8.0` (charts)
+- `axios@1.13.6`
+
+**Note:** `@clerk/clerk-react` is planned but not yet installed. Clerk authentication (Phase 3) is not yet implemented.
+
+**Strato integration pattern:**
+- `AppRoot` from `@dynatrace/strato-components/core` wraps the entire app in `main.tsx`
+- Design tokens injected as CSS custom properties via JS (CSS import not available — not in package exports)
+- Layout uses `Page` + `Page.Header` + `Page.Sidebar` + `Page.Main` from `@dynatrace/strato-components/layouts`
+- `AppHeader` inside `Page.Header` for the app title bar
+- Sidebar contains nav links; clicking navigates to the corresponding page via `react-router-dom`
+- Component imports use subpackage paths: `@dynatrace/strato-components/layouts`, `/buttons`, `/forms`, `/tables`, `/typography`
 
 **Directory structure:**
 ```
 src/
-  ├── api/            # Axios clients per feature
-  ├── components/     # Reusable UI components
+  ├── api/            # Axios client (client.ts — baseURL hardcoded for dev, no auth yet)
+  ├── components/     # Layout.tsx (Page + Sidebar + Main)
   ├── pages/          # Route-level pages
-  ├── hooks/          # Custom React hooks
-  └── types/          # TypeScript interfaces
+  └── types/          # TypeScript interfaces (index.ts)
 ```
 
 ### 1.3 Docker
@@ -118,8 +130,8 @@ ticker_symbol    (id, symbol VARCHAR(20) UNIQUE NOT NULL)
 isin_ticker      (isin_id FK, ticker_symbol_id FK — composite PK)
 country          (id, name VARCHAR(100) UNIQUE NOT NULL)
 branch           (id, name VARCHAR(100) UNIQUE NOT NULL)
-isin_country     (isin_id FK, country_id FK — composite PK)
-isin_branch      (isin_id FK, branch_id FK — composite PK)
+isin_country     (isin_id FK, country_id FK — composite PK; UNIQUE(isin_id) — 1:1, added by V6)
+isin_branch      (isin_id FK, branch_id FK — composite PK; UNIQUE(isin_id) — 1:1, added by V6)
 depot            (id, name VARCHAR(100) UNIQUE NOT NULL)
 transaction      (id, date TIMESTAMP, isin_id FK, depot_id FK, count DOUBLE PRECISION, share_price DOUBLE PRECISION)
 dividend         (id, isin_id FK, currency_id FK, dividend_per_share DOUBLE PRECISION)
@@ -150,6 +162,12 @@ INSERT INTO quote_provider (name) VALUES
 ('FondsDiscount'),
 ('ComDirect'),
 ('WallstreetOnline');
+```
+
+**`V6__enforce_single_country_branch.sql`** — adds `UNIQUE(isin_id)` constraints to `isin_country` and `isin_branch` to enforce the 1:1 relationship at the database level:
+```sql
+ALTER TABLE isin_country ADD CONSTRAINT uq_isin_country_isin UNIQUE (isin_id);
+ALTER TABLE isin_branch  ADD CONSTRAINT uq_isin_branch_isin  UNIQUE (isin_id);
 ```
 
 **`V5__seed_settings.sql`** — inserts default application settings:
@@ -277,7 +295,7 @@ INSERT INTO settings (key, value) VALUES
 1. Upsert ISIN into `isin` table.
 2. Insert `Name` field into `isin_name` if this (isin_id, name) pair does not already exist — never overwrite existing names.
 3. Upsert branch name into `branch`.
-4. Upsert into `isin_branch`.
+4. Replace branch mapping for this ISIN (1:1): DELETE existing row in `isin_branch` where `isin_id` matches, then INSERT the new row.
 
 ### 4.7 `countries.csv`
 
@@ -287,7 +305,7 @@ INSERT INTO settings (key, value) VALUES
 1. Upsert ISIN into `isin` table.
 2. Insert `Name` field into `isin_name` if this (isin_id, name) pair does not already exist — never overwrite existing names.
 3. Upsert country name into `country`.
-4. Upsert into `isin_country`.
+4. Replace country mapping for this ISIN (1:1): DELETE existing row in `isin_country` where `isin_id` matches, then INSERT the new row.
 
 ---
 
@@ -315,7 +333,8 @@ All return `{ success: boolean, imported: int, errors: string[] }`.
 |--------|------|-------------|
 | GET | `/api/countries` | All countries, sorted alphabetically |
 | GET | `/api/branches` | All branches, sorted alphabetically |
-| GET | `/api/depots` | All depots |
+| GET | `/api/depots` | All depots, sorted alphabetically |
+| GET | `/api/currencies` | All currencies, sorted alphabetically |
 
 ### 5.3 Transactions Endpoint
 
@@ -334,6 +353,7 @@ Returns paginated transaction list with ISIN, security name (JOIN to `isin_name`
 **Backend calculation:**
 - Aggregate `SUM(count)` per `isin_id` across all transactions.
 - Filter positions where `SUM(count) > 0` (still held).
+- **Avg entry price formula:** `SUM(count * share_price) / SUM(count)` across **all** transactions for that ISIN (buys contribute positive values, sells contribute negative — mirrors `IsinTransactions.entryPrice()`). Sells proportionally reduce the cost basis rather than being excluded.
 - Join with `isin_name`, `isin_country`, `isin_branch`, `dividend`, `isin_quote`.
 - Return: ISIN, name (from `isin_name`), country, branch, total shares, avg entry price, current quote (from `isin_quote.value`, null if not yet fetched), performance % (`(current_quote - avg_entry_price) / avg_entry_price * 100`), expected annual dividend, estimated annual income.
 
@@ -345,7 +365,7 @@ Returns paginated transaction list with ISIN, security name (JOIN to `isin_name`
 | GET | `/api/analytics/branches` | Total invested per branch + % of portfolio |
 
 **Calculation logic:**
-1. For each open position: `invested = avg_buy_price * total_shares`.
+1. For each open position: `invested = SUM(count * share_price)` (same weighted formula as avg entry price × total shares, computed directly as the sum).
 2. Group by country (or branch) via `isin_country` (or `isin_branch`).
 3. Sum invested per group, compute percentage of total.
 
@@ -439,9 +459,17 @@ Response structure:
 
 ### 6.1 App Layout
 
-- Top navigation bar: logo, nav links, dark/light mode toggle, Clerk `<UserButton />`.
-- Responsive layout using Strato Design System grid.
-- Dark/light preference stored in `localStorage`.
+Layout is implemented using the Strato `Page` component (`@dynatrace/strato-components/layouts`):
+
+- `Page.Header` contains `AppHeader` with the app title ("Folio") and logo link.
+- `Page.Sidebar` contains the navigation links. Clicking a link navigates to the corresponding route; the active link is highlighted.
+- `Page.Main` contains the routed page content (`<Outlet />`), wrapped in a `.page-content` div for padding.
+- The sidebar collapses to a drawer on narrow screens (Strato default breakpoint: 640px).
+
+**Planned but not yet implemented:**
+- Dark/light mode toggle (requires Strato theme switching; preference stored in `localStorage`)
+- Clerk `<UserButton />` in the header
+- Auth redirect on unauthenticated access
 
 ### 6.2 Pages
 
@@ -452,6 +480,8 @@ Response structure:
 | `/securities` | Securities | Portfolio positions table with live quotes and performance |
 | `/countries` | Countries | Alphabetical list |
 | `/branches` | Branches | Alphabetical list |
+| `/depots` | Depots | Alphabetical list |
+| `/currencies` | Currencies | Alphabetical list |
 | `/analytics/countries` | Country Diversification | Donut chart + detail table |
 | `/analytics/branches` | Branch Diversification | Donut chart + detail table |
 | `/import` | Import | File upload section per data type |

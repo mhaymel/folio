@@ -30,21 +30,9 @@
 
 ## Open
 
-### R. `avg_entry_price` calculation undefined
-
-Plan §5.4 and §5.8 reference `avg_entry_price` without defining how it is computed. Specifically: when shares are sold, does the average entry price reset, stay fixed, or use a FIFO/LIFO method? The current formula implied by the plan is `SUM(count * share_price) / SUM(count)` across all transactions (buys positive, sells negative), but this is not stated. Needs a decision before implementing the securities and dashboard endpoints.
-
-### S. `isin_country` / `isin_branch` schema vs. import use case mismatch
-
-The Phase 2 schema uses a composite-PK join table for both `isin_country` and `isin_branch`, which allows an ISIN to be mapped to **multiple** countries or branches. However, the PROJECT.md import use cases say "if an ISIN already has a country/branch mapping, it should be **updated**" — implying 1:1. The analytics calculations also implicitly assume one country per ISIN. Needs clarification: is the relationship 1:1 (UNIQUE on `isin_id`) or 1:N? If 1:1, the schema and upsert logic must be updated.
-
 ### T. No testing phase in plan.md
 
 PROJECT.md requires "a comprehensive test suite that covers all major functionality and edge cases", but plan.md has no phase or section covering testing strategy, test types (unit / integration / e2e), or tooling (JUnit, Mockito, Testcontainers, Vitest, etc.). Needs a Phase 10 (or similar) before implementation begins.
-
-### U. ZERO depot name inconsistency in PROJECT.md
-
-PROJECT.md "Import ZERO-orders.csv" use case refers to the depot as **"Trade Republic"**, while the data model, all other use cases, and plan.md consistently use **"ZERO"**. The seeded depot name in V2 migration is `ZERO`. The PROJECT.md use case text should be treated as a prose error; plan.md is authoritative. Recommend correcting the PROJECT.md use case wording to avoid confusion during implementation.
 
 ### ~~A. Empty use case section in PROJECT.md~~ — Resolved
 
@@ -68,8 +56,53 @@ Both plan.md Phase 2 schema and PROJECT.md data model already reflect composite 
 
 ---
 
+### V. Clerk authentication not yet implemented
+
+Plan §3 describes a full Clerk JWT filter (`ClerkJwtFilter.java`) and `nimbus-jose-jwt` dependency. In the actual code, `SecurityConfig.java` uses a `folio.security.enabled` flag (defaulting to `false`) that simply permits all requests. `@clerk/clerk-react` is not installed in the frontend. No `ClerkJwtFilter` exists.
+
+### W. `quote/` package (IsinsQuoteLoader) not yet implemented
+
+Plan §5.6 describes a full cascading quote fetcher across 10 sources with its own `quote/` package, config CSV files, `@Scheduled` task, and `isin_quote` upsert logic. None of this exists in the codebase. `QuoteController` endpoints exist but the quote-fetching implementation is absent.
+
+### X. `parser/` package not yet extracted
+
+Plan §1.1 lists a `parser/` package for broker-specific CSV parsers. In the actual code, CSV parsing is implemented inside `ImportService`. The extraction into separate parser classes per broker has not been done.
+
+### Y. Lombok removed — plan.md was updated
+
+Lombok is listed in the original plan §1.1 but is not in `build.gradle` and is not used anywhere. Plan §1.1 has been corrected to reflect this.
+
+### Z. Wrong Strato package name in plan.md — corrected
+
+Plan §1.2 listed `@dynatrace/strato-design-system` which does not exist as an NPM package. The actual package is `@dynatrace/strato-components`. Plan §1.2 and PROJECT.md have been corrected.
+
+---
+
+## Resolved (continued)
+
+| # | Issue | Resolution |
+|---|---|---|
+| V1 | plan.md §1.1 listed Lombok | Removed from plan; confirmed not in build.gradle or any source file |
+| V2 | plan.md §1.2 wrong Strato package name | Corrected to `@dynatrace/strato-components`; PROJECT.md updated accordingly |
+| V3 | plan.md §6.1 described top nav bar | Updated to reflect Page + Page.Sidebar + Page.Main layout now implemented |
+| R | `avg_entry_price` calculation undefined | Defined as `SUM(count * share_price) / SUM(count)` across **all** transactions (buys positive, sells negative) — mirrors `IsinTransactions.entryPrice()`. Implemented in `PortfolioService` JPQL and native SQL; plan.md §5.4 and §5.5 updated. |
+| S | `isin_country` / `isin_branch` 1:1 vs 1:N | Clarified as 1:1 in PROJECT.md (each ISIN has exactly one country and one branch; mapping replaced on re-import). ImportService already implements delete+insert. V6 migration adds `UNIQUE(isin_id)` to enforce the constraint at DB level; plan.md §2 and §4.6/§4.7 updated. |
+| U | ZERO depot name inconsistency | PROJECT.md use case corrected to use "ZERO" throughout (was erroneously "Trade Republic" in one use case). |
+
+---
+
+### AA. `show depots` use case — frontend missing
+
+PROJECT.md defines a `show depots` use case. The backend `/api/depots` endpoint was implemented in `ReferenceDataController`. However, the frontend had no `/depots` route, no `Depots` page, and no sidebar nav entry. — **Resolved 2026-03-23**: `Depots.tsx` page created; `/depots` route added to `App.tsx`; "Depots" nav item added to `Layout.tsx`.
+
+### AB. `show currencies` use case — backend and frontend missing
+
+PROJECT.md defines a `show currencies` use case. Neither the backend endpoint `/api/currencies` nor the frontend page existed. The use case was also absent from plan.md §5.2 and §6.2. — **Resolved 2026-03-23**: `findAllByOrderByNameAsc()` added to `CurrencyRepository`; `GET /api/currencies` added to `ReferenceDataController`; `Currency` type added to `types/index.ts`; `Currencies.tsx` page created; `/currencies` route added to `App.tsx`; "Currencies" nav item added to `Layout.tsx`; plan.md §5.2 and §6.2 updated.
+
+---
+
 ## Summary
 
-Items N, O, P, Q resolved and applied to plan.md. Four open items remain (R, S, T, U) requiring decisions before or during implementation.
+Items N, O, P, Q, R, S, U, V1, V2, V3, AA, AB resolved and applied to plan.md / PROJECT.md. Open items T, V, W, X remain requiring decisions or implementation work.
 
-> Last reviewed: 2026-03-22 — full cross-check of PROJECT.md vs plan.md: section ordering fixed, tiny types added, quote package added, KeSt resolved; open items R/S/T/U documented.
+> Last reviewed: 2026-03-23 — `show depots` frontend and `show currencies` (backend + frontend) implemented; plan.md §5.2 and §6.2 updated; Clerk and quote fetcher gaps remain open.
