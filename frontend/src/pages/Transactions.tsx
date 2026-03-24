@@ -1,60 +1,131 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Flex } from '@dynatrace/strato-components/layouts';
 import { Heading, Paragraph } from '@dynatrace/strato-components/typography';
-import { DataTable } from '@dynatrace/strato-components/tables';
+import { DataTable, DataTablePagination } from '@dynatrace/strato-components/tables';
 import { Button } from '@dynatrace/strato-components/buttons';
-import { TextInput } from '@dynatrace/strato-components/forms';
+import { TextInput, Select } from '@dynatrace/strato-components/forms';
+import { ProgressCircle } from '@dynatrace/strato-components/content';
 import api from '../api/client';
 import type { TransactionDto } from '../types';
 
-const fmt = (n: number) =>
+const fmtPrice = (n: number) =>
   n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const columns = [
-  { id: 'date', header: 'Date', accessor: (r: TransactionDto) => new Date(r.date).toLocaleDateString('de-DE'), sortType: 'text' as const },
-  { id: 'isin', header: 'ISIN', accessor: 'isin', sortType: 'text' as const },
-  { id: 'name', header: 'Name', accessor: 'name', sortType: 'text' as const },
-  { id: 'depot', header: 'Depot', accessor: 'depot', sortType: 'text' as const },
-  { id: 'count', header: 'Count', accessor: (r: TransactionDto) => fmt(r.count), sortType: 'number' as const, alignment: 'right' as const },
-  { id: 'sharePrice', header: 'Share Price', accessor: (r: TransactionDto) => fmt(r.sharePrice), sortType: 'number' as const, alignment: 'right' as const },
-];
+const fmtCount = (n: number) =>
+  n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// ISO date → DD-MM-YYYY (avoids timezone shifts; raw ISO used for sort)
+const isoDate = (s: string) => s.substring(0, 10);
+const fmtDate = (s: string) => {
+  const d = isoDate(s);
+  return `${d.substring(8, 10)}-${d.substring(5, 7)}-${d.substring(0, 4)}`;
+};
+
 
 export default function Transactions() {
-  const [txns, setTxns] = useState<TransactionDto[]>([]);
+  const [allTxns, setAllTxns] = useState<TransactionDto[]>([]);
+  const [loading, setLoading] = useState(false);
   const [isinFilter, setIsinFilter] = useState('');
+  const [nameFilter, setNameFilter] = useState('');
   const [depotFilter, setDepotFilter] = useState('');
+  const [showAll, setShowAll] = useState(false);
 
-  const load = () => {
-    const params: Record<string, string> = {};
-    if (isinFilter) params.isin = isinFilter;
-    if (depotFilter) params.depot = depotFilter;
-    api.get<TransactionDto[]>('/transactions', { params }).then(r => setTxns(r.data));
+  const cellStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' };
+
+  const columns = useMemo(() => [
+    { id: 'date', header: 'Date', accessor: (r: TransactionDto) => fmtDate(r.date), sortAccessor: (r: TransactionDto) => isoDate(r.date), sortType: 'text' as const, width: 105, minWidth: 105 },
+    { id: 'isin', header: 'ISIN', accessor: (r: TransactionDto) => r.isin, cell: (info: { value: string }) => (
+      <span style={cellStyle} onDoubleClick={() => setIsinFilter(info.value)} title="Double-click to filter by this ISIN">{info.value}</span>
+    ), sortType: 'text' as const, width: 140, minWidth: 140 },
+    { id: 'name', header: 'Name', accessor: (r: TransactionDto) => r.name, cell: (info: { value: string }) => (
+      <span style={cellStyle} onDoubleClick={() => setNameFilter(info.value)} title="Double-click to filter by this name">{info.value}</span>
+    ), sortType: 'text' as const, width: 240, minWidth: 120 },
+    { id: 'depot', header: 'Depot', accessor: 'depot', sortType: 'text' as const, width: 100, minWidth: 80 },
+    { id: 'count', header: 'Count', accessor: (r: TransactionDto) => fmtCount(r.count), sortType: 'number' as const, alignment: 'right' as const, minWidth: 80 },
+    { id: 'sharePrice', header: 'Share Price', accessor: (r: TransactionDto) => fmtPrice(r.sharePrice), sortType: 'number' as const, alignment: 'right' as const, minWidth: 100 },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], []);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const r = await api.get<TransactionDto[]>('/transactions');
+      setAllTxns(r.data);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
 
-  const data = useMemo(() => txns, [txns]);
+  const depots = useMemo(
+    () => [...new Set(allTxns.map(t => t.depot))].sort(),
+    [allTxns]
+  );
+
+  const filteredTxns = useMemo(() => allTxns.filter(t => {
+    const matchesIsin = !isinFilter || t.isin.toLowerCase().includes(isinFilter.toLowerCase());
+    const matchesName = !nameFilter || t.name.toLowerCase().includes(nameFilter.toLowerCase());
+    const matchesDepot = !depotFilter || t.depot === depotFilter;
+    return matchesIsin && matchesName && matchesDepot;
+  }), [allTxns, isinFilter, nameFilter, depotFilter]);
 
   return (
     <Flex flexDirection="column" gap={16}>
       <Heading level={1}>Transactions</Heading>
-      <div className="filter-bar">
+
+      <Flex gap={8} alignItems="center">
         <TextInput
           placeholder="Filter by ISIN"
           value={isinFilter}
           onChange={val => setIsinFilter(val)}
-          onKeyDown={e => e.key === 'Enter' && load()}
         />
+        {isinFilter && (
+          <Button variant="default" onClick={() => setIsinFilter('')}>Clear</Button>
+        )}
         <TextInput
-          placeholder="Filter by Depot"
-          value={depotFilter}
-          onChange={val => setDepotFilter(val)}
-          onKeyDown={e => e.key === 'Enter' && load()}
+          placeholder="Filter by name"
+          value={nameFilter}
+          onChange={val => setNameFilter(val)}
         />
-        <Button onClick={load} variant="default">Search</Button>
-      </div>
-      <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>{txns.length} transactions</Paragraph>
-      <DataTable data={data} columns={columns} sortable fullWidth />
+        {nameFilter && (
+          <Button variant="default" onClick={() => setNameFilter('')}>Clear</Button>
+        )}
+        <Select<string> value={depotFilter || null} onChange={val => setDepotFilter(val ?? '')}>
+          <Select.Content>
+            <Select.Option value="">All depots</Select.Option>
+            {depots.map(d => (
+              <Select.Option key={d} value={d}>{d}</Select.Option>
+            ))}
+          </Select.Content>
+        </Select>
+        <Button onClick={load} variant="default">Refresh</Button>
+      </Flex>
+
+      {loading ? (
+        <Flex alignItems="center" gap={12}>
+          <ProgressCircle aria-label="Loading transactions" size="small" />
+          <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>Loading...</Paragraph>
+        </Flex>
+      ) : (
+        <>
+          <Flex alignItems="center" justifyContent="space-between">
+            <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
+              {filteredTxns.length !== allTxns.length
+                ? `${filteredTxns.length} of ${allTxns.length} transactions`
+                : `${allTxns.length} transactions`}
+            </Paragraph>
+            <Button variant="default" onClick={() => setShowAll(s => !s)}>
+              {showAll ? 'Paginate' : 'Show All'}
+            </Button>
+          </Flex>
+          <DataTable data={filteredTxns} columns={columns} sortable resizable fullWidth defaultSortBy={[{ id: 'date', desc: true }]}>
+            {!showAll && (
+              <DataTablePagination defaultPageSize={10} pageSizeOptions={[10, 20, 50, 100]} />
+            )}
+          </DataTable>
+        </>
+      )}
     </Flex>
   );
 }

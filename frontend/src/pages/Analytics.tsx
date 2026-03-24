@@ -61,7 +61,7 @@ export default function Analytics() {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <DataTable data={tableData} columns={columns} sortable fullWidth />
+          <DataTable data={tableData} columns={columns} sortable resizable fullWidth />
         </>
       )}
     </Flex>

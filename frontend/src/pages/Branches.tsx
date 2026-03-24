@@ -21,7 +21,7 @@ export default function Branches() {
   return (
     <Flex flexDirection="column" gap={16}>
       <Heading level={1}>Branches ({branches.length})</Heading>
-      <DataTable data={data} columns={columns} sortable fullWidth />
+      <DataTable data={data} columns={columns} sortable resizable fullWidth />
     </Flex>
   );
 }

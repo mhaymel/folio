@@ -102,7 +102,7 @@ public class ImportService {
                     String product = parts[2];
                     String isinCode = parts[3];
                     String countStr = parts[6];
-                    String priceStr = parts[7];
+                    String eurValueStr = parts[11]; // Wert EUR — total trade value in EUR (negative for buys)
 
                     if (isinCode.isBlank()) continue;
 
@@ -111,7 +111,12 @@ public class ImportService {
                     LocalDateTime dateTime = LocalDateTime.of(date, time);
 
                     double count = parseDouble(countStr);
-                    double price = parseDouble(priceStr);
+                    if (count == 0) continue; // skip non-trade rows (fees, dividends, etc.)
+
+                    // Derive EUR share price from total EUR value to guarantee EUR denomination
+                    // regardless of the security's trading currency (Kurs at index 7 may be USD etc.)
+                    double eurValue = parseDouble(eurValueStr);
+                    double price = Math.abs(eurValue) / Math.abs(count);
 
                     Isin isin = upsertIsin(isinCode);
                     upsertIsinName(isin, product);

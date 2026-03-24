@@ -103,6 +103,66 @@ PROJECT.md defines a `show currencies` use case. Neither the backend endpoint `/
 
 ## Summary
 
-Items N, O, P, Q, R, S, U, V1, V2, V3, AA, AB resolved and applied to plan.md / PROJECT.md. Open items T, V, W, X remain requiring decisions or implementation work.
+### AC. Securities table — columns not resizable, several columns clip content
 
-> Last reviewed: 2026-03-23 — `show depots` frontend and `show currencies` (backend + frontend) implemented; plan.md §5.2 and §6.2 updated; Clerk and quote fetcher gaps remain open.
+The Securities table had no resizable columns; ISIN, Name, Country, and Branch columns were too narrow. — **Resolved 2026-03-24**: `resizable` prop added to `DataTable`; column widths set: ISIN `140/140`, Name `240/240`, Country `120/80`, Branch `160/80`; PROJECT.md and plan.md §6.6 updated.
+
+---
+
+## Summary
+
+### AE. All tables — columns not resizable (except Securities)
+
+All `DataTable` instances except Securities were missing the `resizable` prop. — **Resolved 2026-03-24**: `resizable` added to all `DataTable` usages in Analytics, Branches, Countries, Currencies, Depots, Dashboard (both tables), and Transactions; global table convention documented in plan.md §1.2; requirement added to PROJECT.md.
+
+### AD. Transactions page — no loading indicator, no pagination
+
+The Transactions page fetched all rows with no visual feedback during load and displayed them in a single unbroken table. — **Resolved 2026-03-24**: `ProgressCircle` loading indicator added; `DataTablePagination` child added with `defaultPageSize={10}` and `pageSizeOptions={[10, 20, 50, 100]}`; "Show All / Paginate" toggle button added for viewing all rows; PROJECT.md and plan.md §6.5 updated.
+
+---
+
+## Summary
+
+### AF. Transactions page — column widths, date format, number format, real-time filter, depot dropdown
+
+Several requirements were missing from the Transactions page implementation: ISO date format, per-column width/minWidth, count formatted to ≤4 decimal places, ISIN real-time client-side partial filter with Clear button, depot filter as dynamic dropdown instead of free-text. — **Resolved 2026-03-24**: all rows now fetched at once; client-side filtering by ISIN (real-time, case-insensitive, partial) and depot (Select dropdown populated from loaded data); date displayed as `YYYY-MM-DD`; count uses 0–4 decimal places; column widths/minWidths set per spec; PROJECT.md use case rewritten with structured table; plan.md §6.5 updated.
+
+---
+
+### AH. DeGiro transaction import — share price taken from wrong column
+
+`ImportService.importDegiroTransactions` read the share price from column 7 (`Kurs`), which is denominated in the security's local trading currency (e.g. USD for US stocks). For non-EUR securities this stores a non-EUR price, causing incorrect portfolio valuations. Comparison with the depot reference project (`TransactionFromDegiro` / `SharePrice`) revealed the correct approach: derive the EUR price from column 11 (`Wert EUR`) as `abs(Wert EUR) / abs(Anzahl)`. — **Resolved 2026-03-24**: `ImportService` changed to read index 11 and compute `Math.abs(eurValue) / Math.abs(count)`; PROJECT.md and plan.md §4.1 updated with column table and derivation rationale.
+
+### AG. Transactions — Count column format clarified to exactly 2 decimal places
+
+Count was formatted with 0–4 decimal places (`min:0, max:4`). Requirement clarified to exactly 2 decimal places matching Share Price format. — **Resolved 2026-03-24**: `fmtCount` changed to `{minimumFractionDigits:2, maximumFractionDigits:2}`; PROJECT.md column table and plan.md §6.5 updated.
+
+---
+
+### AI. DeGiro import — count=0 rows cause NaN share price
+
+DeGiro `Transactions.csv` contains rows where `Anzahl` (count) is `0,00` — these represent non-trade entries such as fees or dividends. The share price formula `abs(Wert EUR) / abs(count)` divides by zero, producing `NaN` (when `Wert EUR` is also 0) or `Infinity`. These rows appeared as `NaN` in the Transactions view. The depot reference project (`TransactionFromDegiro`) handles this explicitly by returning `Optional.empty()` when count is zero. — **Resolved 2026-03-24**: `ImportService.importDegiroTransactions` now skips any row where `count == 0` immediately after parsing `Anzahl`. PROJECT.md and plan.md §4.1 updated to document the skip rule.
+
+---
+
+### AJ. Transactions — Date column too narrow; no default sort order
+
+The Date column had `minWidth: 105` which caused `YYYY-MM-DD` dates to clip. No default sort order was defined, so rows appeared in arbitrary backend order. — **Resolved 2026-03-24**: `minWidth` increased to `120`; default sort set to descending by date (newest first). PROJECT.md and plan.md §6.5 updated.
+
+---
+
+Items N, O, P, Q, R, S, U, V1, V2, V3, AA, AB, AC, AD, AE, AF, AG, AH, AI, AJ resolved and applied to plan.md / PROJECT.md. Open items T, V, W, X remain requiring decisions or implementation work.
+
+### AL. Transactions — ISIN cell top-aligned; name filter missing
+
+ISIN cells were top-aligned because the custom cell renderer bypasses Strato's `DataTableDefaultCell` centering wrapper. No name filter existed. — **Resolved 2026-03-24**: custom cell spans now use `display:flex; align-items:center; height:100%` to restore vertical centering; same style applied to the new Name cell renderer. Name `TextInput` filter added (real-time partial case-insensitive match with Clear button); double-clicking a Name cell sets the name filter. `filteredTxns` memo updated to include name match. PROJECT.md and plan.md §6.5 updated.
+
+---
+
+### AK. Transactions — double-click ISIN to filter
+
+No way to quickly filter to a single ISIN from the table itself; users had to type the ISIN manually. — **Resolved 2026-03-24**: double-clicking an ISIN cell in the Transactions table copies the ISIN into the filter input, immediately narrowing the view to that ISIN's transactions. Column definition moved into component via `useMemo`; custom `cell` renderer wraps the ISIN value in a `<span onDoubleClick>` with `cursor: pointer` and a tooltip. PROJECT.md and plan.md §6.5 updated.
+
+---
+
+> Last reviewed: 2026-03-24 — Date column width and default sort fixed; ISIN double-click filter added; Clerk and quote fetcher gaps remain open.

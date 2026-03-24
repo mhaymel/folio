@@ -14,6 +14,7 @@ It is a personal tool, just for me. Only one portfolio is managed. There can be 
 - User registration and authentication
 - The swagger ui and the rest endpoints should be protected and only accessible for authenticated users
 - The application should have a user-friendly interface for managing data
+- All data tables in the UI shall have resizable columns
 - The application should have a responsive design that works well on both desktop and mobile devices
 - The application should have a dark mode and a light mode, with the ability to switch between them
 - The application should have proper error handling and display user-friendly error messages
@@ -35,7 +36,7 @@ It is a personal tool, just for me. Only one portfolio is managed. There can be 
 The backend fetches periodically quote data via webscrapping. The interval can be changed dynamically via the UI and is stored database in table settings. The quotes are stored in the database and used for performance calculation and display in the UI.
 
 #### Broker Transaction Import
-- The system shall import transaction data from **DeGiro** broker CSV exports (see sample: [`docs/samples/Transactions.csv`](docs/samples/Transactions.csv)). use euro values.
+- The system shall import transaction data from **DeGiro** broker CSV exports (see sample: [`docs/samples/Transactions.csv`](docs/samples/Transactions.csv)). The share price stored per transaction shall be derived from the `Wert EUR` column (index 11, total trade value in EUR) divided by the absolute share count, not from the `Kurs` column (index 7), which is denominated in the security's local trading currency and may not be EUR. Rows where `Anzahl` (count) is zero shall be skipped entirely — they represent non-trade entries such as fees or dividends and would cause division by zero in the price formula.
 - The system shall import transaction data from **ZERO** broker CSV exports (see sample: [`docs/samples/ZERO-orders-22.03.2026.csv`](docs/samples/ZERO-orders-22.03.2026.csv)).
 - The system shall normalize ISINs across all broker sources into a unified transaction model.
 
@@ -225,7 +226,34 @@ the UI shows date and time of the last successful quote fetch, so the user can s
 The data should be fetched from the backend via a dedicated REST API endpoint.
 
 #### Show transactions
-The UI should provide a view that displays all transactions in a tabular format, showing relevant details such as date, ISIN, depot, count, share price, name etc. The transactions should be fetched from the backend via a REST API endpoint that retrieves transaction data from the database. The UI should allow the user to filter and sort transactions based on different criteria (e.g. date range, ISIN, depot). The UI should also provide a way to refresh the transaction data to reflect any newly imported transactions.
+
+The UI shall provide a view displaying all transactions fetched from the backend in a sortable, resizable table. All rows are loaded at once and filtered client-side.
+
+**Columns:**
+
+| Column | Format                                                                       | Alignment | Min Width |
+|--------|------------------------------------------------------------------------------|-----------|-----------|
+| Date | `DD-MM-YYYY`; sortable (sort key: ISO `YYYY-MM-DD` for correct chronological order); default sort: descending (newest first) | left | 105 px |
+| ISIN | plain text                                                                   | left | 140 px |
+| Name | plain text                                                                   | left | 120 px |
+| Depot | plain text                                                                   | left | 80 px |
+| Count | exactly 2 decimal places; comma as decimal separator (e.g. `100,00`, `0,12`) | right | 80 px |
+| Share Price | exactly 2 decimal places; comma as decimal separator (e.g. `123,45`)         | right | 100 px |
+
+**Filtering:**
+- **ISIN filter**: free-text input; case-insensitive partial match updated in real time as the user types (e.g. typing `DE000` shows all transactions whose ISIN contains that substring). A Clear button appears next to the field and resets the filter. Double-clicking an ISIN value in the table copies it to this filter, immediately showing only that ISIN's transactions.
+- **Name filter**: free-text input; case-insensitive partial match updated in real time as the user types. A Clear button appears next to the field and resets the filter. Double-clicking a Name value in the table copies it to this filter, immediately showing only transactions with that security name.
+- **Depot filter**: dropdown listing all depots present in the loaded data plus an "All depots" option. Selecting a depot restricts the view to that depot's transactions; selecting "All depots" shows all transactions.
+
+**Loading and refresh:**
+- A loading indicator (spinner) is displayed while data is being fetched from the backend.
+- A Refresh button reloads all transactions from the backend.
+- The row count shown above the table reflects the active filter (e.g. "42 of 16140 transactions").
+
+**Pagination:**
+- Default page size: 10 rows per page.
+- Page size selector options: 10, 20, 50, 100 rows per page.
+- A "Show All / Paginate" toggle switches between paginated and full-table view.
 
 #### show countries
 the UI should provide a view that displays the countries. sorted alphabetically. The countries should be fetched from the backend via a REST API endpoint that retrieves country data from the database.
@@ -252,7 +280,7 @@ the UI should provide a view that shows the country diversification breakdown, w
 similar to the country diversification breakdown, the UI should provide a view that shows the branch diversification breakdown, which is calculated by the backend based on the transactions and the branch mapping of ISINs. The backend should provide a REST API endpoint that calculates and returns the branch diversification breakdown, which includes the total invested amount per branch and the percentage of the total portfolio invested in each branch. The UI should display this information in a clear and visually appealing way, such as a pie chart or a bar chart or a donutchart.
 
 #### show securities
-the UI should provide a view that displays all securities (ISINs) that are currently held in the portfolio, along with relevant details such as ticker symbol, name, country, branch, count, current quote, entry price, performance etc. The securities should be fetched from the backend via a REST API endpoint that retrieves security data from the database and calculates the current quote and performance based on the transactions and the current market prices. The UI should allow the user to filter and sort securities based on different criteria (e.g. country, branch, performance). The UI should also provide a way to refresh the security data to reflect any changes in the transactions or market prices.
+the UI should provide a view that displays all securities (ISINs) that are currently held in the portfolio, along with relevant details such as ticker symbol, name, country, branch, count, current quote, entry price, performance etc. The securities should be fetched from the backend via a REST API endpoint that retrieves security data from the database and calculates the current quote and performance based on the transactions and the current market prices. The UI should allow the user to filter and sort securities based on different criteria (e.g. country, branch, performance). The UI should also provide a way to refresh the security data to reflect any changes in the transactions or market prices. The table columns shall be resizable by the user. The ISIN column shall have a fixed minimum width wide enough to display a full 12-character ISIN without clipping. The Name column shall be wide enough for typical security names. The Country and Branch columns shall be wide enough to display their values without clipping.
 
 #### change quote fetch interval
 the UI should provide a way for the user to change the interval at which the backend fetches live quotes for the securities. This could be implemented as a settings page where the user can select from predefined intervals (e.g. every 15 minutes, every hour, every 4 hours) or enter a custom interval. The selected interval should be stored in the database in table settings and used by the backend to schedule the quote fetching task. The UI should also provide feedback to the user about the current quote fetch interval and any changes made to it. REST API endpoint should be provided to update the quote fetch interval in the backend. the ui should also provide a way to trigger an immediate quote fetch, in case the user wants to update the quotes right away without waiting for the next scheduled fetch. the UI should show the date and time of the last successful quote fetch, so the user can see how up-to-date the displayed quotes are

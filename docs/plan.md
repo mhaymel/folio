@@ -92,6 +92,8 @@ spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
 
 **Note:** `@clerk/clerk-react` is planned but not yet installed. Clerk authentication (Phase 3) is not yet implemented.
 
+**Global table convention:** All `DataTable` instances use the `resizable` prop so columns can be dragged to any width.
+
 **Strato integration pattern:**
 - `AppRoot` from `@dynatrace/strato-components/core` wraps the entire app in `main.tsx`
 - Design tokens injected as CSS custom properties via JS (CSS import not available — not in package exports)
@@ -200,17 +202,30 @@ INSERT INTO settings (key, value) VALUES
 ### 4.1 DeGiro `Transactions.csv`
 
 **Format:** comma-separated, first row is header.
-**Relevant columns:** `Datum` (DD-MM-YYYY), `Uhrzeit`, `ISIN`, `Anzahl` (positive=buy, negative=sell), `Kurs` (price per share).
+**Relevant columns (0-indexed):**
+
+| Index | Column | Description |
+|-------|--------|-------------|
+| 0 | Datum | Trade date DD-MM-YYYY |
+| 1 | Uhrzeit | Trade time HH:mm |
+| 2 | Produkt | Security name — insert into `isin_name` |
+| 3 | ISIN | Security identifier |
+| 6 | Anzahl | Share count (positive = buy, negative = sell) |
+| 11 | Wert EUR | Total trade value in EUR (negative for buys) |
+
+**Share price derivation:** `share_price = abs(Wert EUR) / abs(Anzahl)`. Column 7 (`Kurs`) is **not used** because it is denominated in the security's trading currency (e.g. USD) and would require an additional conversion step. `Wert EUR` is always in EUR and yields the correct EUR-denominated price directly.
 
 **Parsing logic:**
 1. Skip header row.
 2. Parse `Datum` + `Uhrzeit` → `LocalDateTime`.
-3. Parse `Anzahl` and `Kurs` as `double` (replace `,` with `.` for decimal).
-4. Upsert ISIN into `isin` table.
-5. Insert `Product` column (security name) into `isin_name` if this (isin_id, name) pair does not already exist — never overwrite existing names.
-6. Map to depot `DeGiro`.
-7. Before insert: **DELETE all transactions where `depot_id = DeGiro`**.
-8. Bulk insert all parsed rows.
+3. Parse `Anzahl` (index 6) as `double` (German decimal format). **If `Anzahl == 0`, skip the row** — zero-count rows are non-trade entries (fees, dividends) and would cause division by zero in the price formula.
+4. Parse `Wert EUR` (index 11) as `double` (German decimal format).
+5. Compute `share_price = Math.abs(eurValue) / Math.abs(count)`.
+6. Upsert ISIN into `isin` table.
+7. Insert `Produkt` column (security name) into `isin_name` if this (isin_id, name) pair does not already exist — never overwrite existing names.
+8. Map to depot `DeGiro`.
+9. Before insert: **DELETE all transactions where `depot_id = DeGiro`**.
+10. Bulk insert all parsed rows.
 
 ### 4.2 ZERO `ZERO-orders-*.csv`
 
@@ -500,10 +515,30 @@ Layout is implemented using the Strato `Page` component (`@dynatrace/strato-comp
 
 ### 6.5 Transactions Page Design
 
-- Table columns: Date, ISIN, Security Name, Depot, Count, Share Price.
-- Filter bar: date range picker, ISIN text input, depot dropdown.
-- Pagination controls.
-- Refresh button.
+All rows are fetched once at load; filtering is entirely client-side.
+
+**Columns and widths:**
+
+| Column | Format | Alignment | `width` | `minWidth` |
+|--------|--------|-----------|---------|------------|
+| Date | `s.substring(0,10)` → `YYYY-MM-DD`; `sortType: 'text'`; default sort descending (newest first) | left | — | 120 |
+| ISIN | plain | left | 140 | 140 |
+| Name | plain | left | 240 | 120 |
+| Depot | plain | left | 100 | 80 |
+| Count | `toLocaleString('de-DE', {min:2, max:2})` | right | — | 80 |
+| Share Price | `toLocaleString('de-DE', {min:2, max:2})` | right | — | 100 |
+
+**Filter bar:**
+- ISIN `TextInput` — real-time partial, case-insensitive match against `t.isin`; Clear `Button` shown when non-empty. Double-clicking an ISIN cell calls `setIsinFilter(isin)`.
+- Name `TextInput` — real-time partial, case-insensitive match against `t.name`; Clear `Button` shown when non-empty. Double-clicking a Name cell calls `setNameFilter(name)`.
+- Depot `Select<string>` — options: `"" → "All depots"` plus unique sorted depot names extracted from loaded data; value `""` means no depot filter.
+- Refresh `Button` — reloads all rows from the backend.
+
+**Row count line:** `"N of M transactions"` when filtered, `"M transactions"` otherwise.
+
+**Pagination:** `DataTablePagination` child of `DataTable`; `defaultPageSize={10}`, `pageSizeOptions={[10, 20, 50, 100]}`. "Show All / Paginate" toggle removes or restores the child.
+
+**Loading:** `ProgressCircle size="small"` + "Loading…" text shown while fetching; table shown once loaded.
 
 ### 6.6 Securities Page Design
 
@@ -511,6 +546,8 @@ Layout is implemented using the Strato `Page` component (`@dynatrace/strato-comp
 - Current Quote and Performance show `—` if no quote has been fetched yet for that ISIN.
 - Filter bar: country dropdown, branch dropdown.
 - Sortable columns.
+- Resizable columns (`resizable` prop on `DataTable`).
+- Column widths: ISIN `140/140`, Name `240/240`, Country `120/80`, Branch `160/80`; numeric columns `minWidth: 80–90`.
 
 ### 6.7 Settings Page Design
 
