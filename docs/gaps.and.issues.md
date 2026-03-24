@@ -165,4 +165,4 @@ No way to quickly filter to a single ISIN from the table itself; users had to ty
 
 ---
 
-> Last reviewed: 2026-03-24 — Date column width and default sort fixed; ISIN double-click filter added; Clerk and quote fetcher gaps remain open.
+> Last reviewed: 2026-03-24 — `plan.md` deleted; all content merged into `PROJECT.md` (scaffolding, schema, auth, CSV specs, API endpoints, page designs, error handling, build). CLAUDE.md key-docs table updated. Open items T, V, W, X remain.

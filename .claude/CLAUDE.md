@@ -6,8 +6,7 @@ Folio is a personal investment portfolio tracker: Spring Boot backend + React/Ty
 
 | File | Contents |
 |------|----------|
-| `docs/PROJECT.md` | Full requirements, data model, use cases, tech preferences |
-| `docs/plan.md` | Phase-by-phase implementation plan with detailed specs |
+| `docs/PROJECT.md` | Full requirements, data model, use cases, tech preferences, API specs, page designs, build config |
 | `docs/gaps.and.issues.md` | All identified gaps and their resolution status |
 
 Always read the relevant doc section before making changes that touch requirements or architecture.

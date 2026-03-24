@@ -366,3 +366,539 @@ clerk (https://clerk.com/) should be used for user management and authentication
 - gradle for the backend
 - vite for the frontend
 - result of the production build should be a single docker image containing both frontend and backend that can be run on linux and windows
+
+---
+
+## Project Scaffolding
+
+### Root Gradle Setup
+
+A root-level `settings.gradle` is required so IntelliJ recognizes the Gradle project when opened at the repo root. It includes the backend via composite build:
+
+```groovy
+rootProject.name = 'folio'
+includeBuild('backend')
+```
+
+### Backend (Spring Boot + Gradle)
+
+**`build.gradle` dependencies:**
+- `spring-boot-starter-web`
+- `spring-boot-starter-data-jpa`
+- `spring-boot-starter-security`
+- `spring-boot-starter-validation`
+- `springdoc-openapi-starter-webmvc-ui:2.8.5`
+- `flyway-core`, `flyway-database-postgresql`
+- `postgresql` (runtimeOnly)
+- `com.opencsv:opencsv:5.9`
+- `com.h2database:h2` (runtimeOnly — dev + test)
+
+**Note:** Lombok is NOT used. `nimbus-jose-jwt` for Clerk JWT verification is planned but not yet added.
+
+**Package structure:**
+```
+com.folio
+  ├── config/         # Security, OpenAPI, CORS config
+  ├── controller/     # REST controllers
+  ├── service/        # Business logic (ImportService, PortfolioService)
+  ├── repository/     # JPA repositories
+  ├── model/          # JPA entities (explicit Java, no Lombok)
+  ├── dto/            # Request/Response DTOs
+  ├── exception/      # Global exception handler
+  ├── parser/         # CSV parsers per broker (planned, not yet extracted)
+  └── quote/          # IsinsQuoteLoader + per-source fetchers (planned, not yet implemented)
+```
+
+**Tiny types:** Domain values wrapped in value types (`Isin`, `Quote`, `DepotName`) rather than raw `String`/`double`. Each tiny type lives in `model/`.
+
+**`application.yml`:**
+```yaml
+spring.datasource: Neon PostgreSQL URL (from env var DATABASE_URL)
+spring.flyway: enabled, locations=classpath:db/migration
+clerk.jwks-uri: https://api.clerk.com/v1/jwks
+```
+
+**`application-dev.yml`:**
+```yaml
+spring.datasource:
+  url: jdbc:h2:file:./data/folio;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+  driver-class-name: org.h2.Driver
+spring.h2.console.enabled: true
+spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+```
+
+**`application-test.yml`:**
+```yaml
+spring.datasource:
+  url: jdbc:h2:mem:folio;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+  driver-class-name: org.h2.Driver
+spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+```
+
+### Frontend (Vite + React + TypeScript)
+
+**`package.json` dependencies:**
+- `react@18.3.1`, `react-dom`, `react-router-dom@7.13.1`
+- `@dynatrace/strato-components@3.1.1`
+- `@dynatrace/strato-design-tokens@1.3.1`
+- `@dynatrace/strato-icons@2.1.0`
+- `@dynatrace-sdk/*` (peer deps; install with `--legacy-peer-deps`)
+- `recharts@3.8.0`
+- `axios@1.13.6`
+
+**Note:** `@clerk/clerk-react` is planned but not yet installed.
+
+**Directory structure:**
+```
+src/
+  ├── api/            # Axios client (client.ts — baseURL hardcoded for dev, no auth yet)
+  ├── components/     # Layout.tsx (Page + Sidebar + Main)
+  ├── pages/          # Route-level pages
+  └── types/          # TypeScript interfaces (index.ts)
+```
+
+**Global table convention:** All `DataTable` instances use the `resizable` prop.
+
+**Strato integration pattern:**
+- `AppRoot` from `@dynatrace/strato-components/core` wraps the entire app in `main.tsx`
+- Design tokens injected via JS (CSS import not available)
+- Layout: `Page` + `Page.Header` + `Page.Sidebar` + `Page.Main`
+- `AppHeader` inside `Page.Header` for the title bar
+- Sidebar contains nav links via `react-router-dom`
+- Imports use subpackage paths: `/layouts`, `/buttons`, `/forms`, `/tables`, `/typography`
+
+### Docker
+
+Multi-stage `Dockerfile`:
+
+```dockerfile
+# Stage 1: Build frontend
+FROM node:20-alpine AS frontend
+WORKDIR /app/frontend
+COPY frontend/ .
+RUN npm ci && npm run build
+
+# Stage 2: Build backend
+FROM eclipse-temurin:21-jdk AS backend
+WORKDIR /app
+COPY backend/ .
+COPY --from=frontend /app/frontend/dist src/main/resources/static
+RUN ./gradlew bootJar -x test
+
+# Stage 3: Runtime
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=backend /app/build/libs/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
+
+**Runtime environment variables:** `DATABASE_URL`, `CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`.
+
+---
+
+## Database Schema (Flyway)
+
+**`V1__create_schema.sql`** — creates all tables:
+
+```
+currency         (id, name VARCHAR(3) UNIQUE NOT NULL)
+isin             (id, isin VARCHAR(12) UNIQUE NOT NULL)
+isin_name        (id, isin_id FK, name VARCHAR(255) NOT NULL, UNIQUE(isin_id, name))
+ticker_symbol    (id, symbol VARCHAR(20) UNIQUE NOT NULL)
+isin_ticker      (isin_id FK, ticker_symbol_id FK — composite PK)
+country          (id, name VARCHAR(100) UNIQUE NOT NULL)
+branch           (id, name VARCHAR(100) UNIQUE NOT NULL)
+isin_country     (isin_id FK, country_id FK — composite PK; UNIQUE(isin_id) enforced by V6)
+isin_branch      (isin_id FK, branch_id FK — composite PK; UNIQUE(isin_id) enforced by V6)
+depot            (id, name VARCHAR(100) UNIQUE NOT NULL)
+transaction      (id, date TIMESTAMP, isin_id FK, depot_id FK, count DOUBLE PRECISION, share_price DOUBLE PRECISION)
+dividend         (id, isin_id FK, currency_id FK, dividend_per_share DOUBLE PRECISION)
+dividend_payment (id, timestamp TIMESTAMP, isin_id FK, depot_id FK, currency_id FK, value DOUBLE PRECISION)
+quote_provider   (id, name VARCHAR(100) UNIQUE NOT NULL)
+isin_quote       (id, isin_id FK UNIQUE, quote_provider_id FK, value DOUBLE PRECISION NOT NULL, fetched_at TIMESTAMP NOT NULL)
+settings         (id, key VARCHAR(100) UNIQUE NOT NULL, value VARCHAR(500) NOT NULL)
+```
+
+**`V2__seed_depots.sql`** — inserts `DeGiro` and `ZERO` depot records.
+
+**`V3__seed_currencies.sql`:**
+```sql
+INSERT INTO currency (name) VALUES
+('AUD'), ('CAD'), ('EUR'), ('GBP'), ('USD'), ('SGD'), ('NOK'), ('PLN'),
+('CNY'), ('IDR'), ('ZAR'), ('MXN'), ('HUF'), ('ILS'), ('DKK'), ('CZK'),
+('THB'), ('SEK'), ('JPY'), ('BRL'), ('RON'), ('CHF'), ('ISK'), ('TRY'),
+('HKD'), ('INR'), ('KRW'), ('MYR'), ('NZD'), ('PHP');
+```
+
+**`V4__seed_quote_providers.sql`:**
+```sql
+INSERT INTO quote_provider (name) VALUES
+('JustETF'), ('Onvista'), ('FinanzenNet'), ('CNBC'),
+('FondsDiscount'), ('ComDirect'), ('WallstreetOnline');
+```
+
+**`V5__seed_settings.sql`:**
+```sql
+INSERT INTO settings (key, value) VALUES ('quote.fetch.interval.minutes', '60');
+```
+
+**`V6__enforce_single_country_branch.sql`:**
+```sql
+ALTER TABLE isin_country ADD CONSTRAINT uq_isin_country_isin UNIQUE (isin_id);
+ALTER TABLE isin_branch  ADD CONSTRAINT uq_isin_branch_isin  UNIQUE (isin_id);
+```
+
+---
+
+## Authentication (Clerk)
+
+### Backend
+
+- `SecurityConfig.java`: stateless JWT filter on all `/api/**` endpoints.
+- `ClerkJwtFilter.java`: fetches Clerk JWKS URI, validates `Authorization: Bearer <token>`, extracts `sub` claim.
+- Swagger UI (`/swagger-ui/**`, `/v3/api-docs/**`) also protected; users authorize via the `Authorize` button.
+- Currently disabled via `folio.security.enabled=false` (permits all requests); `ClerkJwtFilter` not yet implemented.
+
+### Frontend
+
+- Wrap app in `<ClerkProvider publishableKey={...}>`.
+- `<SignIn />` / `<SignUp />` pages at `/sign-in`, `/sign-up`.
+- `useAuth()` hook: attach JWT to all API requests via Axios interceptor.
+- Protected routes: redirect to `/sign-in` if unauthenticated.
+- `@clerk/clerk-react` not yet installed.
+
+---
+
+## CSV Parsing Specifications
+
+### DeGiro `Transactions.csv`
+
+**Format:** comma-separated; first row is header.
+
+| Index | Column | Description |
+|-------|--------|-------------|
+| 0 | Datum | Trade date `DD-MM-YYYY` |
+| 1 | Uhrzeit | Trade time `HH:mm` |
+| 2 | Produkt | Security name → `isin_name` |
+| 3 | ISIN | Security identifier |
+| 6 | Anzahl | Share count (positive = buy, negative = sell) |
+| 11 | Wert EUR | Total trade value in EUR (negative for buys) |
+
+**Share price:** `abs(Wert EUR) / abs(Anzahl)`. Column 7 (`Kurs`) is **not used** — it is in local trading currency.
+
+**Parsing logic:**
+1. Skip header row.
+2. Parse `Datum` + `Uhrzeit` → `LocalDateTime`.
+3. Parse `Anzahl` (German decimal format). **Skip row if `Anzahl == 0`** — zero-count rows are non-trade entries (fees, dividends) and would cause division by zero.
+4. Parse `Wert EUR` (German decimal format).
+5. `share_price = Math.abs(eurValue) / Math.abs(count)`.
+6. Upsert ISIN into `isin`.
+7. Insert `Produkt` into `isin_name` if `(isin_id, name)` pair not yet present.
+8. Depot = `DeGiro`. DELETE all transactions for DeGiro, then bulk insert.
+
+### ZERO `ZERO-orders-*.csv`
+
+**Format:** semicolon-separated; first row is header.
+
+| Index | Column | Description |
+|-------|--------|-------------|
+| 0 | Name | Security name → `isin_name` |
+| 1 | ISIN | Security identifier |
+| 5 | Status | Filter: must equal `"ausgeführt"` |
+| 12 | Richtung | `"Kauf"` = buy (positive), `"Verkauf"` = sell (negative) |
+| 16 | Ausführung Datum | Execution date `DD.MM.YYYY` |
+| 17 | Ausführung Zeit | Execution time |
+| 18 | Ausführung Kurs | Price per share |
+| 19 | Anzahl ausgeführt | Shares executed |
+
+**Parsing logic:**
+1. Skip header. Filter: `Status` (index 5) = `"ausgeführt"`.
+2. Parse date (16) + time (17) → `LocalDateTime`.
+3. `Richtung` (12): `"Kauf"` → positive; `"Verkauf"` → negative count.
+4. Upsert ISIN (1) into `isin`. Insert `Name` (0) into `isin_name` if pair not yet present.
+5. Depot = `ZERO`. DELETE all transactions for ZERO, then bulk insert.
+
+### DeGiro `Account.csv` (dividends)
+
+**Format:** comma-separated.
+
+| Index | Column | Description |
+|-------|--------|-------------|
+| 2 | Valuta | Payment date → `timestamp` |
+| 4 | ISIN | Security identifier |
+| 5 | Beschreibung | Filter: must equal `"Dividende"` exactly |
+| 7 | Currency | Currency code |
+| 8 | Änderung | Dividend amount (decimal separator `~`) |
+
+**Parsing logic:**
+1. Skip rows where `line.length < 9`. Filter: index 5 equals `"Dividende"` exactly.
+2. Parse index 2 → `LocalDateTime`. Upsert ISIN (4) → `isin`. Upsert currency (7) → `currency`.
+3. Parse amount (8): replace `~` with `.`. Insert into `dividend_payment` (depot = DeGiro).
+
+### ZERO `ZERO-kontoumsaetze-*.csv` (dividends)
+
+**Format:** semicolon-separated.
+**Columns:** `[0] Datum`, `[1] Valuta`, `[2] Betrag`, `[3] Betrag storniert`, `[4] Status`, `[5] Verwendungszweck`, `[6] IBAN`.
+
+**Parsing logic:**
+1. Filter: `Status` (4) = `"gebucht"` AND `Verwendungszweck` (5) starts with `"Coupons/Dividende"`.
+2. Extract ISIN: find `"ISIN "`, take next 12 characters. Use `Valuta` (1) as payment date.
+3. Parse `Betrag` (2): replace `,` with `.`. Currency = EUR (no currency column; upsert `EUR`).
+4. DELETE all `dividend_payment` for ZERO, then insert.
+
+### `dividende.csv`
+
+**Format:** `ISIN;Name;Currency;DividendPerShare`
+
+1. Upsert ISIN → `isin`. Insert `Name` → `isin_name` if pair not yet present.
+2. Upsert currency → `currency`. Replace all rows in `dividend` table on each import.
+
+### `branches.csv`
+
+**Format:** `ISIN;Name;Branch`
+
+1. Upsert ISIN → `isin`. Insert `Name` → `isin_name` if pair not yet present.
+2. Upsert branch → `branch`. Replace branch mapping (1:1): DELETE existing `isin_branch` row, INSERT new.
+
+### `countries.csv`
+
+**Format:** `ISIN;Name;Country`
+
+1. Upsert ISIN → `isin`. Insert `Name` → `isin_name` if pair not yet present.
+2. Upsert country → `country`. Replace country mapping (1:1): DELETE existing `isin_country` row, INSERT new.
+
+---
+
+## Backend REST API
+
+All endpoints under `/api/**`, secured with Clerk JWT.
+
+### Import Endpoints (`ImportController`)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/import/degiro/transactions` | Upload DeGiro Transactions.csv |
+| POST | `/api/import/degiro/account` | Upload DeGiro Account.csv |
+| POST | `/api/import/zero/orders` | Upload ZERO orders CSV |
+| POST | `/api/import/zero/account` | Upload ZERO kontoumsaetze CSV |
+| POST | `/api/import/dividends` | Upload dividende.csv |
+| POST | `/api/import/branches` | Upload branches.csv |
+| POST | `/api/import/countries` | Upload countries.csv |
+
+All return `{ success: boolean, imported: int, errors: string[] }`.
+
+### Reference Data Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/countries` | All countries, sorted alphabetically |
+| GET | `/api/branches` | All branches, sorted alphabetically |
+| GET | `/api/depots` | All depots, sorted alphabetically |
+| GET | `/api/currencies` | All currencies, sorted alphabetically |
+
+### Transactions Endpoint
+
+| Method | Path | Query Params |
+|--------|------|--------------|
+| GET | `/api/transactions` | `fromDate`, `toDate`, `isin`, `depotId`, `page`, `size`, `sort` |
+
+Returns paginated list with ISIN, security name (JOIN `isin_name`), depot, date, count, share price.
+
+### Securities Endpoint
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/securities` | Current positions aggregated from transactions |
+
+**Calculation:**
+- `SUM(count)` per ISIN; keep positions where `SUM(count) > 0`.
+- **Avg entry price:** `SUM(count * share_price) / SUM(count)` across **all** transactions (buys positive, sells negative — reduces cost basis proportionally).
+- Join with `isin_name`, `isin_country`, `isin_branch`, `dividend`, `isin_quote`.
+- Response: ISIN, name, country, branch, total shares, avg entry price, current quote (null if not fetched), performance % (`(current_quote − avg_entry_price) / avg_entry_price * 100`), expected annual dividend, estimated annual income.
+
+### Analytics Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/analytics/countries` | Total invested per country + % of portfolio |
+| GET | `/api/analytics/branches` | Total invested per branch + % of portfolio |
+
+**Calculation:** `invested = SUM(count * share_price)` per open position; group by country/branch via `isin_country`/`isin_branch`; compute % of total.
+
+### Quote Management Endpoints (`QuoteController`)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/quotes/settings` | Current fetch interval + last fetch timestamp |
+| PUT | `/api/quotes/settings/interval` | Update `quote.fetch.interval.minutes` |
+| POST | `/api/quotes/fetch` | Trigger immediate fetch for all held ISINs |
+
+`GET /api/quotes/settings` response: `{ "intervalMinutes": 60, "lastFetchAt": "2026-03-22T14:30:00" }` (`lastFetchAt` null if no fetch yet).
+
+### Dashboard Endpoint (`DashboardController`)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/dashboard` | Portfolio summary |
+
+**Calculation:**
+- **Total portfolio value:** `SUM(avg_entry_price * total_shares)` across open positions.
+- **Security count:** distinct ISINs with `SUM(count) > 0`.
+- **Total dividend ratio:** `SUM(shares * dividend_per_share) / total_portfolio_value * 100`.
+- **Top 5 holdings:** highest `avg_entry_price * total_shares`; fields: ISIN, name, invested amount.
+- **Top 5 dividend sources:** highest `shares * dividend_per_share`; fields: ISIN, name, estimated annual income.
+- **Last quote fetch:** `settings` key `quote.last.fetch.timestamp`; null if not set.
+
+Response:
+```json
+{
+  "totalPortfolioValue": 12345.67,
+  "securityCount": 23,
+  "totalDividendRatio": 3.14,
+  "top5Holdings": [{ "isin": "IE00B4L5Y983", "name": "iShares Core MSCI World ETF", "investedAmount": 4500.00 }],
+  "top5DividendSources": [{ "isin": "DE000BASF111", "name": "BASF SE", "estimatedAnnualIncome": 150.00 }],
+  "lastQuoteFetchAt": "2026-03-22T14:30:00"
+}
+```
+
+---
+
+## Quote Fetcher Scheduling & Persistence
+
+- **Scheduling:** `@Scheduled` Spring task reads `settings.quote.fetch.interval.minutes` before each run (so UI changes take effect without restart). Runs for all ISINs where `SUM(count) > 0`. Requires `@EnableScheduling` on the application class.
+- **Persistence:** After each fetch batch, upsert results into `isin_quote` (one row per ISIN; `quote_provider_id` = provider that succeeded; `fetched_at` = now). Update `settings` key `quote.last.fetch.timestamp`.
+- **Disabled source:** Lemon Markets batch API — API token expired; do not implement.
+
+---
+
+## Frontend Pages & Routes
+
+### Routes
+
+| Route | Page | Description |
+|-------|------|-------------|
+| `/` | Dashboard | KPI cards + top-5 holdings/dividend sources + last quote fetch |
+| `/transactions` | Transactions | Sortable/filterable table |
+| `/securities` | Securities | Portfolio positions with live quotes and performance |
+| `/countries` | Countries | Alphabetical list |
+| `/branches` | Branches | Alphabetical list |
+| `/depots` | Depots | Alphabetical list |
+| `/currencies` | Currencies | Alphabetical list |
+| `/analytics/countries` | Country Diversification | Donut chart + detail table |
+| `/analytics/branches` | Branch Diversification | Donut chart + detail table |
+| `/import` | Import | File upload section per data type |
+| `/settings` | Settings | Quote fetch interval selector + manual trigger |
+
+### App Layout
+
+- `Page.Header` → `AppHeader` with app title "Folio" and logo link.
+- `Page.Sidebar` → navigation links; active link highlighted; collapses to drawer below 640px (Strato default).
+- `Page.Main` → routed content via `<Outlet />`.
+- **Planned (not yet implemented):** dark/light mode toggle; Clerk `<UserButton />` in header; auth redirect.
+
+### Import Page
+
+- One card/section per import type, grouped by broker.
+- Each card: description, `<input type="file" />`, upload button, status indicator (idle / loading / success with row count / error with messages).
+
+### Analytics Pages
+
+- Donut chart (Recharts `PieChart`) with legend.
+- Detail table below: name, invested amount (EUR), percentage.
+- Country and branch pages share the same layout pattern.
+
+### Transactions Page
+
+All rows fetched once at load; filtering entirely client-side.
+
+**Columns:**
+
+| Column | Format | Alignment | `width` | `minWidth` |
+|--------|--------|-----------|---------|------------|
+| Date | `DD-MM-YYYY`; `sortAccessor` returns ISO `YYYY-MM-DD` for chronological sort; default sort descending | left | 105 | 105 |
+| ISIN | plain; custom cell with `display:flex; align-items:center; height:100%`; double-click → `setIsinFilter` | left | 140 | 140 |
+| Name | plain; custom cell with `display:flex; align-items:center; height:100%`; double-click → `setNameFilter` | left | 240 | 120 |
+| Depot | plain | left | 100 | 80 |
+| Count | `toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2})` | right | — | 80 |
+| Share Price | `toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2})` | right | — | 100 |
+
+**Filter bar:** ISIN `TextInput` (real-time partial, case-insensitive; Clear button; double-click cell fills); Name `TextInput` (same); Depot `Select<string>` (`""` = "All depots" + sorted unique names); Refresh `Button`.
+
+**Row count:** `"N of M transactions"` filtered / `"M transactions"` unfiltered.
+
+**Pagination:** `DataTablePagination`; `defaultPageSize=10`; options `[10,20,50,100]`; "Show All / Paginate" toggle.
+
+**Loading:** `ProgressCircle size="small"` + "Loading…".
+
+### Securities Page
+
+- Columns: ISIN (140/140), Name (240/240), Country (120/80), Branch (160/80), Total Shares, Avg Entry Price, Current Quote, Performance (%), Expected Dividend/Share, Est. Annual Income.
+- Current Quote and Performance show `—` if no quote fetched yet.
+- Filter bar: country dropdown, branch dropdown. Sortable + resizable (`resizable` prop).
+
+### Settings Page
+
+- Fetch interval: dropdown (15 min, 30 min, 1 h, 4 h, 12 h, 24 h) + custom input.
+- "Save interval" → `PUT /api/quotes/settings/interval`.
+- "Fetch now" → `POST /api/quotes/fetch`; loading spinner while running.
+- Last fetch timestamp displayed below controls.
+
+### Dashboard Page
+
+- **KPI row:** Total Portfolio Value (EUR), Number of Securities, Total Dividend Ratio (%).
+- **Top 5 Holdings:** table — ISIN, Security Name, Invested Amount (EUR).
+- **Top 5 Dividend Sources:** table — ISIN, Security Name, Est. Annual Income (EUR).
+- **Last Quote Fetch:** timestamp (e.g. "Last updated: 22.03.2026 14:30"); `—` if not yet fetched.
+- Data from `GET /api/dashboard`.
+
+---
+
+## Error Handling & Logging
+
+**Backend:**
+- `GlobalExceptionHandler` (`@RestControllerAdvice`): maps exceptions to `{ error, message, timestamp }` JSON.
+- CSV import: errors collected per row, returned in import response — partial success allowed.
+- SLF4J + Logback: structured logging at INFO/WARN/ERROR.
+
+**Frontend:**
+- Axios interceptor: 401 → redirect to `/sign-in`; 4xx/5xx → show Strato notification/toast.
+- File type validation before upload (client-side).
+
+---
+
+## API Documentation
+
+- SpringDoc generates OpenAPI 3 spec at `/v3/api-docs`.
+- Swagger UI at `/swagger-ui/index.html`.
+- Configured with Clerk JWT bearer auth scheme (users paste token in `Authorize` dialog).
+- All controllers annotated with `@Tag`, `@Operation`, `@ApiResponse`.
+
+---
+
+## Production Build
+
+### Gradle + Vite Integration
+
+`build.gradle` custom tasks:
+1. `npmInstall`: exec `npm ci` in `frontend/`
+2. `buildFrontend`: exec `npm run build`; depends on `npmInstall`
+3. `copyFrontend`: copy `frontend/dist/` → `backend/src/main/resources/static/`; depends on `buildFrontend`
+4. `bootJar` depends on `copyFrontend`
+
+### SPA Fallback
+
+Catch-all `ResourceHttpRequestHandler`: all non-`/api/**` routes serve `index.html` (enables client-side routing).
+
+---
+
+## Implementation Order
+
+1. Project scaffolding (backend + frontend skeletons, Docker stub)
+2. Database schema + Flyway migrations
+3. Clerk authentication (backend JWT filter + frontend auth flow)
+4. CSV parsers (DeGiro transactions → ZERO orders → reference files)
+5. REST API (import endpoints first, then query/analytics)
+6. Frontend pages (import page first to load data, then transactions, securities, analytics)
+7. Error handling & logging polish
+8. Swagger/OpenAPI annotations
+9. Docker build + end-to-end production test
