@@ -30,4 +30,5 @@ Similar to the country diversification breakdown, the UI should provide a view t
 - Donut chart (Recharts `PieChart`) with legend.
 - Detail table below: name, invested amount (EUR), percentage.
 - Country and branch pages share the same layout pattern.
+- Table conventions per [ui.md](ui.md) apply (sortable, resizable, full width).
 

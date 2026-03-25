@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Flex } from '@dynatrace/strato-components/layouts';
 import { Heading, Paragraph } from '@dynatrace/strato-components/typography';
-import { DataTable } from '@dynatrace/strato-components/tables';
+import { DataTable, DataTablePagination } from '@dynatrace/strato-components/tables';
 import api from '../api/client';
 import type { DiversificationDto } from '../types';
 
@@ -61,7 +61,9 @@ export default function Analytics() {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <DataTable data={tableData} columns={columns} sortable resizable fullWidth />
+          <DataTable data={tableData} columns={columns} sortable resizable fullWidth>
+            <DataTablePagination defaultPageSize={10} pageSizeOptions={[10, 20, 50, 100]} />
+          </DataTable>
         </>
       )}
     </Flex>

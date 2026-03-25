@@ -3,6 +3,7 @@ package com.folio.controller;
 import com.folio.dto.QuoteSettingsDto;
 import com.folio.model.Setting;
 import com.folio.repository.SettingRepository;
+import com.folio.service.QuoteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,11 @@ import java.util.Map;
 public class QuoteController {
 
     private final SettingRepository settingRepo;
+    private final QuoteService quoteService;
 
-    public QuoteController(SettingRepository settingRepo) {
+    public QuoteController(SettingRepository settingRepo, QuoteService quoteService) {
         this.settingRepo = settingRepo;
+        this.quoteService = quoteService;
     }
 
     @GetMapping("/settings")
@@ -56,9 +59,12 @@ public class QuoteController {
     }
 
     @PostMapping("/fetch")
-    @Operation(summary = "Trigger immediate quote fetch (stub)")
-    public ResponseEntity<Map<String, String>> triggerFetch() {
-        // Quote fetching is a stub for now — will be implemented with IsinsQuoteLoader
-        return ResponseEntity.ok(Map.of("status", "Quote fetching not yet implemented"));
+    @Operation(summary = "Trigger immediate quote fetch for all held ISINs")
+    public ResponseEntity<Map<String, Object>> triggerFetch() {
+        int fetched = quoteService.triggerFetch();
+        return ResponseEntity.ok(Map.of(
+            "status", "completed",
+            "fetchedCount", fetched
+        ));
     }
 }

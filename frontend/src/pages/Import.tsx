@@ -18,6 +18,7 @@ const sections: ImportSection[] = [
   { title: 'Dividends', endpoint: '/import/dividends', description: 'Upload dividende.csv' },
   { title: 'Branches', endpoint: '/import/branches', description: 'Upload branches.csv' },
   { title: 'Countries', endpoint: '/import/countries', description: 'Upload countries.csv' },
+  { title: 'Ticker Symbols', endpoint: '/import/ticker-symbols', description: 'Upload ticker_symbol.csv' },
 ];
 
 function ImportCard({ section }: { section: ImportSection }) {

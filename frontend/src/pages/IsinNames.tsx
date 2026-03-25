@@ -4,44 +4,53 @@ import { Heading, Paragraph } from '@dynatrace/strato-components/typography';
 import { DataTable, DataTablePagination } from '@dynatrace/strato-components/tables';
 import { ProgressCircle } from '@dynatrace/strato-components/content';
 import api from '../api/client';
-import type { Country } from '../types';
+import type { IsinNameDto } from '../types';
 
 const columns = [
-  { id: 'name', header: 'Country', accessor: 'name', sortType: 'text' as const },
+  { id: 'isin', header: 'ISIN', accessor: 'isin', sortType: 'text' as const, width: 140, minWidth: 140 },
+  { id: 'name', header: 'Name', accessor: 'name', sortType: 'text' as const, width: 400, minWidth: 200 },
 ];
 
-export default function Countries() {
-  const [countries, setCountries] = useState<Country[]>([]);
+export default function IsinNames() {
+  const [data, setData] = useState<IsinNameDto[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
-    api.get<Country[]>('/countries')
-      .then(r => setCountries(r.data))
+    api.get<IsinNameDto[]>('/isin-names')
+      .then(r => setData(r.data))
       .finally(() => setLoading(false));
   }, []);
 
-  const data = useMemo(() => countries, [countries]);
+  const tableData = useMemo(() => data, [data]);
 
   return (
     <Flex flexDirection="column" gap={16}>
-      <Heading level={1}>Countries</Heading>
+      <Heading level={1}>ISIN Names</Heading>
 
       {loading ? (
         <Flex alignItems="center" gap={12}>
-          <ProgressCircle aria-label="Loading countries" size="small" />
+          <ProgressCircle aria-label="Loading ISIN names" size="small" />
           <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>Loading...</Paragraph>
         </Flex>
       ) : (
         <>
           <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
-            {countries.length} countries
+            {data.length} ISIN name mappings
           </Paragraph>
-          <DataTable data={data} columns={columns} sortable resizable fullWidth defaultSortBy={[{ id: 'name', desc: false }]}>
-            <DataTablePagination defaultPageSize={10} pageSizeOptions={[10, 20, 50, 100]} />
+          <DataTable
+          data={tableData}
+          columns={columns}
+          sortable
+          resizable
+          fullWidth
+          defaultSortBy={[{ id: 'name', desc: false }]}
+        >
+          <DataTablePagination defaultPageSize={10} pageSizeOptions={[10, 20, 50, 100]} />
           </DataTable>
         </>
       )}
     </Flex>
   );
 }
+

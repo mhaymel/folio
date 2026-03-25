@@ -83,3 +83,15 @@ export interface Currency {
   id: number;
   name: string;
 }
+
+export interface TickerSymbolDto {
+  isin: string;
+  tickerSymbol: string;
+  name: string | null;
+}
+
+export interface IsinNameDto {
+  isin: string;
+  name: string;
+}
+

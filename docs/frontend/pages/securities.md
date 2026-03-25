@@ -4,7 +4,7 @@
 
 ## Use Case
 
-The UI should provide a view that displays all securities (ISINs) that are currently held in the portfolio, along with relevant details such as ticker symbol, name, country, branch, count, current quote, entry price, performance etc. The securities should be fetched from the backend via a REST API endpoint that retrieves security data from the database and calculates the current quote and performance based on the transactions and the current market prices. The UI should allow the user to filter and sort securities based on different criteria (e.g. country, branch, performance). The UI should also provide a way to refresh the security data to reflect any changes in the transactions or market prices. The table columns shall be resizable by the user. The ISIN column shall have a fixed minimum width wide enough to display a full 12-character ISIN without clipping. The Name column shall be wide enough for typical security names. The Country and Branch columns shall be wide enough to display their values without clipping.
+The UI should provide a view that displays all securities (ISINs) currently held in the portfolio, along with relevant details such as ticker symbol, name, country, branch, count, current quote, entry price, and performance. The securities should be fetched from the backend via a REST API endpoint that retrieves security data from the database and calculates the current quote and performance based on transactions and current market prices. The UI should allow the user to filter and sort securities based on different criteria (e.g., country, branch, performance). The UI should also provide a way to refresh the security data to reflect any changes. Table conventions per [ui.md](ui.md) apply (sortable, resizable, full width).
 
 ---
 
@@ -39,5 +39,4 @@ The UI should provide a view that displays all securities (ISINs) that are curre
 
 - Current Quote and Performance show `—` if no quote fetched yet.
 - Filter bar: country dropdown, branch dropdown.
-- Sortable + resizable (`resizable` prop).
 

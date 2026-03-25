@@ -60,9 +60,9 @@ Both plan.md Phase 2 schema and PROJECT.md data model already reflect composite 
 
 Plan §3 describes a full Clerk JWT filter (`ClerkJwtFilter.java`) and `nimbus-jose-jwt` dependency. In the actual code, `SecurityConfig.java` uses a `folio.security.enabled` flag (defaulting to `false`) that simply permits all requests. `@clerk/clerk-react` is not installed in the frontend. No `ClerkJwtFilter` exists.
 
-### W. `quote/` package (IsinsQuoteLoader) not yet implemented
+### ~~W. `quote/` package (IsinsQuoteLoader) not yet implemented~~ — Resolved
 
-Plan §5.6 describes a full cascading quote fetcher across 10 sources with its own `quote/` package, config CSV files, `@Scheduled` task, and `isin_quote` upsert logic. None of this exists in the codebase. `QuoteController` endpoints exist but the quote-fetching implementation is absent.
+Plan §5.6 describes a full cascading quote fetcher across 10 sources with its own `quote/` package, config CSV files, `@Scheduled` task, and `isin_quote` upsert logic. — **Resolved 2026-03-25**: Full `quote/` package implemented with `IsinsQuoteLoader`, 10 cascade sources, `QuoteService` with scheduling and persistence. See gap AO for details.
 
 ### X. `parser/` package not yet extracted
 
@@ -151,11 +151,11 @@ The Date column had `minWidth: 105` which caused `YYYY-MM-DD` dates to clip. No 
 
 ---
 
-Items N, O, P, Q, R, S, U, V1, V2, V3, AA, AB, AC, AD, AE, AF, AG, AH, AI, AJ resolved and applied to plan.md / PROJECT.md. Open items T, V, W, X remain requiring decisions or implementation work.
+Items N, O, P, Q, R, S, U, V1, V2, V3, AA, AB, AC, AD, AE, AF, AG, AH, AI, AJ resolved and applied to plan.md / PROJECT.md. Open items T, V, X remain requiring decisions or implementation work.
 
 ### AN. Dashboard DataTables missing `resizable` prop
 
-AE states `resizable` was added to all DataTable usages including Dashboard. However, `Dashboard.tsx` still has `<DataTable ... fullWidth />` without `resizable` on both the holdings and dividend-sources tables. The global convention in PROJECT.md requires it on all DataTable instances.
+AE states `resizable` was added to all DataTable usages including Dashboard. However, `Dashboard.tsx` still has `<DataTable ... fullWidth />` without `resizable` on both the holdings and dividend-sources tables. The global convention in PROJECT.md requires it on all DataTable instances. — **Resolved 2026-03-25**: `resizable` prop added to both `DataTable` components in `Dashboard.tsx`.
 
 ### AL. Transactions — ISIN cell top-aligned; name filter missing
 
@@ -175,4 +175,41 @@ Both `DataTable` instances on the Dashboard page were missing the `fullWidth` pr
 
 ---
 
-> Last reviewed: 2026-03-25 — `plan.md` deleted; PROJECT.md split: page-level specs extracted to `docs/pages/` (dashboard, transactions, securities, import, analytics, settings, reference-data). Gap U (ZERO depot name) applied to import.md. Gap T (testing) section added to PROJECT.md. Open items: T (testing strategy), V (Clerk auth), W (quote/ package), X (parser/ extraction), AN (Dashboard resizable).
+### AO. `quote/` package (IsinsQuoteLoader) not implemented
+
+The entire quote fetching system described in settings.md was missing: no `quote/` package, no cascade fallback sources, no `@Scheduled` task, no `isin_quote` upsert logic. `QuoteController.triggerFetch()` returned a stub response. — **Resolved 2026-03-25**: Full implementation added:
+- `QuoteSource` interface + `AbstractHtmlQuoteSource` base class with HTTP client and decimal parsing utilities.
+- `EcbExchangeRateProvider` for USD→EUR conversion via ECB XML feed (with 1-hour cache and static fallback).
+- `CsvConfigLoader` for loading ISIN→path config CSVs from classpath.
+- 10 cascade sources in `quote/sources/`: `JustEtfApiSource` (step 1), `OnvistaSource` (2), `FinanzenNetSource` (3), `CnbcSource` (4), `JustEtfHtmlSource` (5), `JustEtfApiRetrySource` (6), `FondsDiscountEurSource` (7), `FondsDiscountUsdSource` (8), `ComDirectSource` (9), `WallstreetOnlineSource` (10).
+- `IsinsQuoteLoader` orchestrator: tries each source in `@Order` priority; resolved ISINs removed before next source.
+- `QuoteService`: `@Scheduled(fixedDelay=60000)` task checks configured interval and triggers fetch; `triggerFetch()` fetches all held ISINs, upserts into `isin_quote`, updates `settings.quote.last.fetch.timestamp`.
+- `QuoteController.triggerFetch()` wired to `QuoteService`; returns `{ status, fetchedCount }`.
+- Empty config CSV placeholders created: `finanzennet.csv`, `onvista.csv`, `wallstreetonline.csv`, `isin.symbol.csv`.
+- Settings page updated to show fetched count and refresh last-fetch timestamp after fetch.
+
+### AP. Securities page — missing country/branch filter dropdowns
+
+The securities spec (securities.md) requires a filter bar with country and branch dropdowns, but `Securities.tsx` had no filters. — **Resolved 2026-03-25**: Country and Branch `Select` dropdowns added, populated from loaded data. Loading indicator (`ProgressCircle`) added. Refresh button added. Filtered count displayed in heading (e.g. "42 of 50").
+
+### AQ. Depots endpoint — not sorted alphabetically
+
+The reference-data spec requires all reference lists sorted alphabetically. `GET /api/depots` used `findAll()` (unsorted). — **Resolved 2026-03-25**: `findAllByOrderByNameAsc()` added to `DepotRepository`; `ReferenceDataController.getDepots()` updated.
+
+### AR. SPA fallback — client-side routing not supported by backend
+
+Opening a frontend route directly (e.g. `/transactions`) returned a 404 from the backend because no catch-all handler existed to serve `index.html` for non-API routes. — **Resolved 2026-03-25**: `SpaWebConfig.java` added: `WebMvcConfigurer` with `PathResourceResolver` that serves `classpath:/static/index.html` for any request not matching a real static file.
+
+---
+
+### AS. Ticker symbol support — data model, import, and display page
+
+The data model defined `ticker_symbol` and `isin_ticker` tables, and import.md specified a `POST /api/import/ticker-symbols` endpoint and `ticker_symbol.csv` parsing, but none of this was implemented. A new `/ticker-symbols` page was specified in `ticker-symbols.md` but had no backend or frontend code. — **Resolved 2026-03-25**:
+- `V7__ticker_symbol_add_isin_id.sql` migration adds `isin_id` FK column to `ticker_symbol`.
+- `TickerSymbol` JPA model + `TickerSymbolRepository` created.
+- `ImportService.importTickerSymbols()`: parses `ISIN;Name;TickerSymbol` CSV, upserts ISIN/name/ticker, creates `isin_ticker` junction mapping.
+- `ImportController`: `POST /api/import/ticker-symbols` endpoint added.
+- `TickerSymbolDto` + `TickerSymbolController`: `GET /api/ticker-symbols` returns ISIN/ticker/name via native SQL join.
+- Frontend: `TickerSymbols.tsx` page (3-column sortable table), route `/ticker-symbols`, nav entry, import card.
+
+> Last reviewed: 2026-03-25 — Gaps AN, AO (W), AP, AQ, AR, AS resolved. Open items: T (testing strategy), V (Clerk auth), X (parser/ extraction).

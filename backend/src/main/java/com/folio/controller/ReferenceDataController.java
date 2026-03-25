@@ -45,9 +45,9 @@ public class ReferenceDataController {
     }
 
     @GetMapping("/depots")
-    @Operation(summary = "Get all depots")
+    @Operation(summary = "Get all depots sorted alphabetically")
     public ResponseEntity<List<Depot>> getDepots() {
-        return ResponseEntity.ok(depotRepo.findAll());
+        return ResponseEntity.ok(depotRepo.findAllByOrderByNameAsc());
     }
 
     @GetMapping("/currencies")

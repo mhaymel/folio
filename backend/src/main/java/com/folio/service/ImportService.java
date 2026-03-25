@@ -34,12 +34,14 @@ public class ImportService {
     private final DividendPaymentRepository dividendPaymentRepo;
     private final CountryRepository countryRepo;
     private final BranchRepository branchRepo;
+    private final TickerSymbolRepository tickerSymbolRepo;
     private final EntityManager em;
 
     public ImportService(IsinRepository isinRepo, IsinNameRepository isinNameRepo, DepotRepository depotRepo,
                          CurrencyRepository currencyRepo, TransactionRepository transactionRepo,
                          DividendRepository dividendRepo, DividendPaymentRepository dividendPaymentRepo,
-                         CountryRepository countryRepo, BranchRepository branchRepo, EntityManager em) {
+                         CountryRepository countryRepo, BranchRepository branchRepo,
+                         TickerSymbolRepository tickerSymbolRepo, EntityManager em) {
         this.isinRepo = isinRepo;
         this.isinNameRepo = isinNameRepo;
         this.depotRepo = depotRepo;
@@ -49,6 +51,7 @@ public class ImportService {
         this.dividendPaymentRepo = dividendPaymentRepo;
         this.countryRepo = countryRepo;
         this.branchRepo = branchRepo;
+        this.tickerSymbolRepo = tickerSymbolRepo;
         this.em = em;
     }
 
@@ -433,6 +436,75 @@ public class ImportService {
         }
 
         log.info("Imported {} country mappings", imported);
+        return ImportResult.builder().success(errors.isEmpty()).imported(imported).errors(errors).build();
+    }
+
+    // ---- ticker_symbol.csv ----
+    // Format: ISIN;TickerSymbol;Name (Name is optional)
+    @Transactional
+    public ImportResult importTickerSymbols(MultipartFile file) {
+        List<String> errors = new ArrayList<>();
+        int imported = 0;
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            int lineNum = 0;
+            while ((line = reader.readLine()) != null) {
+                lineNum++;
+                try {
+                    if (line.isBlank()) continue;
+
+                    String[] parts = line.split(";", -1);
+                    if (parts.length < 2) continue;
+
+                    String isinCode = parts[0].trim();
+                    String symbol = parts[1].trim();
+                    String name = parts.length >= 3 ? parts[2].trim() : "";
+
+                    if (isinCode.isBlank() || symbol.isBlank()) continue;
+
+                    // Upsert ISIN — creates it if not yet in the isin table
+                    Isin isin = upsertIsin(isinCode);
+
+                    // If name is present, add it to isin_name
+                    if (!name.isBlank()) {
+                        upsertIsinName(isin, name);
+                    }
+
+                    // Find or create ticker symbol
+                    TickerSymbol tickerSymbol = tickerSymbolRepo.findBySymbol(symbol)
+                        .orElseGet(() -> tickerSymbolRepo.save(TickerSymbol.builder()
+                            .isin(isin).symbol(symbol).build()));
+
+                    // Update isin reference if not set
+                    if (tickerSymbol.getIsin() == null) {
+                        tickerSymbol.setIsin(isin);
+                        tickerSymbolRepo.save(tickerSymbol);
+                    }
+
+                    // Upsert isin_ticker mapping
+                    Long count = (Long) em.createNativeQuery(
+                            "SELECT COUNT(*) FROM isin_ticker WHERE isin_id = :isinId AND ticker_symbol_id = :tsId")
+                        .setParameter("isinId", isin.getId())
+                        .setParameter("tsId", tickerSymbol.getId())
+                        .getSingleResult();
+                    if (count == 0) {
+                        em.createNativeQuery("INSERT INTO isin_ticker (isin_id, ticker_symbol_id) VALUES (:isinId, :tsId)")
+                            .setParameter("isinId", isin.getId())
+                            .setParameter("tsId", tickerSymbol.getId())
+                            .executeUpdate();
+                    }
+
+                    imported++;
+                } catch (Exception e) {
+                    errors.add("Line " + lineNum + ": " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            return ImportResult.fail(List.of("Failed to read file: " + e.getMessage()));
+        }
+
+        log.info("Imported {} ticker symbol mappings", imported);
         return ImportResult.builder().success(errors.isEmpty()).imported(imported).errors(errors).build();
     }
 

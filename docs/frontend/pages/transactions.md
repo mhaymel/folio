@@ -2,9 +2,16 @@
 
 > Route: `/transactions` — Sortable, filterable transaction table.
 
+
+### UI Conventions
+
+follow ui conventions in [ui.md](ui.md)
+
 ## Use Case
 
-The UI shall provide a view displaying all transactions fetched from the backend in a sortable, resizable table. All rows are loaded at once and filtered client-side.
+- The UI shall provide a view displaying all transactions fetched from the backend. 
+- All rows are loaded at once and filtered client-side. 
+- Table conventions per [ui.md](ui.md) apply.
 
 ---
 
@@ -32,12 +39,12 @@ Returns paginated list with ISIN, security name (JOIN `isin_name`), depot, date,
 
 | Column | Format | Alignment | `width` | `minWidth` |
 |--------|--------|-----------|---------|------------|
-| Date | `DD-MM-YYYY`; `sortAccessor` returns ISO `YYYY-MM-DD` for chronological sort; default sort descending | left | 105 | 105 |
+| Date | Date format per [ui.md](ui.md); `sortAccessor` returns ISO format for chronological sort; default sort descending | left | 105 | 105 |
 | ISIN | plain; custom cell with `display:flex; align-items:center; height:100%`; double-click → `setIsinFilter` | left | 140 | 140 |
 | Name | plain; custom cell with `display:flex; align-items:center; height:100%`; double-click → `setNameFilter` | left | 240 | 120 |
 | Depot | plain | left | 100 | 80 |
-| Count | `toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2})` | right | — | 80 |
-| Share Price | `toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2})` | right | — | 100 |
+| Count | Number format per [ui.md](ui.md) | right | — | 80 |
+| Share Price | Number format per [ui.md](ui.md) | right | — | 100 |
 
 ### Filtering
 
@@ -51,17 +58,5 @@ Returns paginated list with ISIN, security name (JOIN `isin_name`), depot, date,
 
 - A loading indicator (spinner) is displayed while data is being fetched from the backend.
 - A Refresh button reloads all transactions from the backend.
-- The row count shown above the table reflects the active filter (e.g. "42 of 16140 transactions").
 - **Loading:** `ProgressCircle size="small"` + "Loading…".
-
-### Row Count
-
-`"N of M transactions"` filtered / `"M transactions"` unfiltered.
-
-### Pagination
-
-- Default page size: 10 rows per page.
-- Page size selector options: 10, 20, 50, 100 rows per page.
-- A "Show All / Paginate" toggle switches between paginated and full-table view.
-- `DataTablePagination`; `defaultPageSize=10`; options `[10,20,50,100]`.
 

@@ -61,4 +61,10 @@ public class ImportController {
     public ResponseEntity<ImportResult> importCountries(@RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(importService.importCountries(file));
     }
+
+    @PostMapping(value = "/ticker-symbols", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Import ticker_symbol.csv")
+    public ResponseEntity<ImportResult> importTickerSymbols(@RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(importService.importTickerSymbols(file));
+    }
 }

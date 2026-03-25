@@ -38,12 +38,14 @@ export default function Settings() {
   const triggerFetch = async () => {
     setFetchStatus('Fetching...');
     try {
-      const res = await api.post<{ status: string }>('/quotes/fetch');
-      setFetchStatus(res.data.status);
+      const res = await api.post<{ status: string; fetchedCount?: number }>('/quotes/fetch');
+      const count = res.data.fetchedCount;
+      setFetchStatus(count != null ? `Fetched ${count} quotes` : res.data.status);
+      load(); // refresh last fetch timestamp
     } catch {
       setFetchStatus('Fetch failed');
     }
-    setTimeout(() => setFetchStatus(''), 3000);
+    setTimeout(() => setFetchStatus(''), 5000);
   };
 
   if (!settings) return <Paragraph>Loading...</Paragraph>;

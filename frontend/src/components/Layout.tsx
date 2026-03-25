@@ -9,6 +9,8 @@ const NAV_ITEMS = [
   { label: 'Branches', to: '/branches' },
   { label: 'Depots', to: '/depots' },
   { label: 'Currencies', to: '/currencies' },
+  { label: 'Ticker Symbols', to: '/ticker-symbols' },
+  { label: 'ISIN Names', to: '/isin-names' },
   { label: 'Country Analysis', to: '/analytics/countries' },
   { label: 'Branch Analysis', to: '/analytics/branches' },
   { label: 'Import', to: '/import' },

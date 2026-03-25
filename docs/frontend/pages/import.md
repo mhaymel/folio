@@ -25,6 +25,9 @@ The UI should provide a file upload interface for the user to upload the `countr
 ### Import branches.csv
 The UI should provide a file upload interface for the user to upload the `branches.csv` file, which contains the mapping of ISINs to their respective industry branches. The system should parse the CSV file, extract the branch mapping data, and store it in the database according to the defined data model. The system should handle any parsing errors gracefully and provide feedback to the user about the success or failure of the import process. The system should also ensure that ISINs are normalized and mapped correctly to the `isin` table, and that the branch mapping is associated with the correct ISINs in the `isin_branch` table. If an ISIN already has a branch mapping, it should be updated with the new value from the CSV file. If an ISIN does not have a branch mapping yet, a new entry should be created in the `isin_branch` table. If an ISIN from the CSV file does not exist in the `isin` table, it should be added to the `isin` table and then mapped to the branch in the `isin_branch` table.
 
+### Import ticker_symbol.csv
+The UI should provide a file upload interface for the user to upload the `ticker_symbol.csv` file, which contains the mapping of ISINs to their respective ticker symbols. The CSV format is `ISIN;TickerSymbol;Name`, where the Name column is optional. The system should parse the CSV file, extract the ticker symbol mapping data, and store it in the database according to the defined data model. The system should handle any parsing errors gracefully and provide feedback to the user about the success or failure of the import process. The system should ensure that ISINs are normalized and mapped correctly to the `isin` table, ticker symbols are stored in the `ticker_symbol` table, and the mapping is created in the `isin_ticker` junction table. If an ISIN from the CSV file does not exist in the `isin` table, it should be added. If the optional Name column is present and non-empty, the name should be added to the `isin_name` table (if the ISIN/name pair does not yet exist). If a ticker symbol already exists, it should be reused; otherwise, a new entry should be created. The mapping in `isin_ticker` allows many-to-many relationships (one ISIN can have multiple ticker symbols across different exchanges).
+
 ---
 
 ## REST API
@@ -40,6 +43,7 @@ The UI should provide a file upload interface for the user to upload the `branch
 | POST | `/api/import/dividends` | Upload dividende.csv |
 | POST | `/api/import/branches` | Upload branches.csv |
 | POST | `/api/import/countries` | Upload countries.csv |
+| POST | `/api/import/ticker-symbols` | Upload ticker_symbol.csv |
 
 All return `{ success: boolean, imported: int, errors: string[] }`.
 
@@ -142,6 +146,21 @@ All return `{ success: boolean, imported: int, errors: string[] }`.
 
 1. Upsert ISIN → `isin`. Insert `Name` → `isin_name` if pair not yet present.
 2. Upsert country → `country`. Replace country mapping (1:1): DELETE existing `isin_country` row, INSERT new.
+
+### `ticker_symbol.csv`
+
+**Format:** `ISIN;TickerSymbol;Name` — Name is optional (3rd column may be empty or absent).
+
+**Parsing logic:**
+1. Skip empty lines. Rows with fewer than 2 columns are skipped.
+2. Upsert ISIN → `isin`. If the ISIN does not exist in the `isin` table, it is created.
+3. If the 3rd column (Name) is present and non-empty, insert into `isin_name` if the `(isin_id, name)` pair does not yet exist.
+4. Find or create ticker symbol in `ticker_symbol` table:
+   - If ticker symbol exists: retrieve existing `ticker_symbol_id`
+   - If new: INSERT into `ticker_symbol` (isin_id, symbol), get new `ticker_symbol_id`
+5. Create mapping in `isin_ticker` junction table if not already present (check for existing `(isin_id, ticker_symbol_id)` pair to avoid duplicates).
+
+**Note:** Unlike country and branch mappings (1:1), the ticker symbol mapping is many-to-many — an ISIN can have multiple ticker symbols (e.g., different exchanges), and a ticker symbol could theoretically map to multiple ISINs (though rare).
 
 ---
 
