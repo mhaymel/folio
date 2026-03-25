@@ -37,7 +37,9 @@ export default function Layout() {
     <Page>
       <Page.Header>
         <AppHeader>
-          <AppHeader.AppNavLink href="/">Folio</AppHeader.AppNavLink>
+          <AppHeader.Navigation>
+            <AppHeader.AppNavLink href="/">Folio</AppHeader.AppNavLink>
+          </AppHeader.Navigation>
         </AppHeader>
       </Page.Header>
       <Page.Sidebar>

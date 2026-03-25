@@ -57,12 +57,12 @@ export default function Dashboard() {
 
       <div className="section">
         <Heading level={2}>Top 5 Holdings</Heading>
-        <DataTable data={holdings} columns={holdingColumns} resizable fullWidth />
+        <DataTable data={holdings} columns={holdingColumns} fullWidth />
       </div>
 
       <div className="section">
         <Heading level={2}>Top 5 Dividend Sources</Heading>
-        <DataTable data={dividends} columns={dividendColumns} resizable fullWidth />
+        <DataTable data={dividends} columns={dividendColumns} fullWidth />
       </div>
     </Flex>
   );

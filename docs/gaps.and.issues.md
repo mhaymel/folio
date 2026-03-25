@@ -153,6 +153,10 @@ The Date column had `minWidth: 105` which caused `YYYY-MM-DD` dates to clip. No 
 
 Items N, O, P, Q, R, S, U, V1, V2, V3, AA, AB, AC, AD, AE, AF, AG, AH, AI, AJ resolved and applied to plan.md / PROJECT.md. Open items T, V, W, X remain requiring decisions or implementation work.
 
+### AN. Dashboard DataTables missing `resizable` prop
+
+AE states `resizable` was added to all DataTable usages including Dashboard. However, `Dashboard.tsx` still has `<DataTable ... fullWidth />` without `resizable` on both the holdings and dividend-sources tables. The global convention in PROJECT.md requires it on all DataTable instances.
+
 ### AL. Transactions — ISIN cell top-aligned; name filter missing
 
 ISIN cells were top-aligned because the custom cell renderer bypasses Strato's `DataTableDefaultCell` centering wrapper. No name filter existed. — **Resolved 2026-03-24**: custom cell spans now use `display:flex; align-items:center; height:100%` to restore vertical centering; same style applied to the new Name cell renderer. Name `TextInput` filter added (real-time partial case-insensitive match with Clear button); double-clicking a Name cell sets the name filter. `filteredTxns` memo updated to include name match. PROJECT.md and plan.md §6.5 updated.
@@ -165,4 +169,10 @@ No way to quickly filter to a single ISIN from the table itself; users had to ty
 
 ---
 
-> Last reviewed: 2026-03-24 — `plan.md` deleted; all content merged into `PROJECT.md` (scaffolding, schema, auth, CSV specs, API endpoints, page designs, error handling, build). CLAUDE.md key-docs table updated. Open items T, V, W, X remain.
+### AM. Dashboard — "Top 5 Holdings" and "Top 5 Dividend Sources" tables not using full width
+
+Both `DataTable` instances on the Dashboard page were missing the `fullWidth` prop, causing them to render at content width instead of stretching to the available page width. All other pages (Securities, Transactions, Analytics, Branches, Countries, Currencies, Depots) already used `fullWidth`. — **Resolved 2026-03-25**: `fullWidth` prop added to both `DataTable` components in `Dashboard.tsx`.
+
+---
+
+> Last reviewed: 2026-03-25 — `plan.md` deleted; PROJECT.md split: page-level specs extracted to `docs/pages/` (dashboard, transactions, securities, import, analytics, settings, reference-data). Gap U (ZERO depot name) applied to import.md. Gap T (testing) section added to PROJECT.md. Open items: T (testing strategy), V (Clerk auth), W (quote/ package), X (parser/ extraction), AN (Dashboard resizable).

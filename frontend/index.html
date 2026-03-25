@@ -8,6 +8,42 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      window.dtRuntime = {
+        appEnvironment: {
+          getAppName: function () {
+            return 'Folio';
+          },
+          getAppId: function () {
+            return 'folio-id'
+          },
+          getAppVersion : function () {
+            return '0.0.1'
+          },
+          getCurrentUserDetails: function () {
+            return {
+              id: "dt.missing.user.id",
+              name: "dt.missing.user.name",
+              email: "dt.missing.user.email"
+            };
+          },
+        },
+        userPreferences: {
+          getRegionalFormat: function () {
+            return 'en';
+          },
+          getTimezone: function () {
+            return 'UTC+02:00';
+          },
+          getLanguage: function () {
+            return 'en';
+          },
+          getTheme: function () {
+            return 'light'
+          },
+        },
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

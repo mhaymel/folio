@@ -197,137 +197,23 @@ Records an actual dividend payment received for a security in a specific depot.
 | currency_id | INTEGER          | FK → currency.id | Reference to the currency                |
 | value       | DOUBLE PRECISION | NOT NULL         | Dividend amount received                 |
 
-### Use cases
+---
 
-#### Import Transactions.csv
-UI should provide a file upload interface for the user to upload the `Transactions.csv` file exported from DeGiro. The system should parse the CSV file, extract transaction data, and store it in the database according to the defined data model. The system should handle any parsing errors gracefully and provide feedback to the user about the success or failure of the import process. The system should also ensure that ISINs are normalized and mapped correctly to the `isin` table, and that transactions are associated with the correct depot (DeGiro). before the data will be written to the table transactions all entries for the depot DeGiro should be deleted to avoid duplicates and to reflect any changes in the transaction history. 
+## Page Specifications
 
-#### Import ZERO-orders.csv
-similar to the import of `Transactions.csv`, the UI should provide a file upload interface for the user to upload the `ZERO-orders-*.csv` file exported from ZERO. The system should parse the CSV file, extract transaction data, and store it in the database according to the defined data model. The system should handle any parsing errors gracefully and provide feedback to the user about the success or failure of the import process. The system should also ensure that ISINs are normalized and mapped correctly to the `isin` table, and that transactions are associated with the correct depot (Trade Republic). before the data will be written to the table transactions all entries for the depot Trade Republic should be deleted to avoid duplicates and to reflect any changes in the transaction history.
+Detailed use cases, API contracts, CSV parsing specs, and UI specifications for each page are maintained in separate documents:
 
-#### Import Account.csv
-The UI should provide a file upload interface for the user to upload the `Account.csv` file exported from DeGiro. The system should parse the CSV file and extract dividend payment records. Only rows where the description field equals `"Dividende"` are processed. Each valid row is stored as a `dividend_payment` entry associated with the DeGiro depot, using the valuta date as the payment timestamp and recording the currency. The system should handle parsing errors gracefully and provide feedback about the success or failure of the import. Before writing new records, all existing `dividend_payment` entries for the DeGiro depot should be deleted to avoid duplicates.
+| Page | Document | Route(s) |
+|------|----------|----------|
+| Dashboard | [pages/dashboard.md](pages/dashboard.md) | `/` |
+| Transactions | [pages/transactions.md](pages/transactions.md) | `/transactions` |
+| Securities | [pages/securities.md](pages/securities.md) | `/securities` |
+| Import | [pages/import.md](pages/import.md) | `/import` |
+| Analytics | [pages/analytics.md](pages/analytics.md) | `/analytics/countries`, `/analytics/branches` |
+| Settings & Quotes | [pages/settings.md](pages/settings.md) | `/settings` |
+| Reference Data | [pages/reference-data.md](pages/reference-data.md) | `/countries`, `/branches`, `/depots`, `/currencies` |
 
-#### Import ZERO-kontoumsaetze.csv
-The ui should provide a file upload interface for the user to upload the `ZERO-kontoumsaetze-*.csv`. THe data should be parsed and dividend payment records should be extracted and writen to table `dividend_payment`. as depot the value for ZERO should be used. before the records are stored to the table, all existing `dividend_payment` entries for the ZERO depot should be deleted to avoid duplicates and to reflect any changes in the transaction history.
-
-#### Import dividende.csv
-The UI should provide a file upload interface for the user to upload the `dividende.csv` file, which contains the expected annual dividend per share for each ISIN. The system should parse the CSV file, extract the dividend data, and store it in the database according to the defined data model. The system should handle any parsing errors gracefully and provide feedback to the user about the success or failure of the import process. The system should also ensure that ISINs are normalized and mapped correctly to the `isin` table, and that dividend data is associated with the correct ISINs in the `dividend` table. If an ISIN from the CSV file does not exist in the `isin` table, it should be added to the `isin` table before storing the dividend data.
-
-#### Dashboard
-The UI should provide a dashboard as the landing page, giving a quick overview of the portfolio. It should display:
-- **Total portfolio value**: the sum of (total shares × avg entry price) across all open positions.
-- **Number of different securities**: the count of distinct ISINs currently held.
-- **Total dividend ratio**: the estimated annual dividend income divided by the total portfolio value, expressed as a percentage.
-- **Top 5 holdings**: the five positions with the highest invested value (total shares × avg entry price), showing security name, ISIN, and invested amount.
-- **Top 5 dividend sources**: the five securities with the highest estimated annual dividend income (shares × dividend per share), showing security name, ISIN, and estimated annual income.
-the UI shows date and time of the last successful quote fetch, so the user can see how up-to-date the displayed quotes are.S
-
-The data should be fetched from the backend via a dedicated REST API endpoint.
-
-#### Show transactions
-
-The UI shall provide a view displaying all transactions fetched from the backend in a sortable, resizable table. All rows are loaded at once and filtered client-side.
-
-**Columns:**
-
-| Column | Format                                                                       | Alignment | Min Width |
-|--------|------------------------------------------------------------------------------|-----------|-----------|
-| Date | `DD-MM-YYYY`; sortable (sort key: ISO `YYYY-MM-DD` for correct chronological order); default sort: descending (newest first) | left | 105 px |
-| ISIN | plain text                                                                   | left | 140 px |
-| Name | plain text                                                                   | left | 120 px |
-| Depot | plain text                                                                   | left | 80 px |
-| Count | exactly 2 decimal places; comma as decimal separator (e.g. `100,00`, `0,12`) | right | 80 px |
-| Share Price | exactly 2 decimal places; comma as decimal separator (e.g. `123,45`)         | right | 100 px |
-
-**Filtering:**
-- **ISIN filter**: free-text input; case-insensitive partial match updated in real time as the user types (e.g. typing `DE000` shows all transactions whose ISIN contains that substring). A Clear button appears next to the field and resets the filter. Double-clicking an ISIN value in the table copies it to this filter, immediately showing only that ISIN's transactions.
-- **Name filter**: free-text input; case-insensitive partial match updated in real time as the user types. A Clear button appears next to the field and resets the filter. Double-clicking a Name value in the table copies it to this filter, immediately showing only transactions with that security name.
-- **Depot filter**: dropdown listing all depots present in the loaded data plus an "All depots" option. Selecting a depot restricts the view to that depot's transactions; selecting "All depots" shows all transactions.
-
-**Loading and refresh:**
-- A loading indicator (spinner) is displayed while data is being fetched from the backend.
-- A Refresh button reloads all transactions from the backend.
-- The row count shown above the table reflects the active filter (e.g. "42 of 16140 transactions").
-
-**Pagination:**
-- Default page size: 10 rows per page.
-- Page size selector options: 10, 20, 50, 100 rows per page.
-- A "Show All / Paginate" toggle switches between paginated and full-table view.
-
-#### show countries
-the UI should provide a view that displays the countries. sorted alphabetically. The countries should be fetched from the backend via a REST API endpoint that retrieves country data from the database.
-
-#### import countries.csv
-the UI should provide a file upload interface for the user to upload the `countries.csv` file, which contains the mapping of ISINs to their respective countries. The system should parse the CSV file, extract the country mapping data, and store it in the database according to the defined data model. The system should handle any parsing errors gracefully and provide feedback to the user about the success or failure of the import process. The system should also ensure that ISINs are normalized and mapped correctly to the `isin` table, and that the country mapping is associated with the correct ISINs in the `isin_country` table. If an isin already has a country mapping, it should be updated with the new value from the CSV file. if an isin does not have a country mapping yet, a new entry should be created in the `isin_country` table. if an isin from the CSV file does not exist in the `isin` table, it should be added to the `isin` table and then mapped to the country in the `isin_country` table.
-
-#### show branches
-the UI should provide a view that displays the branches. sorted alphabetically. The branches should be fetched from the backend via a REST API endpoint that retrieves branch data from the database.
-
-#### show currencies
-the UI should provide a view that displays the currencies. sorted alphabetically. The currencies should be fetched from the backend via a REST API endpoint that retrieves currency data from the database.
-
-#### show depots
-the UI should provide a view that displays the depots. sorted alphabetically. The depots should be fetched from the backend via a REST API endpoint that retrieves depot data from the database.
-
-#### import branches.csv
-the UI should provide a file upload interface for the user to upload the `branches.csv` file, which contains the mapping of ISINs to their respective industry branches. The system should parse the CSV file, extract the branch mapping data, and store it in the database according to the defined data model. The system should handle any parsing errors gracefully and provide feedback to the user about the success or failure of the import process. The system should also ensure that ISINs are normalized and mapped correctly to the `isin` table, and that the branch mapping is associated with the correct ISINs in the `isin_branch` table. If an isin already has a branch mapping, it should be updated with the new value from the CSV file. if an isin does not have a branch mapping yet, a new entry should be created in the `isin_branch` table. if an isin from the CSV file does not exist in the `isin` table, it should be added to the `isin` table and then mapped to the branch in the `isin_branch` table. 
-
-#### country diversification breakdown
-the UI should provide a view that shows the country diversification breakdown, which is calculated by the backend based on the transactions and the country mapping of ISINs. The backend should provide a REST API endpoint that calculates and returns the country diversification breakdown, which includes the total invested amount per country and the percentage of the total portfolio invested in each country. The UI should display this information in a clear and visually appealing way, such as a pie chart or a bar chart or a donutchart.
-
-#### branch diversification breakdown
-similar to the country diversification breakdown, the UI should provide a view that shows the branch diversification breakdown, which is calculated by the backend based on the transactions and the branch mapping of ISINs. The backend should provide a REST API endpoint that calculates and returns the branch diversification breakdown, which includes the total invested amount per branch and the percentage of the total portfolio invested in each branch. The UI should display this information in a clear and visually appealing way, such as a pie chart or a bar chart or a donutchart.
-
-#### show securities
-the UI should provide a view that displays all securities (ISINs) that are currently held in the portfolio, along with relevant details such as ticker symbol, name, country, branch, count, current quote, entry price, performance etc. The securities should be fetched from the backend via a REST API endpoint that retrieves security data from the database and calculates the current quote and performance based on the transactions and the current market prices. The UI should allow the user to filter and sort securities based on different criteria (e.g. country, branch, performance). The UI should also provide a way to refresh the security data to reflect any changes in the transactions or market prices. The table columns shall be resizable by the user. The ISIN column shall have a fixed minimum width wide enough to display a full 12-character ISIN without clipping. The Name column shall be wide enough for typical security names. The Country and Branch columns shall be wide enough to display their values without clipping.
-
-#### change quote fetch interval
-the UI should provide a way for the user to change the interval at which the backend fetches live quotes for the securities. This could be implemented as a settings page where the user can select from predefined intervals (e.g. every 15 minutes, every hour, every 4 hours) or enter a custom interval. The selected interval should be stored in the database in table settings and used by the backend to schedule the quote fetching task. The UI should also provide feedback to the user about the current quote fetch interval and any changes made to it. REST API endpoint should be provided to update the quote fetch interval in the backend. the ui should also provide a way to trigger an immediate quote fetch, in case the user wants to update the quotes right away without waiting for the next scheduled fetch. the UI should show the date and time of the last successful quote fetch, so the user can see how up-to-date the displayed quotes are
-
-### Quote Data System
-
-The backend fetches live EUR-denominated prices for a set of ISINs using a **cascading fallback** approach across up to 10 sources. The central orchestrator is `IsinsQuoteLoader`. Each source is tried in order; ISINs successfully resolved are removed from the remaining set before the next source is attempted.
-
-#### Config Files (bundled as backend resources)
-
-Three sources require a pre-configured URL path per ISIN, stored as semicolon-delimited CSV files in `src/main/resources/`:
-
-| File | Format | Used by |
-|---|---|---|
-| `finanzennet.csv` | `ISIN;relative-url-path` | Finanzen.net source |
-| `onvista.csv` | `ISIN;relative-url-path` | Onvista source |
-| `wallstreetonline.csv` | `ISIN;relative-url-path` | WallstreetOnline source |
-| `isin.symbol.csv` | `ISIN;TICKER;Company Name` | CNBC source |
-
-If an ISIN has no entry in the relevant config file, that source is skipped for that ISIN.
-
-#### Cascade Fallback Order
-
-| Step | Source | URL Pattern | Currency |
-|---|---|---|---|
-| 1 | JustETF REST API | `https://www.justetf.com/api/etfs/{ISIN}/quote?locale=de&currency=EUR` | EUR (JSON API) |
-| 2 | Onvista HTML | `https://www.onvista.de/{path}` (from `onvista.csv`) | EUR or USD |
-| 3 | Finanzen.net HTML | `https://www.finanzen.net/{path}` (from `finanzennet.csv`) | EUR only |
-| 4 | CNBC HTML | `https://www.cnbc.com/quotes/{TICKER}` (from `isin.symbol.csv`) | USD→EUR |
-| 5 | JustETF HTML | `https://www.justetf.com/at/etf-profile.html?isin={ISIN}` | EUR |
-| 6 | JustETF REST API | Same as step 1 (retry) | EUR |
-| 7 | FondsDiscount.de EUR | `https://www.fondsdiscount.de/fonds/etf/{ISIN}/` | EUR |
-| 8 | FondsDiscount.de USD | `https://www.fondsdiscount.de/fonds/etf/{ISIN}/` | USD→EUR |
-| 9 | ComDirect HTML | `https://www.comdirect.de/inf/zertifikate/{ISIN}` | EUR |
-| 10 | WallstreetOnline | `https://www.wallstreet-online.de/{path}` (from `wallstreetonline.csv`) | EUR or USD (auto-detect) |
-
-#### Currency Conversion
-
-- USD→EUR conversion uses the ECB online XML exchange rate feed (with static fallback) for steps 4 and 8.
-- WallstreetOnline (step 10) uses a hardcoded factor of `0.86` for USD instead of the dynamic rate.
-
-#### Error Handling
-
-- Each source returns `Optional.empty()` on any failure (HTTP non-200, parse error, missing config entry, network error).
-- ISINs with no successful quote from any source are simply absent from the result — no error is thrown.
-- All decimal values use comma→dot normalization before parsing.
-
+---
 
 ## Tech preferences
 
@@ -569,211 +455,7 @@ ALTER TABLE isin_branch  ADD CONSTRAINT uq_isin_branch_isin  UNIQUE (isin_id);
 
 ---
 
-## CSV Parsing Specifications
-
-### DeGiro `Transactions.csv`
-
-**Format:** comma-separated; first row is header.
-
-| Index | Column | Description |
-|-------|--------|-------------|
-| 0 | Datum | Trade date `DD-MM-YYYY` |
-| 1 | Uhrzeit | Trade time `HH:mm` |
-| 2 | Produkt | Security name → `isin_name` |
-| 3 | ISIN | Security identifier |
-| 6 | Anzahl | Share count (positive = buy, negative = sell) |
-| 11 | Wert EUR | Total trade value in EUR (negative for buys) |
-
-**Share price:** `abs(Wert EUR) / abs(Anzahl)`. Column 7 (`Kurs`) is **not used** — it is in local trading currency.
-
-**Parsing logic:**
-1. Skip header row.
-2. Parse `Datum` + `Uhrzeit` → `LocalDateTime`.
-3. Parse `Anzahl` (German decimal format). **Skip row if `Anzahl == 0`** — zero-count rows are non-trade entries (fees, dividends) and would cause division by zero.
-4. Parse `Wert EUR` (German decimal format).
-5. `share_price = Math.abs(eurValue) / Math.abs(count)`.
-6. Upsert ISIN into `isin`.
-7. Insert `Produkt` into `isin_name` if `(isin_id, name)` pair not yet present.
-8. Depot = `DeGiro`. DELETE all transactions for DeGiro, then bulk insert.
-
-### ZERO `ZERO-orders-*.csv`
-
-**Format:** semicolon-separated; first row is header.
-
-| Index | Column | Description |
-|-------|--------|-------------|
-| 0 | Name | Security name → `isin_name` |
-| 1 | ISIN | Security identifier |
-| 5 | Status | Filter: must equal `"ausgeführt"` |
-| 12 | Richtung | `"Kauf"` = buy (positive), `"Verkauf"` = sell (negative) |
-| 16 | Ausführung Datum | Execution date `DD.MM.YYYY` |
-| 17 | Ausführung Zeit | Execution time |
-| 18 | Ausführung Kurs | Price per share |
-| 19 | Anzahl ausgeführt | Shares executed |
-
-**Parsing logic:**
-1. Skip header. Filter: `Status` (index 5) = `"ausgeführt"`.
-2. Parse date (16) + time (17) → `LocalDateTime`.
-3. `Richtung` (12): `"Kauf"` → positive; `"Verkauf"` → negative count.
-4. Upsert ISIN (1) into `isin`. Insert `Name` (0) into `isin_name` if pair not yet present.
-5. Depot = `ZERO`. DELETE all transactions for ZERO, then bulk insert.
-
-### DeGiro `Account.csv` (dividends)
-
-**Format:** comma-separated.
-
-| Index | Column | Description |
-|-------|--------|-------------|
-| 2 | Valuta | Payment date → `timestamp` |
-| 4 | ISIN | Security identifier |
-| 5 | Beschreibung | Filter: must equal `"Dividende"` exactly |
-| 7 | Currency | Currency code |
-| 8 | Änderung | Dividend amount (decimal separator `~`) |
-
-**Parsing logic:**
-1. Skip rows where `line.length < 9`. Filter: index 5 equals `"Dividende"` exactly.
-2. Parse index 2 → `LocalDateTime`. Upsert ISIN (4) → `isin`. Upsert currency (7) → `currency`.
-3. Parse amount (8): replace `~` with `.`. Insert into `dividend_payment` (depot = DeGiro).
-
-### ZERO `ZERO-kontoumsaetze-*.csv` (dividends)
-
-**Format:** semicolon-separated.
-**Columns:** `[0] Datum`, `[1] Valuta`, `[2] Betrag`, `[3] Betrag storniert`, `[4] Status`, `[5] Verwendungszweck`, `[6] IBAN`.
-
-**Parsing logic:**
-1. Filter: `Status` (4) = `"gebucht"` AND `Verwendungszweck` (5) starts with `"Coupons/Dividende"`.
-2. Extract ISIN: find `"ISIN "`, take next 12 characters. Use `Valuta` (1) as payment date.
-3. Parse `Betrag` (2): replace `,` with `.`. Currency = EUR (no currency column; upsert `EUR`).
-4. DELETE all `dividend_payment` for ZERO, then insert.
-
-### `dividende.csv`
-
-**Format:** `ISIN;Name;Currency;DividendPerShare`
-
-1. Upsert ISIN → `isin`. Insert `Name` → `isin_name` if pair not yet present.
-2. Upsert currency → `currency`. Replace all rows in `dividend` table on each import.
-
-### `branches.csv`
-
-**Format:** `ISIN;Name;Branch`
-
-1. Upsert ISIN → `isin`. Insert `Name` → `isin_name` if pair not yet present.
-2. Upsert branch → `branch`. Replace branch mapping (1:1): DELETE existing `isin_branch` row, INSERT new.
-
-### `countries.csv`
-
-**Format:** `ISIN;Name;Country`
-
-1. Upsert ISIN → `isin`. Insert `Name` → `isin_name` if pair not yet present.
-2. Upsert country → `country`. Replace country mapping (1:1): DELETE existing `isin_country` row, INSERT new.
-
----
-
-## Backend REST API
-
-All endpoints under `/api/**`, secured with Clerk JWT.
-
-### Import Endpoints (`ImportController`)
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/api/import/degiro/transactions` | Upload DeGiro Transactions.csv |
-| POST | `/api/import/degiro/account` | Upload DeGiro Account.csv |
-| POST | `/api/import/zero/orders` | Upload ZERO orders CSV |
-| POST | `/api/import/zero/account` | Upload ZERO kontoumsaetze CSV |
-| POST | `/api/import/dividends` | Upload dividende.csv |
-| POST | `/api/import/branches` | Upload branches.csv |
-| POST | `/api/import/countries` | Upload countries.csv |
-
-All return `{ success: boolean, imported: int, errors: string[] }`.
-
-### Reference Data Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/countries` | All countries, sorted alphabetically |
-| GET | `/api/branches` | All branches, sorted alphabetically |
-| GET | `/api/depots` | All depots, sorted alphabetically |
-| GET | `/api/currencies` | All currencies, sorted alphabetically |
-
-### Transactions Endpoint
-
-| Method | Path | Query Params |
-|--------|------|--------------|
-| GET | `/api/transactions` | `fromDate`, `toDate`, `isin`, `depotId`, `page`, `size`, `sort` |
-
-Returns paginated list with ISIN, security name (JOIN `isin_name`), depot, date, count, share price.
-
-### Securities Endpoint
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/securities` | Current positions aggregated from transactions |
-
-**Calculation:**
-- `SUM(count)` per ISIN; keep positions where `SUM(count) > 0`.
-- **Avg entry price:** `SUM(count * share_price) / SUM(count)` across **all** transactions (buys positive, sells negative — reduces cost basis proportionally).
-- Join with `isin_name`, `isin_country`, `isin_branch`, `dividend`, `isin_quote`.
-- Response: ISIN, name, country, branch, total shares, avg entry price, current quote (null if not fetched), performance % (`(current_quote − avg_entry_price) / avg_entry_price * 100`), expected annual dividend, estimated annual income.
-
-### Analytics Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/analytics/countries` | Total invested per country + % of portfolio |
-| GET | `/api/analytics/branches` | Total invested per branch + % of portfolio |
-
-**Calculation:** `invested = SUM(count * share_price)` per open position; group by country/branch via `isin_country`/`isin_branch`; compute % of total.
-
-### Quote Management Endpoints (`QuoteController`)
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/quotes/settings` | Current fetch interval + last fetch timestamp |
-| PUT | `/api/quotes/settings/interval` | Update `quote.fetch.interval.minutes` |
-| POST | `/api/quotes/fetch` | Trigger immediate fetch for all held ISINs |
-
-`GET /api/quotes/settings` response: `{ "intervalMinutes": 60, "lastFetchAt": "2026-03-22T14:30:00" }` (`lastFetchAt` null if no fetch yet).
-
-### Dashboard Endpoint (`DashboardController`)
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/dashboard` | Portfolio summary |
-
-**Calculation:**
-- **Total portfolio value:** `SUM(avg_entry_price * total_shares)` across open positions.
-- **Security count:** distinct ISINs with `SUM(count) > 0`.
-- **Total dividend ratio:** `SUM(shares * dividend_per_share) / total_portfolio_value * 100`.
-- **Top 5 holdings:** highest `avg_entry_price * total_shares`; fields: ISIN, name, invested amount.
-- **Top 5 dividend sources:** highest `shares * dividend_per_share`; fields: ISIN, name, estimated annual income.
-- **Last quote fetch:** `settings` key `quote.last.fetch.timestamp`; null if not set.
-
-Response:
-```json
-{
-  "totalPortfolioValue": 12345.67,
-  "securityCount": 23,
-  "totalDividendRatio": 3.14,
-  "top5Holdings": [{ "isin": "IE00B4L5Y983", "name": "iShares Core MSCI World ETF", "investedAmount": 4500.00 }],
-  "top5DividendSources": [{ "isin": "DE000BASF111", "name": "BASF SE", "estimatedAnnualIncome": 150.00 }],
-  "lastQuoteFetchAt": "2026-03-22T14:30:00"
-}
-```
-
----
-
-## Quote Fetcher Scheduling & Persistence
-
-- **Scheduling:** `@Scheduled` Spring task reads `settings.quote.fetch.interval.minutes` before each run (so UI changes take effect without restart). Runs for all ISINs where `SUM(count) > 0`. Requires `@EnableScheduling` on the application class.
-- **Persistence:** After each fetch batch, upsert results into `isin_quote` (one row per ISIN; `quote_provider_id` = provider that succeeded; `fetched_at` = now). Update `settings` key `quote.last.fetch.timestamp`.
-- **Disabled source:** Lemon Markets batch API — API token expired; do not implement.
-
----
-
-## Frontend Pages & Routes
-
-### Routes
+## Frontend Routes
 
 | Route | Page | Description |
 |-------|------|-------------|
@@ -796,60 +478,20 @@ Response:
 - `Page.Main` → routed content via `<Outlet />`.
 - **Planned (not yet implemented):** dark/light mode toggle; Clerk `<UserButton />` in header; auth redirect.
 
-### Import Page
+---
 
-- One card/section per import type, grouped by broker.
-- Each card: description, `<input type="file" />`, upload button, status indicator (idle / loading / success with row count / error with messages).
+## Testing
 
-### Analytics Pages
+PROJECT.md requires "a comprehensive test suite that covers all major functionality and edge cases." The testing strategy and tooling are not yet defined. The following is planned but not yet implemented:
 
-- Donut chart (Recharts `PieChart`) with legend.
-- Detail table below: name, invested amount (EUR), percentage.
-- Country and branch pages share the same layout pattern.
+**Backend (JUnit 5 + Spring Boot Test):**
+- Unit tests for CSV parsers (each broker format), domain services (portfolio calculation, import logic), and tiny types.
+- Integration tests for REST controllers using `@WebMvcTest` and for repositories using `@DataJpaTest` with H2 in PostgreSQL mode.
+- Test profile uses `application-test.yml` (in-memory H2).
 
-### Transactions Page
-
-All rows fetched once at load; filtering entirely client-side.
-
-**Columns:**
-
-| Column | Format | Alignment | `width` | `minWidth` |
-|--------|--------|-----------|---------|------------|
-| Date | `DD-MM-YYYY`; `sortAccessor` returns ISO `YYYY-MM-DD` for chronological sort; default sort descending | left | 105 | 105 |
-| ISIN | plain; custom cell with `display:flex; align-items:center; height:100%`; double-click → `setIsinFilter` | left | 140 | 140 |
-| Name | plain; custom cell with `display:flex; align-items:center; height:100%`; double-click → `setNameFilter` | left | 240 | 120 |
-| Depot | plain | left | 100 | 80 |
-| Count | `toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2})` | right | — | 80 |
-| Share Price | `toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2})` | right | — | 100 |
-
-**Filter bar:** ISIN `TextInput` (real-time partial, case-insensitive; Clear button; double-click cell fills); Name `TextInput` (same); Depot `Select<string>` (`""` = "All depots" + sorted unique names); Refresh `Button`.
-
-**Row count:** `"N of M transactions"` filtered / `"M transactions"` unfiltered.
-
-**Pagination:** `DataTablePagination`; `defaultPageSize=10`; options `[10,20,50,100]`; "Show All / Paginate" toggle.
-
-**Loading:** `ProgressCircle size="small"` + "Loading…".
-
-### Securities Page
-
-- Columns: ISIN (140/140), Name (240/240), Country (120/80), Branch (160/80), Total Shares, Avg Entry Price, Current Quote, Performance (%), Expected Dividend/Share, Est. Annual Income.
-- Current Quote and Performance show `—` if no quote fetched yet.
-- Filter bar: country dropdown, branch dropdown. Sortable + resizable (`resizable` prop).
-
-### Settings Page
-
-- Fetch interval: dropdown (15 min, 30 min, 1 h, 4 h, 12 h, 24 h) + custom input.
-- "Save interval" → `PUT /api/quotes/settings/interval`.
-- "Fetch now" → `POST /api/quotes/fetch`; loading spinner while running.
-- Last fetch timestamp displayed below controls.
-
-### Dashboard Page
-
-- **KPI row:** Total Portfolio Value (EUR), Number of Securities, Total Dividend Ratio (%).
-- **Top 5 Holdings:** table — ISIN, Security Name, Invested Amount (EUR).
-- **Top 5 Dividend Sources:** table — ISIN, Security Name, Est. Annual Income (EUR).
-- **Last Quote Fetch:** timestamp (e.g. "Last updated: 22.03.2026 14:30"); `—` if not yet fetched.
-- Data from `GET /api/dashboard`.
+**Frontend (Vitest + React Testing Library):**
+- Unit tests for utility functions (formatters, filters).
+- Component tests for pages with mocked API responses.
 
 ---
 
