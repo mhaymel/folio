@@ -1,6 +1,6 @@
 package com.folio.dto;
 
-public class SecurityDto {
+public class StockDto {
     private String isin;
     private String name;
     private String country;
@@ -12,9 +12,9 @@ public class SecurityDto {
     private Double dividendPerShare;
     private Double estimatedAnnualIncome;
 
-    public SecurityDto() {}
+    public StockDto() {}
 
-    public SecurityDto(String isin, String name, String country, String branch, Double totalShares,
+    public StockDto(String isin, String name, String country, String branch, Double totalShares,
                        Double avgEntryPrice, Double currentQuote, Double performancePercent,
                        Double dividendPerShare, Double estimatedAnnualIncome) {
         this.isin = isin;
@@ -73,9 +73,10 @@ public class SecurityDto {
         public Builder performancePercent(Double performancePercent) { this.performancePercent = performancePercent; return this; }
         public Builder dividendPerShare(Double dividendPerShare) { this.dividendPerShare = dividendPerShare; return this; }
         public Builder estimatedAnnualIncome(Double estimatedAnnualIncome) { this.estimatedAnnualIncome = estimatedAnnualIncome; return this; }
-        public SecurityDto build() {
-            return new SecurityDto(isin, name, country, branch, totalShares, avgEntryPrice,
+        public StockDto build() {
+            return new StockDto(isin, name, country, branch, totalShares, avgEntryPrice,
                     currentQuote, performancePercent, dividendPerShare, estimatedAnnualIncome);
         }
     }
 }
+

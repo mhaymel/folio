@@ -1,16 +1,16 @@
-# Securities
+# Stocks
 
-> Route: `/securities` — Portfolio positions with live quotes and performance.
+> Route: `/stocks` — Portfolio positions with live quotes and performance.
 
 ## Use Case
 
-The UI should provide a view that displays all securities (ISINs) currently held in the portfolio, along with relevant details such as ticker symbol, name, country, branch, count, current quote, entry price, and performance. The securities should be fetched from the backend via a REST API endpoint that retrieves security data from the database and calculates the current quote and performance based on transactions and current market prices. The UI should allow the user to filter and sort securities based on different criteria (e.g., country, branch, performance). The UI should also provide a way to refresh the security data to reflect any changes. Table conventions per [ui.md](ui.md) apply (sortable, resizable, full width).
+The UI should provide a view that displays all stocks (ISINs) currently held in the portfolio, along with relevant details such as ticker symbol, name, country, branch, count, current quote, entry price, and performance. The stocks should be fetched from the backend via a REST API endpoint that retrieves stock data from the database and calculates the current quote and performance based on transactions and current market prices. The UI should allow the user to filter and sort stocks based on different criteria (e.g., country, branch, performance). The UI should also provide a way to refresh the stock data to reflect any changes. Table conventions per [ui.md](ui.md) apply (sortable, resizable, full width).
 
 ---
 
 ## REST API
 
-### `GET /api/securities` — Current positions aggregated from transactions
+### `GET /api/stocks` — Current positions aggregated from transactions
 
 **Calculation:**
 - `SUM(count)` per ISIN; keep positions where `SUM(count) > 0`.

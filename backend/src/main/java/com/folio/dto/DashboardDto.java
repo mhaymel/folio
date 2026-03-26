@@ -5,7 +5,7 @@ import java.util.List;
 
 public class DashboardDto {
     private Double totalPortfolioValue;
-    private Integer securityCount;
+    private Integer stockCount;
     private Double totalDividendRatio;
     private List<HoldingDto> top5Holdings;
     private List<DividendSourceDto> top5DividendSources;
@@ -13,11 +13,11 @@ public class DashboardDto {
 
     public DashboardDto() {}
 
-    public DashboardDto(Double totalPortfolioValue, Integer securityCount, Double totalDividendRatio,
+    public DashboardDto(Double totalPortfolioValue, Integer stockCount, Double totalDividendRatio,
                         List<HoldingDto> top5Holdings, List<DividendSourceDto> top5DividendSources,
                         LocalDateTime lastQuoteFetchAt) {
         this.totalPortfolioValue = totalPortfolioValue;
-        this.securityCount = securityCount;
+        this.stockCount = stockCount;
         this.totalDividendRatio = totalDividendRatio;
         this.top5Holdings = top5Holdings;
         this.top5DividendSources = top5DividendSources;
@@ -26,8 +26,8 @@ public class DashboardDto {
 
     public Double getTotalPortfolioValue() { return totalPortfolioValue; }
     public void setTotalPortfolioValue(Double totalPortfolioValue) { this.totalPortfolioValue = totalPortfolioValue; }
-    public Integer getSecurityCount() { return securityCount; }
-    public void setSecurityCount(Integer securityCount) { this.securityCount = securityCount; }
+    public Integer getStockCount() { return stockCount; }
+    public void setStockCount(Integer stockCount) { this.stockCount = stockCount; }
     public Double getTotalDividendRatio() { return totalDividendRatio; }
     public void setTotalDividendRatio(Double totalDividendRatio) { this.totalDividendRatio = totalDividendRatio; }
     public List<HoldingDto> getTop5Holdings() { return top5Holdings; }
@@ -41,19 +41,19 @@ public class DashboardDto {
 
     public static class Builder {
         private Double totalPortfolioValue;
-        private Integer securityCount;
+        private Integer stockCount;
         private Double totalDividendRatio;
         private List<HoldingDto> top5Holdings;
         private List<DividendSourceDto> top5DividendSources;
         private LocalDateTime lastQuoteFetchAt;
         public Builder totalPortfolioValue(Double v) { this.totalPortfolioValue = v; return this; }
-        public Builder securityCount(Integer v) { this.securityCount = v; return this; }
+        public Builder stockCount(Integer v) { this.stockCount = v; return this; }
         public Builder totalDividendRatio(Double v) { this.totalDividendRatio = v; return this; }
         public Builder top5Holdings(List<HoldingDto> v) { this.top5Holdings = v; return this; }
         public Builder top5DividendSources(List<DividendSourceDto> v) { this.top5DividendSources = v; return this; }
         public Builder lastQuoteFetchAt(LocalDateTime v) { this.lastQuoteFetchAt = v; return this; }
         public DashboardDto build() {
-            return new DashboardDto(totalPortfolioValue, securityCount, totalDividendRatio,
+            return new DashboardDto(totalPortfolioValue, stockCount, totalDividendRatio,
                     top5Holdings, top5DividendSources, lastQuoteFetchAt);
         }
     }

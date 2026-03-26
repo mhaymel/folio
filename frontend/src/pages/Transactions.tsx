@@ -7,6 +7,7 @@ import { TextInput, Select } from '@dynatrace/strato-components/forms';
 import { ProgressCircle } from '@dynatrace/strato-components/content';
 import api from '../api/client';
 import type { TransactionDto } from '../types';
+import ExportButtons from '../components/ExportButtons';
 
 const fmtPrice = (n: number) =>
   n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -29,6 +30,8 @@ export default function Transactions() {
   const [nameFilter, setNameFilter] = useState('');
   const [depotFilter, setDepotFilter] = useState('');
   const [showAll, setShowAll] = useState(false);
+  const [sortField, setSortField] = useState('date');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const cellStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' };
 
@@ -37,7 +40,7 @@ export default function Transactions() {
     { id: 'isin', header: 'ISIN', accessor: (r: TransactionDto) => r.isin, cell: (info: { value: string }) => (
       <span style={cellStyle} onDoubleClick={() => setIsinFilter(info.value)} title="Double-click to filter by this ISIN">{info.value}</span>
     ), sortType: 'text' as const, width: 140, minWidth: 140 },
-    { id: 'name', header: 'Name', accessor: (r: TransactionDto) => r.name, cell: (info: { value: string }) => (
+    { id: 'name', header: 'Name', accessor: (r: TransactionDto) => r.name ?? '', cell: (info: { value: string }) => (
       <span style={cellStyle} onDoubleClick={() => setNameFilter(info.value)} title="Double-click to filter by this name">{info.value}</span>
     ), sortType: 'text' as const, width: 240, minWidth: 120 },
     { id: 'depot', header: 'Depot', accessor: 'depot', sortType: 'text' as const, width: 100, minWidth: 80 },
@@ -65,10 +68,21 @@ export default function Transactions() {
 
   const filteredTxns = useMemo(() => allTxns.filter(t => {
     const matchesIsin = !isinFilter || t.isin.toLowerCase().includes(isinFilter.toLowerCase());
-    const matchesName = !nameFilter || t.name.toLowerCase().includes(nameFilter.toLowerCase());
+    const matchesName = !nameFilter || (t.name ?? '').toLowerCase().includes(nameFilter.toLowerCase());
     const matchesDepot = !depotFilter || t.depot === depotFilter;
     return matchesIsin && matchesName && matchesDepot;
   }), [allTxns, isinFilter, nameFilter, depotFilter]);
+
+  const filteredCountSum = useMemo(() => filteredTxns.reduce((sum, t) => sum + t.count, 0), [filteredTxns]);
+  const totalCountSum = useMemo(() => allTxns.reduce((sum, t) => sum + t.count, 0), [allTxns]);
+
+  const exportParams = useMemo(() => ({
+    isin: isinFilter || undefined,
+    name: nameFilter || undefined,
+    depot: depotFilter || undefined,
+    sortField,
+    sortDir,
+  }), [isinFilter, nameFilter, depotFilter, sortField, sortDir]);
 
   return (
     <Flex flexDirection="column" gap={16}>
@@ -78,7 +92,7 @@ export default function Transactions() {
         <TextInput
           placeholder="Filter by ISIN"
           value={isinFilter}
-          onChange={val => setIsinFilter(val)}
+          onChange={val => setIsinFilter(val ?? '')}
         />
         {isinFilter && (
           <Button variant="default" onClick={() => setIsinFilter('')}>Clear</Button>
@@ -86,7 +100,7 @@ export default function Transactions() {
         <TextInput
           placeholder="Filter by name"
           value={nameFilter}
-          onChange={val => setNameFilter(val)}
+          onChange={val => setNameFilter(val ?? '')}
         />
         {nameFilter && (
           <Button variant="default" onClick={() => setNameFilter('')}>Clear</Button>
@@ -105,21 +119,26 @@ export default function Transactions() {
       {loading ? (
         <Flex alignItems="center" gap={12}>
           <ProgressCircle aria-label="Loading transactions" size="small" />
-          <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>Loading...</Paragraph>
+          <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>Loading…</Paragraph>
         </Flex>
       ) : (
         <>
           <Flex alignItems="center" justifyContent="space-between">
             <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
               {filteredTxns.length !== allTxns.length
-                ? `${filteredTxns.length} of ${allTxns.length} transactions`
-                : `${allTxns.length} transactions`}
+                ? `${filteredTxns.length} of ${allTxns.length} transactions — Count: ${fmtCount(filteredCountSum)} of ${fmtCount(totalCountSum)}`
+                : `${allTxns.length} transactions — Count: ${fmtCount(totalCountSum)}`}
             </Paragraph>
-            <Button variant="default" onClick={() => setShowAll(s => !s)}>
-              {showAll ? 'Paginate' : 'Show All'}
-            </Button>
+            <Flex gap={8} alignItems="center">
+              <ExportButtons endpoint="/transactions/export" params={exportParams} />
+              <Button variant="default" onClick={() => setShowAll(s => !s)}>
+                {showAll ? 'Paginate' : 'Show All'}
+              </Button>
+            </Flex>
           </Flex>
-          <DataTable data={filteredTxns} columns={columns} sortable resizable fullWidth defaultSortBy={[{ id: 'date', desc: true }]}>
+          <DataTable data={filteredTxns} columns={columns} sortable resizable fullWidth
+            defaultSortBy={[{ id: 'date', desc: true }]}
+            onSortByChange={(s: any) => { if (s?.[0]) { setSortField(s[0].id); setSortDir(s[0].desc ? 'desc' : 'asc'); } }}>
             {!showAll && (
               <DataTablePagination defaultPageSize={10} pageSizeOptions={[10, 20, 50, 100]} />
             )}

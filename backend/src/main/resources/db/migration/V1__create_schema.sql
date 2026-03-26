@@ -1,3 +1,4 @@
+-- Schema
 CREATE TABLE currency (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name VARCHAR(3) NOT NULL UNIQUE
@@ -17,7 +18,8 @@ CREATE TABLE isin_name (
 
 CREATE TABLE ticker_symbol (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    symbol VARCHAR(20) NOT NULL UNIQUE
+    symbol VARCHAR(20) NOT NULL UNIQUE,
+    isin_id INTEGER UNIQUE REFERENCES isin(id)
 );
 
 CREATE TABLE isin_ticker (
@@ -36,16 +38,19 @@ CREATE TABLE branch (
     name VARCHAR(100) NOT NULL UNIQUE
 );
 
+-- Each ISIN maps to exactly one country and one branch (1:1).
 CREATE TABLE isin_country (
     isin_id INTEGER NOT NULL REFERENCES isin(id),
     country_id INTEGER NOT NULL REFERENCES country(id),
-    PRIMARY KEY (isin_id, country_id)
+    PRIMARY KEY (isin_id, country_id),
+    CONSTRAINT uq_isin_country_isin UNIQUE (isin_id)
 );
 
 CREATE TABLE isin_branch (
     isin_id INTEGER NOT NULL REFERENCES isin(id),
     branch_id INTEGER NOT NULL REFERENCES branch(id),
-    PRIMARY KEY (isin_id, branch_id)
+    PRIMARY KEY (isin_id, branch_id),
+    CONSTRAINT uq_isin_branch_isin UNIQUE (isin_id)
 );
 
 CREATE TABLE depot (
@@ -96,3 +101,27 @@ CREATE TABLE settings (
     "key" VARCHAR(100) NOT NULL UNIQUE,
     "value" VARCHAR(500) NOT NULL
 );
+
+-- Seed data: depots
+INSERT INTO depot (name) VALUES ('DeGiro');
+INSERT INTO depot (name) VALUES ('ZERO');
+
+-- Seed data: currencies
+INSERT INTO currency (name) VALUES
+('AUD'), ('CAD'), ('EUR'), ('GBP'), ('USD'), ('SGD'), ('NOK'), ('PLN'),
+('CNY'), ('IDR'), ('ZAR'), ('MXN'), ('HUF'), ('ILS'), ('DKK'), ('CZK'),
+('THB'), ('SEK'), ('JPY'), ('BRL'), ('RON'), ('CHF'), ('ISK'), ('TRY'),
+('HKD'), ('INR'), ('KRW'), ('MYR'), ('NZD'), ('PHP');
+
+-- Seed data: quote providers
+INSERT INTO quote_provider (name) VALUES
+('JustETF'),
+('Onvista'),
+('FinanzenNet'),
+('CNBC'),
+('FondsDiscount'),
+('ComDirect'),
+('WallstreetOnline');
+
+-- Seed data: settings
+INSERT INTO settings ("key", "value") VALUES ('quote.fetch.interval.minutes', '60');

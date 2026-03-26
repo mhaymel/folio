@@ -24,7 +24,7 @@ public class PortfolioService {
 
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<SecurityDto> getSecurities() {
+    public List<StockDto> getStocks() {
         // Get open positions: ISIN with SUM(count) > 0
         List<Tuple> positions = em.createQuery("""
             SELECT t.isin.id as isinId, t.isin.isin as isinCode,
@@ -35,7 +35,7 @@ public class PortfolioService {
             HAVING SUM(t.count) > 0
             """, Tuple.class).getResultList();
 
-        List<SecurityDto> result = new ArrayList<>();
+        List<StockDto> result = new ArrayList<>();
         for (Tuple pos : positions) {
             Integer isinId = pos.get("isinId", Integer.class);
             String isinCode = pos.get("isinCode", String.class);
@@ -62,7 +62,7 @@ public class PortfolioService {
 
             Double estimatedAnnualIncome = (dps != null && dps > 0) ? dps * totalShares : null;
 
-            result.add(SecurityDto.builder()
+            result.add(StockDto.builder()
                 .isin(isinCode).name(name).country(country).branch(branch)
                 .totalShares(totalShares).avgEntryPrice(avgEntryPrice)
                 .currentQuote(currentQuote).performancePercent(performancePercent)
@@ -74,23 +74,23 @@ public class PortfolioService {
 
     @Transactional(readOnly = true)
     public DashboardDto getDashboard() {
-        List<SecurityDto> securities = getSecurities();
+        List<StockDto> stocks = getStocks();
 
-        double totalValue = securities.stream()
+        double totalValue = stocks.stream()
             .mapToDouble(s -> s.getTotalShares() * s.getAvgEntryPrice())
             .sum();
 
-        int securityCount = securities.size();
+        int stockCount = stocks.size();
 
-        double totalDividendIncome = securities.stream()
+        double totalDividendIncome = stocks.stream()
             .filter(s -> s.getEstimatedAnnualIncome() != null)
-            .mapToDouble(SecurityDto::getEstimatedAnnualIncome)
+            .mapToDouble(StockDto::getEstimatedAnnualIncome)
             .sum();
 
         double dividendRatio = totalValue > 0 ? (totalDividendIncome / totalValue) * 100 : 0;
 
-        List<DashboardDto.HoldingDto> top5Holdings = securities.stream()
-            .sorted(Comparator.comparingDouble((SecurityDto s) -> s.getTotalShares() * s.getAvgEntryPrice()).reversed())
+        List<DashboardDto.HoldingDto> top5Holdings = stocks.stream()
+            .sorted(Comparator.comparingDouble((StockDto s) -> s.getTotalShares() * s.getAvgEntryPrice()).reversed())
             .limit(5)
             .map(s -> DashboardDto.HoldingDto.builder()
                 .isin(s.getIsin()).name(s.getName())
@@ -98,9 +98,9 @@ public class PortfolioService {
                 .build())
             .toList();
 
-        List<DashboardDto.DividendSourceDto> top5Dividends = securities.stream()
+        List<DashboardDto.DividendSourceDto> top5Dividends = stocks.stream()
             .filter(s -> s.getEstimatedAnnualIncome() != null && s.getEstimatedAnnualIncome() > 0)
-            .sorted(Comparator.comparingDouble(SecurityDto::getEstimatedAnnualIncome).reversed())
+            .sorted(Comparator.comparingDouble(StockDto::getEstimatedAnnualIncome).reversed())
             .limit(5)
             .map(s -> DashboardDto.DividendSourceDto.builder()
                 .isin(s.getIsin()).name(s.getName())
@@ -114,7 +114,7 @@ public class PortfolioService {
 
         return DashboardDto.builder()
             .totalPortfolioValue(totalValue)
-            .securityCount(securityCount)
+            .stockCount(stockCount)
             .totalDividendRatio(dividendRatio)
             .top5Holdings(top5Holdings)
             .top5DividendSources(top5Dividends)

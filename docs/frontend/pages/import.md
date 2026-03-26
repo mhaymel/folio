@@ -59,8 +59,8 @@ All return `{ success: boolean, imported: int, errors: string[] }`.
 |-------|--------|-------------|
 | 0 | Datum | Trade date `DD-MM-YYYY` |
 | 1 | Uhrzeit | Trade time `HH:mm` |
-| 2 | Produkt | Security name → `isin_name` |
-| 3 | ISIN | Security identifier |
+| 2 | Produkt | Stock name → `isin_name` |
+| 3 | ISIN | Stock identifier |
 | 6 | Anzahl | Share count (positive = buy, negative = sell) |
 | 11 | Wert EUR | Total trade value in EUR (negative for buys) |
 
@@ -82,8 +82,8 @@ All return `{ success: boolean, imported: int, errors: string[] }`.
 
 | Index | Column | Description |
 |-------|--------|-------------|
-| 0 | Name | Security name → `isin_name` |
-| 1 | ISIN | Security identifier |
+| 0 | Name | Stock name → `isin_name` |
+| 1 | ISIN | Stock identifier |
 | 5 | Status | Filter: must equal `"ausgeführt"` |
 | 12 | Richtung | `"Kauf"` = buy (positive), `"Verkauf"` = sell (negative) |
 | 16 | Ausführung Datum | Execution date `DD.MM.YYYY` |
@@ -105,7 +105,7 @@ All return `{ success: boolean, imported: int, errors: string[] }`.
 | Index | Column | Description |
 |-------|--------|-------------|
 | 2 | Valuta | Payment date → `timestamp` |
-| 4 | ISIN | Security identifier |
+| 4 | ISIN | Stock identifier |
 | 5 | Beschreibung | Filter: must equal `"Dividende"` exactly |
 | 7 | Currency | Currency code |
 | 8 | Änderung | Dividend amount (decimal separator `~`) |

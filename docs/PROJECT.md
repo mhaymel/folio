@@ -2,7 +2,7 @@
 
 ## What it does
 
-Folio is a personal investment portfolio analysis and visualization tool for tracking securities 
+Folio is a personal investment portfolio analysis and visualization tool for tracking stocks 
 across multiple brokers, calculating gains/losses, dividends.
 
 In the first version KeSt (Austrian capital gains tax) calculation is a stated goal, but it is not yet clear how this will be implemented. Therefore, KeSt is currently out of scope for v1 and will be explicitly deferred to a future version.
@@ -36,7 +36,7 @@ It is a personal tool, just for me. Only one portfolio is managed. There can be 
 The backend fetches periodically quote data via webscrapping. The interval can be changed dynamically via the UI and is stored database in table settings. The quotes are stored in the database and used for performance calculation and display in the UI.
 
 #### Broker Transaction Import
-- The system shall import transaction data from **DeGiro** broker CSV exports (see sample: [`docs/samples/Transactions.csv`](docs/samples/Transactions.csv)). The share price stored per transaction shall be derived from the `Wert EUR` column (index 11, total trade value in EUR) divided by the absolute share count, not from the `Kurs` column (index 7), which is denominated in the security's local trading currency and may not be EUR. Rows where `Anzahl` (count) is zero shall be skipped entirely — they represent non-trade entries such as fees or dividends and would cause division by zero in the price formula.
+- The system shall import transaction data from **DeGiro** broker CSV exports (see sample: [`docs/samples/Transactions.csv`](docs/samples/Transactions.csv)). The share price stored per transaction shall be derived from the `Wert EUR` column (index 11, total trade value in EUR) divided by the absolute share count, not from the `Kurs` column (index 7), which is denominated in the stock's local trading currency and may not be EUR. Rows where `Anzahl` (count) is zero shall be skipped entirely — they represent non-trade entries such as fees or dividends and would cause division by zero in the price formula.
 - The system shall import transaction data from **ZERO** broker CSV exports (see sample: [`docs/samples/ZERO-orders-22.03.2026.csv`](docs/samples/ZERO-orders-22.03.2026.csv)).
 - The system shall normalize ISINs across all broker sources into a unified transaction model.
 
@@ -74,7 +74,7 @@ Detailed use cases, API contracts, CSV parsing specs, and UI specifications for 
 |------|----------|----------|
 | Dashboard | [frontend/pages/dashboard.md](frontend/pages/dashboard.md) | `/` |
 | Transactions | [frontend/pages/transactions.md](frontend/pages/transactions.md) | `/transactions` |
-| Securities | [frontend/pages/securities.md](frontend/pages/securities.md) | `/securities` |
+| Stocks | [frontend/pages/stocks.md](frontend/pages/stocks.md) | `/stocks` |
 | Import | [frontend/pages/import.md](frontend/pages/import.md) | `/import` |
 | Analytics | [frontend/pages/analytics.md](frontend/pages/analytics.md) | `/analytics/countries`, `/analytics/branches` |
 | Settings & Quotes | [frontend/pages/settings.md](frontend/pages/settings.md) | `/settings` |
@@ -257,18 +257,20 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 ## Database Schema (Flyway)
 
-**`V1__create_schema.sql`** — creates all tables:
+All schema definitions and seed data are combined in a single migration file:
+
+**`V1__create_schema.sql`** — creates all tables and inserts seed data:
 
 ```
 currency         (id, name VARCHAR(3) UNIQUE NOT NULL)
 isin             (id, isin VARCHAR(12) UNIQUE NOT NULL)
 isin_name        (id, isin_id FK, name VARCHAR(255) NOT NULL, UNIQUE(isin_id, name))
-ticker_symbol    (id, symbol VARCHAR(20) UNIQUE NOT NULL)
+ticker_symbol    (id, symbol VARCHAR(20) UNIQUE NOT NULL, isin_id FK UNIQUE)
 isin_ticker      (isin_id FK, ticker_symbol_id FK — composite PK)
 country          (id, name VARCHAR(100) UNIQUE NOT NULL)
 branch           (id, name VARCHAR(100) UNIQUE NOT NULL)
-isin_country     (isin_id FK, country_id FK — composite PK; UNIQUE(isin_id) enforced by V6)
-isin_branch      (isin_id FK, branch_id FK — composite PK; UNIQUE(isin_id) enforced by V6)
+isin_country     (isin_id FK, country_id FK — composite PK; UNIQUE(isin_id))
+isin_branch      (isin_id FK, branch_id FK — composite PK; UNIQUE(isin_id))
 depot            (id, name VARCHAR(100) UNIQUE NOT NULL)
 transaction      (id, date TIMESTAMP, isin_id FK, depot_id FK, count DOUBLE PRECISION, share_price DOUBLE PRECISION)
 dividend         (id, isin_id FK, currency_id FK, dividend_per_share DOUBLE PRECISION)
@@ -278,34 +280,11 @@ isin_quote       (id, isin_id FK UNIQUE, quote_provider_id FK, value DOUBLE PREC
 settings         (id, key VARCHAR(100) UNIQUE NOT NULL, value VARCHAR(500) NOT NULL)
 ```
 
-**`V2__seed_depots.sql`** — inserts `DeGiro` and `ZERO` depot records.
-
-**`V3__seed_currencies.sql`:**
-```sql
-INSERT INTO currency (name) VALUES
-('AUD'), ('CAD'), ('EUR'), ('GBP'), ('USD'), ('SGD'), ('NOK'), ('PLN'),
-('CNY'), ('IDR'), ('ZAR'), ('MXN'), ('HUF'), ('ILS'), ('DKK'), ('CZK'),
-('THB'), ('SEK'), ('JPY'), ('BRL'), ('RON'), ('CHF'), ('ISK'), ('TRY'),
-('HKD'), ('INR'), ('KRW'), ('MYR'), ('NZD'), ('PHP');
-```
-
-**`V4__seed_quote_providers.sql`:**
-```sql
-INSERT INTO quote_provider (name) VALUES
-('JustETF'), ('Onvista'), ('FinanzenNet'), ('CNBC'),
-('FondsDiscount'), ('ComDirect'), ('WallstreetOnline');
-```
-
-**`V5__seed_settings.sql`:**
-```sql
-INSERT INTO settings (key, value) VALUES ('quote.fetch.interval.minutes', '60');
-```
-
-**`V6__enforce_single_country_branch.sql`:**
-```sql
-ALTER TABLE isin_country ADD CONSTRAINT uq_isin_country_isin UNIQUE (isin_id);
-ALTER TABLE isin_branch  ADD CONSTRAINT uq_isin_branch_isin  UNIQUE (isin_id);
-```
+**Seed data included in V1:**
+- Depots: `DeGiro`, `ZERO`
+- Currencies: AUD, CAD, EUR, GBP, USD, SGD, NOK, PLN, CNY, IDR, ZAR, MXN, HUF, ILS, DKK, CZK, THB, SEK, JPY, BRL, RON, CHF, ISK, TRY, HKD, INR, KRW, MYR, NZD, PHP
+- Quote providers: JustETF, Onvista, FinanzenNet, CNBC, FondsDiscount, ComDirect, WallstreetOnline
+- Settings: `quote.fetch.interval.minutes` = `60`
 
 ---
 
@@ -334,13 +313,13 @@ ALTER TABLE isin_branch  ADD CONSTRAINT uq_isin_branch_isin  UNIQUE (isin_id);
 |-------|------|-------------|
 | `/` | Dashboard | KPI cards + top-5 holdings/dividend sources + last quote fetch |
 | `/transactions` | Transactions | Sortable/filterable table |
-| `/securities` | Securities | Portfolio positions with live quotes and performance |
+| `/stocks` | Stocks | Portfolio positions with live quotes and performance |
 | `/countries` | Countries | Alphabetical list |
 | `/branches` | Branches | Alphabetical list |
 | `/depots` | Depots | Alphabetical list |
 | `/currencies` | Currencies | Alphabetical list |
 | `/ticker-symbols` | Ticker Symbols | ISIN to ticker symbol mappings |
-| `/isin-names` | ISIN Names | ISIN to security name mappings |
+| `/isin-names` | ISIN Names | ISIN to stock name mappings |
 | `/analytics/countries` | Country Diversification | Donut chart + detail table |
 | `/analytics/branches` | Branch Diversification | Donut chart + detail table |
 | `/import` | Import | File upload section per data type |
@@ -415,7 +394,7 @@ Catch-all `ResourceHttpRequestHandler`: all non-`/api/**` routes serve `index.ht
 3. Clerk authentication (backend JWT filter + frontend auth flow)
 4. CSV parsers (DeGiro transactions → ZERO orders → reference files)
 5. REST API (import endpoints first, then query/analytics)
-6. Frontend pages (import page first to load data, then transactions, securities, analytics)
+6. Frontend pages (import page first to load data, then transactions, stocks, analytics)
 7. Error handling & logging polish
 8. Swagger/OpenAPI annotations
 9. Docker build + end-to-end production test

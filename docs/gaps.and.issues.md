@@ -4,22 +4,22 @@
 
 | # | Issue | Resolution |
 |---|---|---|
-| 1 | Missing security `name` field | `isin_name` table added to PROJECT.md and plan.md Phase 2 schema |
+| 1 | Missing stock `name` field | `isin_name` table added to PROJECT.md and plan.md Phase 2 schema |
 | 4 | `dividend_payment` missing `currency_id` | Column added to PROJECT.md and plan.md Phase 2 schema |
 | 7 | Vague column name in plan 4.3 (DeGiro Account.csv) | Exact 0-indexed column table added |
 | 8 | Stale open-question reference in plan 4.3 | Replaced with actual storage logic |
 | C | KeSt (Austrian tax) scope | Explicitly deferred to a future version in PROJECT.md |
 | A1 | Empty `Import ZERO-kontoumsaetze.csv` use case | Content added to PROJECT.md |
 | B1 | Dashboard use case missing from PROJECT.md | Dashboard use case added |
-| D | Market quotes / open question #2 | Live EUR quotes via `IsinsQuoteLoader` cascade (§5.6 added to plan.md); quote + performance added to securities endpoint; open question #2 resolved |
+| D | Market quotes / open question #2 | Live EUR quotes via `IsinsQuoteLoader` cascade (§5.6 added to plan.md); quote + performance added to stocks endpoint; open question #2 resolved |
 | E | `isin_name` UNIQUE constraint | Composite `UNIQUE(isin_id, name)` already in plan.md Phase 2 schema and PROJECT.md data model; insert logic in all parsers already enforces "never overwrite" |
 | F | ZERO orders CSV — no name column identified | `Name` column confirmed at index 0; plan.md §4.2 updated with full column table and `isin_name` insert step |
 | G | Quote persistence + scheduling not in plan | `isin_quote` table added to schema; §5.6 extended with persistence (upsert after fetch, update `settings.quote.last.fetch.timestamp`) and `@Scheduled` task; seed migration V5 added for default interval |
 | H | Quote management endpoints missing | §5.7 added: GET/PUT settings, POST immediate trigger |
 | I | Settings page missing from frontend plan | `/settings` route added to §6.2; §6.7 Settings Page Design added |
-| J | Securities page missing quote/performance columns | §6.6 updated with Current Quote and Performance columns |
+| J | Stocks page missing quote/performance columns | §6.6 updated with Current Quote and Performance columns |
 | K | Seed migration V3/V4 order was inverted in plan text | Fixed: V3=currencies, V4=quote providers, V5=settings |
-| L | Dashboard backend endpoint missing from Phase 5 | `§5.8 DashboardController` added: `GET /api/dashboard` returning total portfolio value, security count, total dividend ratio %, top 5 holdings, top 5 dividend sources, last quote fetch timestamp |
+| L | Dashboard backend endpoint missing from Phase 5 | `§5.8 DashboardController` added: `GET /api/dashboard` returning total portfolio value, stock count, total dividend ratio %, top 5 holdings, top 5 dividend sources, last quote fetch timestamp |
 | M | Dashboard frontend page description incomplete (wrong KPIs) | §6.2 Dashboard row updated; §6.8 Dashboard Page Design added with KPI cards, top-5 tables, and last-fetch timestamp |
 | N | Open question #5 (KeSt) never marked resolved despite PROJECT.md explicitly deferring it | Marked resolved in plan.md open questions |
 | O | Tiny types requirement (PROJECT.md tech pref) absent from plan.md | Added to §1.1: `model/` package note and tiny types paragraph |
@@ -44,7 +44,7 @@ PROJECT.md requires "a comprehensive test suite that covers all major functional
 
 ### ~~D. Market quotes and performance — open question #2~~ — Resolved
 
-Live EUR quotes via `IsinsQuoteLoader` cascade fallback (§5.6 added to plan.md). Securities endpoint updated to return current quote and performance %. Open question #2 resolved.
+Live EUR quotes via `IsinsQuoteLoader` cascade fallback (§5.6 added to plan.md). Stocks endpoint updated to return current quote and performance %. Open question #2 resolved.
 
 ### ~~E. `isin_name` UNIQUE constraint not reflected in PROJECT.md~~ — Resolved
 
@@ -103,17 +103,17 @@ PROJECT.md defines a `show currencies` use case. Neither the backend endpoint `/
 
 ## Summary
 
-### AC. Securities table — columns not resizable, several columns clip content
+### AC. Stocks table — columns not resizable, several columns clip content
 
-The Securities table had no resizable columns; ISIN, Name, Country, and Branch columns were too narrow. — **Resolved 2026-03-24**: `resizable` prop added to `DataTable`; column widths set: ISIN `140/140`, Name `240/240`, Country `120/80`, Branch `160/80`; PROJECT.md and plan.md §6.6 updated.
+The Stocks table had no resizable columns; ISIN, Name, Country, and Branch columns were too narrow. — **Resolved 2026-03-24**: `resizable` prop added to `DataTable`; column widths set: ISIN `140/140`, Name `240/240`, Country `120/80`, Branch `160/80`; PROJECT.md and plan.md §6.6 updated.
 
 ---
 
 ## Summary
 
-### AE. All tables — columns not resizable (except Securities)
+### AE. All tables — columns not resizable (except Stocks)
 
-All `DataTable` instances except Securities were missing the `resizable` prop. — **Resolved 2026-03-24**: `resizable` added to all `DataTable` usages in Analytics, Branches, Countries, Currencies, Depots, Dashboard (both tables), and Transactions; global table convention documented in plan.md §1.2; requirement added to PROJECT.md.
+All `DataTable` instances except Stocks were missing the `resizable` prop. — **Resolved 2026-03-24**: `resizable` added to all `DataTable` usages in Analytics, Branches, Countries, Currencies, Depots, Dashboard (both tables), and Transactions; global table convention documented in plan.md §1.2; requirement added to PROJECT.md.
 
 ### AD. Transactions page — no loading indicator, no pagination
 
@@ -131,7 +131,7 @@ Several requirements were missing from the Transactions page implementation: ISO
 
 ### AH. DeGiro transaction import — share price taken from wrong column
 
-`ImportService.importDegiroTransactions` read the share price from column 7 (`Kurs`), which is denominated in the security's local trading currency (e.g. USD for US stocks). For non-EUR securities this stores a non-EUR price, causing incorrect portfolio valuations. Comparison with the depot reference project (`TransactionFromDegiro` / `SharePrice`) revealed the correct approach: derive the EUR price from column 11 (`Wert EUR`) as `abs(Wert EUR) / abs(Anzahl)`. — **Resolved 2026-03-24**: `ImportService` changed to read index 11 and compute `Math.abs(eurValue) / Math.abs(count)`; PROJECT.md and plan.md §4.1 updated with column table and derivation rationale.
+`ImportService.importDegiroTransactions` read the share price from column 7 (`Kurs`), which is denominated in the stock's local trading currency (e.g. USD for US stocks). For non-EUR stocks this stores a non-EUR price, causing incorrect portfolio valuations. Comparison with the depot reference project (`TransactionFromDegiro` / `SharePrice`) revealed the correct approach: derive the EUR price from column 11 (`Wert EUR`) as `abs(Wert EUR) / abs(Anzahl)`. — **Resolved 2026-03-24**: `ImportService` changed to read index 11 and compute `Math.abs(eurValue) / Math.abs(count)`; PROJECT.md and plan.md §4.1 updated with column table and derivation rationale.
 
 ### AG. Transactions — Count column format clarified to exactly 2 decimal places
 
@@ -171,7 +171,7 @@ No way to quickly filter to a single ISIN from the table itself; users had to ty
 
 ### AM. Dashboard — "Top 5 Holdings" and "Top 5 Dividend Sources" tables not using full width
 
-Both `DataTable` instances on the Dashboard page were missing the `fullWidth` prop, causing them to render at content width instead of stretching to the available page width. All other pages (Securities, Transactions, Analytics, Branches, Countries, Currencies, Depots) already used `fullWidth`. — **Resolved 2026-03-25**: `fullWidth` prop added to both `DataTable` components in `Dashboard.tsx`.
+Both `DataTable` instances on the Dashboard page were missing the `fullWidth` prop, causing them to render at content width instead of stretching to the available page width. All other pages (Stocks, Transactions, Analytics, Branches, Countries, Currencies, Depots) already used `fullWidth`. — **Resolved 2026-03-25**: `fullWidth` prop added to both `DataTable` components in `Dashboard.tsx`.
 
 ---
 
@@ -188,9 +188,9 @@ The entire quote fetching system described in settings.md was missing: no `quote
 - Empty config CSV placeholders created: `finanzennet.csv`, `onvista.csv`, `wallstreetonline.csv`, `isin.symbol.csv`.
 - Settings page updated to show fetched count and refresh last-fetch timestamp after fetch.
 
-### AP. Securities page — missing country/branch filter dropdowns
+### AP. Stocks page — missing country/branch filter dropdowns
 
-The securities spec (securities.md) requires a filter bar with country and branch dropdowns, but `Securities.tsx` had no filters. — **Resolved 2026-03-25**: Country and Branch `Select` dropdowns added, populated from loaded data. Loading indicator (`ProgressCircle`) added. Refresh button added. Filtered count displayed in heading (e.g. "42 of 50").
+The stocks spec (stocks.md) requires a filter bar with country and branch dropdowns, but `Stocks.tsx` had no filters. — **Resolved 2026-03-25**: Country and Branch `Select` dropdowns added, populated from loaded data. Loading indicator (`ProgressCircle`) added. Refresh button added. Filtered count displayed in heading (e.g. "42 of 50").
 
 ### AQ. Depots endpoint — not sorted alphabetically
 

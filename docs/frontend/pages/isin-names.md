@@ -1,10 +1,10 @@
 # ISIN Names
 
-> Route: `/isin-names` — ISIN to security name mappings.
+> Route: `/isin-names` — ISIN to stock name mappings.
 
 ## Use Case
 
-The UI should provide a view that displays all ISINs along with their associated security names. An ISIN can have multiple names (e.g., different names used across brokers or import files). The data should be fetched from the backend via a REST API endpoint that retrieves ISIN and name data from the `isin` and `isin_name` tables.
+The UI should provide a view that displays all ISINs along with their associated stock names. An ISIN can have multiple names (e.g., different names used across brokers or import files). The data should be fetched from the backend via a REST API endpoint that retrieves ISIN and name data from the `isin` and `isin_name` tables.
 
 ---
 
@@ -36,8 +36,8 @@ Returns all ISIN to name mappings, sorted alphabetically by ISIN.
 
 | Column | Description | Alignment | Width | MinWidth |
 |--------|-------------|-----------|-------|----------|
-| ISIN | Security identifier | left | 140 | 140 |
-| Name | Security name | left | 400 | 200 |
+| ISIN | Stock identifier | left | 140 | 140 |
+| Name | Stock name | left | 400 | 200 |
 
 ### Features
 

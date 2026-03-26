@@ -29,7 +29,7 @@ follow ui conventions in [ui.md](ui.md)
 | `size` | Page size |
 | `sort` | Sort field + direction |
 
-Returns paginated list with ISIN, security name (JOIN `isin_name`), depot, date, count, share price.
+Returns paginated list with ISIN, stock name (JOIN `isin_name`), depot, date, count, share price.
 
 ---
 
@@ -46,10 +46,13 @@ Returns paginated list with ISIN, security name (JOIN `isin_name`), depot, date,
 | Count | Number format per [ui.md](ui.md) | right | — | 80 |
 | Share Price | Number format per [ui.md](ui.md) | right | — | 100 |
 
+### Summary 
+- Display sum of count of transactions reflecting current filters, e.g. "42 transactions" or "12 of 50 transactions" if a filter is active.
+
 ### Filtering
 
 - **ISIN filter**: free-text input; case-insensitive partial match updated in real time as the user types (e.g. typing `DE000` shows all transactions whose ISIN contains that substring). A Clear button appears next to the field and resets the filter. Double-clicking an ISIN value in the table copies it to this filter, immediately showing only that ISIN's transactions.
-- **Name filter**: free-text input; case-insensitive partial match updated in real time as the user types. A Clear button appears next to the field and resets the filter. Double-clicking a Name value in the table copies it to this filter, immediately showing only transactions with that security name.
+- **Name filter**: free-text input; case-insensitive partial match updated in real time as the user types. A Clear button appears next to the field and resets the filter. Double-clicking a Name value in the table copies it to this filter, immediately showing only transactions with that stock name.
 - **Depot filter**: dropdown listing all depots present in the loaded data plus an "All depots" option. Selecting a depot restricts the view to that depot's transactions; selecting "All depots" shows all transactions.
 
 **Filter bar:** ISIN `TextInput` (real-time partial, case-insensitive; Clear button; double-click cell fills); Name `TextInput` (same); Depot `Select<string>` (`""` = "All depots" + sorted unique names); Refresh `Button`.

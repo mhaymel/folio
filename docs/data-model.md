@@ -7,12 +7,12 @@ The data model shall be designed to support the required functionality and perfo
 ---
 
 ## `ticker_symbol`
-Maps a ticker symbol to a security.
+Maps a ticker symbol to a stock.
 
 | Column  | Type        | Constraints              | Description                        |
 |---------|-------------|---------------------------|------------------------------------|
 | id      | INTEGER     | PK                       | Surrogate primary key              |
-| isin_id | INTEGER     | FK → isin.id, UNIQUE     | Reference to the security          |
+| isin_id | INTEGER     | FK → isin.id, UNIQUE     | Reference to the stock          |
 | symbol  | VARCHAR(20) | UNIQUE, NOT NULL         | Ticker symbol (e.g. AAPL, BASF.DE) |
 
 ## `currency`
@@ -24,12 +24,12 @@ Reference table of all currencies.
 | name   | VARCHAR(3)  | UNIQUE, NOT NULL | Currency code (e.g. EUR, USD)  |
 
 ## `isin`
-Central registry of all known securities by ISIN.
+Central registry of all known stocks by ISIN.
 
 | Column | Type         | Constraints | Description             |
 |--------|--------------|-------------|-------------------------|
 | id     | INTEGER      | PK          | Surrogate primary key   |
-| isin   | VARCHAR(12)  | UNIQUE, NOT NULL | Security identifier (e.g. DE000BASF111) |
+| isin   | VARCHAR(12)  | UNIQUE, NOT NULL | Stock identifier (e.g. DE000BASF111) |
 
 ## `dividend`
 Manually maintained expected annual dividend per ISIN. Sourced from [`docs/samples/dividende.csv`](samples/dividende.csv).
@@ -37,12 +37,12 @@ Manually maintained expected annual dividend per ISIN. Sourced from [`docs/sampl
 | Column             | Type         | Constraints      | Description                          |
 |--------------------|--------------|------------------|--------------------------------------|
 | id                 | INTEGER      | PK               | Surrogate primary key                |
-| isin_id            | INTEGER      | FK → isin.id     | Reference to the security            |
+| isin_id            | INTEGER      | FK → isin.id     | Reference to the stock            |
 | currency_id        | INTEGER      | FK → currency.id | Reference to the currency            |
 | dividend_per_share | DOUBLE       | NOT NULL         | Expected annual dividend per share   |
 
 ## `depot`
-Represents a broker account/depot where securities are held.
+Represents a broker account/depot where stocks are held.
 
 | Column | Type         | Constraints      | Description           |
 |--------|--------------|------------------|-----------------------|
@@ -50,13 +50,13 @@ Represents a broker account/depot where securities are held.
 | name   | VARCHAR(100) | UNIQUE, NOT NULL | Depot name (e.g. DeGiro, ZERO) |
 
 ## `transaction`
-Records a buy or sell transaction for a security.
+Records a buy or sell transaction for a stock.
 
 | Column      | Type      | Constraints      | Description                        |
 |-------------|-----------|------------------|------------------------------------|
 | id          | INTEGER   | PK               | Surrogate primary key              |
 | date        | TIMESTAMP | NOT NULL         | Date and time of the transaction   |
-| isin_id     | INTEGER   | FK → isin.id     | Reference to the security          |
+| isin_id     | INTEGER   | FK → isin.id     | Reference to the stock          |
 | depot_id    | INTEGER   | FK → depot.id    | Reference to the depot             |
 | count       | DOUBLE    | NOT NULL         | Number of shares bought or sold    |
 | share_price | DOUBLE    | NOT NULL         | Price per share at time of transaction |
@@ -86,13 +86,13 @@ Maps an ISIN to its country of origin. Sourced from [`docs/samples/countries.csv
 | country_id | INTEGER | PK, FK → country.id      | Reference to country |
 
 ## `isin_name`
-Maps an ISIN to a human-readable security name. An ISIN can have multiple names (e.g. different names used across brokers or import files). Names are only added, never overwritten. A composite unique constraint on `(isin_id, name)` prevents exact duplicate entries.
+Maps an ISIN to a human-readable stock name. An ISIN can have multiple names (e.g. different names used across brokers or import files). Names are only added, never overwritten. A composite unique constraint on `(isin_id, name)` prevents exact duplicate entries.
 
 | Column  | Type         | Constraints      | Description                        |
 |---------|--------------|------------------|------------------------------------|
 | id      | INTEGER      | PK                       | Surrogate primary key             |
-| isin_id | INTEGER      | FK → isin.id             | Reference to the security         |
-| name    | VARCHAR(255) | NOT NULL                 | Security name (e.g. "Apple Inc.") |
+| isin_id | INTEGER      | FK → isin.id             | Reference to the stock         |
+| name    | VARCHAR(255) | NOT NULL                 | Stock name (e.g. "Apple Inc.") |
 |         |              | UNIQUE (isin_id, name)   | Prevents duplicate (ISIN, name) pairs |
 
 ## `isin_ticker`
@@ -129,24 +129,24 @@ Key-value store for application configuration (e.g. quote fetch interval).
 | value  | VARCHAR(500) | NOT NULL         | Setting value                      |
 
 ## `dividend_payment`
-Records an actual dividend payment received for a security in a specific depot.
+Records an actual dividend payment received for a stock in a specific depot.
 
 | Column      | Type             | Constraints      | Description                              |
 |-------------|------------------|------------------|------------------------------------------|
 | id          | INTEGER          | PK               | Surrogate primary key                    |
 | timestamp   | TIMESTAMP        | NOT NULL         | Date and time the dividend was received  |
-| isin_id     | INTEGER          | FK → isin.id     | Reference to the security                |
+| isin_id     | INTEGER          | FK → isin.id     | Reference to the stock                |
 | depot_id    | INTEGER          | FK → depot.id    | Reference to the depot                   |
 | currency_id | INTEGER          | FK → currency.id | Reference to the currency                |
 | value       | DOUBLE PRECISION | NOT NULL         | Dividend amount received                 |
 
 ## `isin_quote`
-Stores the latest fetched quote for a security. One row per ISIN (upserted on each fetch).
+Stores the latest fetched quote for a stock. One row per ISIN (upserted on each fetch).
 
 | Column            | Type             | Constraints              | Description                              |
 |-------------------|------------------|--------------------------|------------------------------------------|
 | id                | INTEGER          | PK                       | Surrogate primary key                    |
-| isin_id           | INTEGER          | FK → isin.id, UNIQUE     | Reference to the security                |
+| isin_id           | INTEGER          | FK → isin.id, UNIQUE     | Reference to the stock                |
 | quote_provider_id | INTEGER          | FK → quote_provider.id   | Provider that successfully fetched the quote |
 | value             | DOUBLE PRECISION | NOT NULL                 | Quote price in EUR                       |
 | fetched_at        | TIMESTAMP        | NOT NULL                 | When the quote was fetched               |

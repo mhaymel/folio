@@ -4,7 +4,7 @@ import { AppHeader, Page } from '@dynatrace/strato-components/layouts';
 const NAV_ITEMS = [
   { label: 'Dashboard', to: '/', end: true },
   { label: 'Transactions', to: '/transactions' },
-  { label: 'Securities', to: '/securities' },
+  { label: 'Stocks', to: '/stocks' },
   { label: 'Countries', to: '/countries' },
   { label: 'Branches', to: '/branches' },
   { label: 'Depots', to: '/depots' },

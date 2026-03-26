@@ -1,1 +1,0 @@
-ALTER TABLE ticker_symbol ADD COLUMN isin_id INTEGER UNIQUE REFERENCES isin(id);

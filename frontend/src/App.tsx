@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
-import Securities from './pages/Securities';
+import Stocks from './pages/Stocks';
 import Countries from './pages/Countries';
 import Branches from './pages/Branches';
 import Depots from './pages/Depots';
@@ -20,7 +20,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/transactions" element={<Transactions />} />
-          <Route path="/securities" element={<Securities />} />
+          <Route path="/stocks" element={<Stocks />} />
           <Route path="/countries" element={<Countries />} />
           <Route path="/branches" element={<Branches />} />
           <Route path="/depots" element={<Depots />} />

@@ -7,6 +7,7 @@ import { DataTable, DataTablePagination } from '@dynatrace/strato-components/tab
 import { Button } from '@dynatrace/strato-components/buttons';
 import api from '../api/client';
 import type { DiversificationDto } from '../types';
+import ExportButtons from '../components/ExportButtons';
 
 const COLORS = [
   '#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f',
@@ -20,6 +21,8 @@ export default function Analytics() {
   const { type } = useParams<{ type: string }>();
   const [data, setData] = useState<DiversificationDto | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [sortField, setSortField] = useState('investedAmount');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
     api.get<DiversificationDto>(`/analytics/${type}`).then(r => setData(r.data));
@@ -67,11 +70,16 @@ export default function Analytics() {
             <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
               {tableData.length} entries
             </Paragraph>
-            <Button variant="default" onClick={() => setShowAll(s => !s)}>
-              {showAll ? 'Paginate' : 'Show All'}
-            </Button>
+            <Flex gap={8} alignItems="center">
+              <ExportButtons endpoint={`/analytics/${type}/export`} params={{ sortField, sortDir }} />
+              <Button variant="default" onClick={() => setShowAll(s => !s)}>
+                {showAll ? 'Paginate' : 'Show All'}
+              </Button>
+            </Flex>
           </Flex>
-          <DataTable data={tableData} columns={columns} sortable resizable fullWidth>
+          <DataTable data={tableData} columns={columns} sortable resizable fullWidth
+            defaultSortBy={[{ id: 'investedAmount', desc: true }]}
+            onSortByChange={(s: any) => { if (s?.[0]) { setSortField(s[0].id); setSortDir(s[0].desc ? 'desc' : 'asc'); } }}>
             {!showAll && (
               <DataTablePagination defaultPageSize={10} pageSizeOptions={[10, 20, 50, 100]} />
             )}

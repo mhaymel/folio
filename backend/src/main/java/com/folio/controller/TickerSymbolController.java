@@ -1,6 +1,8 @@
 package com.folio.controller;
 
 import com.folio.dto.TickerSymbolDto;
+import com.folio.service.ExportService;
+import com.folio.service.ExportService.Column;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityManager;
@@ -8,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -16,9 +19,11 @@ import java.util.List;
 public class TickerSymbolController {
 
     private final EntityManager em;
+    private final ExportService exportService;
 
-    public TickerSymbolController(EntityManager em) {
+    public TickerSymbolController(EntityManager em, ExportService exportService) {
         this.em = em;
+        this.exportService = exportService;
     }
 
     @GetMapping
@@ -26,6 +31,31 @@ public class TickerSymbolController {
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public ResponseEntity<List<TickerSymbolDto>> getTickerSymbols() {
+        return ResponseEntity.ok(loadAll());
+    }
+
+    @GetMapping("/export")
+    @Operation(summary = "Export ticker symbols as CSV or Excel")
+    @Transactional(readOnly = true)
+    public ResponseEntity<byte[]> exportTickerSymbols(
+            @RequestParam(defaultValue = "csv") String format,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        List<TickerSymbolDto> data = loadAll();
+        if (sortField != null && !sortField.isBlank()) {
+            data = sorted(data, sortField, sortDir);
+        }
+        List<Column<TickerSymbolDto>> columns = List.of(
+                new Column<>("ISIN", TickerSymbolDto::getIsin),
+                new Column<>("Ticker Symbol", TickerSymbolDto::getTickerSymbol),
+                new Column<>("Name", TickerSymbolDto::getName)
+        );
+        return exportService.export(data, columns, format, "ticker-symbols");
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<TickerSymbolDto> loadAll() {
         List<Object[]> rows = em.createNativeQuery("""
             SELECT i.isin, ts.symbol,
                    (SELECT n.name FROM isin_name n WHERE n.isin_id = i.id ORDER BY n.id ASC LIMIT 1)
@@ -35,15 +65,24 @@ public class TickerSymbolController {
             ORDER BY i.isin ASC, ts.symbol ASC
             """).getResultList();
 
-        List<TickerSymbolDto> result = rows.stream()
+        return rows.stream()
             .map(r -> TickerSymbolDto.builder()
                 .isin((String) r[0])
                 .tickerSymbol((String) r[1])
                 .name((String) r[2])
                 .build())
             .toList();
+    }
 
-        return ResponseEntity.ok(result);
+    private static List<TickerSymbolDto> sorted(List<TickerSymbolDto> data, String field, String dir) {
+        Comparator<TickerSymbolDto> cmp = switch (field) {
+            case "isin" -> Comparator.comparing(TickerSymbolDto::getIsin, Comparator.nullsLast(String::compareToIgnoreCase));
+            case "tickerSymbol" -> Comparator.comparing(TickerSymbolDto::getTickerSymbol, Comparator.nullsLast(String::compareToIgnoreCase));
+            case "name" -> Comparator.comparing(TickerSymbolDto::getName, Comparator.nullsLast(String::compareToIgnoreCase));
+            default -> null;
+        };
+        if (cmp == null) return data;
+        if ("desc".equalsIgnoreCase(dir)) cmp = cmp.reversed();
+        return data.stream().sorted(cmp).toList();
     }
 }
-

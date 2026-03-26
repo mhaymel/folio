@@ -1,81 +1,113 @@
 # General UI Requirements
 
-This document contains general UI requirements that apply to the overall design and functionality of the user interface. These requirements serve as a baseline for the overall user experience and can be overridden by specific requirements for individual pages.
+This document defines the baseline UI conventions that apply across all pages. Page-specific requirements (e.g., `dashboard.md`, `transactions.md`) take precedence when they conflict with these general rules.
+
+---
 
 ## Core Principles
 
-- **User-centered design**: The UI shall prioritize ease of use and efficiency in completing tasks
-- **Consistency**: The UI shall be consistent with the overall branding and design system of the application
-- **Accessibility**: The UI shall be accessible to all users, regardless of their abilities or devices
+- **User-centred design** — Prioritise ease of use and task efficiency.
+- **Consistency** — Follow the Strato design system for components, tokens, and layout patterns.
+- **Accessibility** — Ensure the interface is usable by all users, regardless of ability or device.
 
-## Design Requirements
+---
+
+## Design
 
 ### Visual Design
-- The UI shall be visually appealing and modern
-- The UI shall maintain a clean and uncluttered layout
-- The UI shall use the Strato design system components and tokens consistently
+
+- Maintain a clean, modern, and uncluttered layout.
+- Use Strato design-system components and CSS custom-property tokens consistently.
 
 ### Responsiveness
-- The UI shall work well on both desktop and mobile devices
-- The UI shall adapt to different screen sizes and orientations
-- Layout components shall respond appropriately to viewport changes
+
+- Support desktop and mobile viewports.
+- Adapt to different screen sizes and orientations; layout components must respond to viewport changes.
 
 ### Intuitiveness
-- Navigation shall be clear and easy to understand
-- Interactive elements shall provide appropriate visual feedback
-- Error messages shall be user-friendly and actionable
+
+- Provide clear, predictable navigation.
+- Give immediate visual feedback on interactive elements.
+- Display user-friendly, actionable error messages.
+
+---
 
 ## Functional Requirements
 
 ### Performance
-- Pages shall load efficiently without unnecessary delays
-- Data tables shall handle large datasets without performance degradation
-- User interactions shall feel responsive and immediate
+
+- Pages shall load without unnecessary delays.
+- Data tables shall handle large datasets without degradation.
+- Interactions shall feel responsive and immediate.
 
 ### Date and Number Formatting
-- **Dates**: Display format shall be `DD-MM-YYYY` (e.g., "22-03-2026")
-  - For timestamps with time: `DD.MM.YYYY HH:mm` (e.g., "22.03.2026 14:30")
-  - For sorting: Use ISO format `YYYY-MM-DD` as `sortAccessor` to ensure chronological ordering
-- **Numbers (decimals)**: Use German locale formatting
-  - Format: `toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})`
-  - Decimal separator: comma (`,`)
-  - Thousands separator: period (`.`)
-  - Always show exactly 2 decimal places
-  - Examples: `1.234,56` or `42,00`
+
+#### Dates
+
+| Context | Format | Example |
+|---------|--------|---------|
+| Date only | `DD-MM-YYYY` | `22-03-2026` |
+| Date + time | `DD.MM.YYYY HH:mm` | `22.03.2026 14:30` |
+| Sort value | ISO `YYYY-MM-DD` via `sortAccessor` | `2026-03-22` |
+
+#### Numbers
+
+- Use German locale: `toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })`
+- Decimal separator: comma (`,`)
+- Thousands separator: period (`.`)
+- Always exactly 2 decimal places — e.g. `1.234,56`, `42,00`
+
+---
 
 ### Data Tables
-All data tables in the application shall follow these conventions unless explicitly overridden in page-specific requirements:
+
+All `DataTable` instances shall follow these conventions unless a page-specific spec states otherwise.
 
 #### Layout and Sizing
-- **Full width**: Tables shall use the `fullWidth` prop to stretch to the available container width
-- **Resizable columns**: Tables shall use the `resizable` prop to allow users to adjust column widths
-- **Column widths**: Columns shall specify both `width` (initial) and `minWidth` (minimum) values where appropriate
-  - Text-heavy columns (e.g., Name, Description): larger initial widths for readability
-  - Fixed-format columns (e.g., ISIN, Date): fixed widths matching content size
-  - Numeric columns: narrower widths, right-aligned
+
+| Prop | Required | Purpose |
+|------|----------|---------|
+| `fullWidth` | ✔ | Stretch the table to the available container width |
+| `resizable` | ✔ | Allow users to drag-resize column widths |
+
+- Specify both `width` (initial) and `minWidth` (minimum) per column where appropriate.
+  - **Text-heavy columns** (Name, Description): larger initial widths for readability.
+  - **Fixed-format columns** (ISIN, Date): fixed widths matching content size.
+  - **Numeric columns**: narrower widths, right-aligned.
 
 #### Sorting and Filtering
-- **Sortable**: Tables shall use the `sortable` prop to enable column-based sorting
-- **Default sort**: Tables should specify a sensible `defaultSortBy` (e.g., most recent date first)
-- **Sort accessors**: When display format differs from sort value (e.g., dates), use `sortAccessor` to provide the raw sortable value
+
+- Enable the `sortable` prop on every table.
+- Define a sensible `defaultSortBy` (e.g. most recent date first).
+- When the display format differs from the sort value (e.g. formatted dates), provide a `sortAccessor` that returns the raw sortable value.
 
 #### Pagination
-- **Default behavior**: Large datasets shall use pagination by default
-- **Page size**: Default page size shall be 10 rows
-- **Page size options**: User shall be able to select from `[10, 20, 50, 100]` rows per page
-- **Show All toggle**: Tables shall provide a "Show All / Paginate" toggle button (top-right of the table) that switches between paginated view and showing all rows at once
-- **Implementation**: Use `DataTablePagination` component with `defaultPageSize={10}` and `pageSizeOptions={[10, 20, 50, 100]}`
+
+- Large datasets shall be paginated by default.
+- Default page size: **10** rows.
+- Selectable page sizes: `[10, 20, 50, 100]`.
+- A **Show All / Paginate** toggle button (top-right of the table area) switches between paginated and unpaginated views.
+- Implementation: `<DataTablePagination defaultPageSize={10} pageSizeOptions={[10, 20, 50, 100]} />`
+
+#### Export
+
+- Each table shall offer **Export CSV** and **Export Excel** buttons, positioned top-right next to the Show All / Paginate toggle.
+- **Formats:**
+  - **CSV** — semicolon-separated, UTF-8 with BOM. Numeric values formatted with German locale (comma decimal separator, 2 decimal places).
+  - **Excel** — `.xlsx`. Numeric columns must be written as **real numbers** (not text), with a 2-decimal-place cell format so that Excel recognises them as numeric and allows sorting, summing, charting, etc.
+- **Scope:** Exports shall respect the currently applied filters **and** the current sort order (field + direction), and shall include column headers matching the visible columns.
+- **Sort forwarding:** Every page shall track its active sort state (initialised from `defaultSortBy`) and pass `sortField` and `sortDir` to the export endpoint so the exported file matches the on-screen order.
+- **Backend-driven generation:** The frontend sends a request to a backend export endpoint, passing the active sort field, sort direction, and all applied filters. The backend generates the file and returns it as a downloadable response. This keeps large-dataset exports off the client.
 
 #### Row Count Display
-- **Filtered count**: When filters are active, display `"N of M items"` format
-- **Unfiltered count**: When no filters are active, display `"M items"` format
-- The count should update in real-time as filters are applied
+
+- **Filtered:** `"N of M items"` (e.g. `"12 of 50 stocks"`).
+- **Unfiltered:** `"M items"` (e.g. `"50 stocks"`).
+- The count shall update in real time as filters change.
+
+---
 
 ### Testing
-- The UI shall be tested thoroughly to ensure it meets the needs of the target audience
-- Testing shall verify a seamless user experience across different browsers and devices
-- Usability testing shall validate that the interface is intuitive for the target users
 
-## Overrides
-
-Specific page requirements documented in individual page specification files (e.g., `dashboard.md`, `transactions.md`) take precedence over these general requirements when conflicts arise.
+- Verify a seamless experience across major browsers and device types.
+- Validate that the interface is intuitive through usability testing.

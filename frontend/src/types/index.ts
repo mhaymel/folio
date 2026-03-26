@@ -14,7 +14,7 @@ export interface TransactionDto {
   sharePrice: number;
 }
 
-export interface SecurityDto {
+export interface StockDto {
   isin: string;
   name: string | null;
   country: string | null;
@@ -29,7 +29,7 @@ export interface SecurityDto {
 
 export interface DashboardDto {
   totalPortfolioValue: number;
-  securityCount: number;
+  stockCount: number;
   totalDividendRatio: number;
   top5Holdings: HoldingDto[];
   top5DividendSources: DividendSourceDto[];

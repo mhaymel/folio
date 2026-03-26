@@ -4,6 +4,7 @@ import { Heading, Paragraph } from '@dynatrace/strato-components/typography';
 import { DataTable } from '@dynatrace/strato-components/tables';
 import api from '../api/client';
 import type { DashboardDto } from '../types';
+import ExportButtons from '../components/ExportButtons';
 
 const fmt = (n: number) =>
   n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -39,7 +40,7 @@ export default function Dashboard() {
       <div className="kpi-grid">
         {[
           { label: 'Total Portfolio Value', value: fmt(data.totalPortfolioValue) + ' EUR' },
-          { label: 'Securities', value: String(data.securityCount) },
+          { label: 'Stocks', value: String(data.stockCount) },
           { label: 'Dividend Ratio', value: fmt(data.totalDividendRatio) + '%' },
         ].map(kpi => (
           <Surface key={kpi.label} p={16}>
@@ -56,12 +57,18 @@ export default function Dashboard() {
       )}
 
       <div className="section">
-        <Heading level={2}>Top 5 Holdings</Heading>
+        <Flex alignItems="center" justifyContent="space-between">
+          <Heading level={2}>Top 5 Holdings</Heading>
+          <ExportButtons endpoint="/dashboard/holdings/export" />
+        </Flex>
         <DataTable data={holdings} columns={holdingColumns} resizable fullWidth />
       </div>
 
       <div className="section">
-        <Heading level={2}>Top 5 Dividend Sources</Heading>
+        <Flex alignItems="center" justifyContent="space-between">
+          <Heading level={2}>Top 5 Dividend Sources</Heading>
+          <ExportButtons endpoint="/dashboard/dividends/export" />
+        </Flex>
         <DataTable data={dividends} columns={dividendColumns} resizable fullWidth />
       </div>
     </Flex>
