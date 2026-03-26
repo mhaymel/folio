@@ -13,7 +13,7 @@ const fmtPrice = (n: number) =>
   n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const fmtCount = (n: number) =>
-  n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  n.toLocaleString('de-DE', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 
 // ISO date → DD-MM-YYYY (avoids timezone shifts; raw ISO used for sort)
 const isoDate = (s: string) => s.substring(0, 10);
@@ -44,7 +44,9 @@ export default function Transactions() {
       <span style={cellStyle} onDoubleClick={() => setNameFilter(info.value)} title="Double-click to filter by this name">{info.value}</span>
     ), sortType: 'text' as const, width: 240, minWidth: 120 },
     { id: 'depot', header: 'Depot', accessor: 'depot', sortType: 'text' as const, width: 100, minWidth: 80 },
-    { id: 'count', header: 'Count', accessor: (r: TransactionDto) => fmtCount(r.count), sortType: 'number' as const, alignment: 'right' as const, minWidth: 80 },
+    { id: 'count', header: 'Count', accessor: (r: TransactionDto) => r.count, cell: (info: { value: number }) => (
+      <span style={{ display: 'flex', alignItems: 'center', height: '100%', justifyContent: 'flex-end', color: info.value < 0 ? '#ff6b6b' : info.value > 0 ? '#51cf66' : undefined }}>{fmtCount(info.value)}</span>
+    ), sortType: 'number' as const, alignment: 'right' as const, minWidth: 80 },
     { id: 'sharePrice', header: 'Share Price', accessor: (r: TransactionDto) => fmtPrice(r.sharePrice), sortType: 'number' as const, alignment: 'right' as const, minWidth: 100 },
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], []);

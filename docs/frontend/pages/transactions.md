@@ -43,7 +43,7 @@ Returns paginated list with ISIN, stock name (JOIN `isin_name`), depot, date, co
 | ISIN | plain; custom cell with `display:flex; align-items:center; height:100%`; double-click → `setIsinFilter` | left | 140 | 140 |
 | Name | plain; custom cell with `display:flex; align-items:center; height:100%`; double-click → `setNameFilter` | left | 240 | 120 |
 | Depot | plain | left | 100 | 80 |
-| Count | Number format per [ui.md](ui.md) | right | — | 80 |
+| Count | Number format per [ui.md](ui.md) with 3 decimal places; negative values red, positive values green | right | — | 80 |
 | Share Price | Number format per [ui.md](ui.md) | right | — | 100 |
 
 ### Summary 

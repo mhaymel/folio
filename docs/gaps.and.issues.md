@@ -135,7 +135,7 @@ Several requirements were missing from the Transactions page implementation: ISO
 
 ### AG. Transactions — Count column format clarified to exactly 2 decimal places
 
-Count was formatted with 0–4 decimal places (`min:0, max:4`). Requirement clarified to exactly 2 decimal places matching Share Price format. — **Resolved 2026-03-24**: `fmtCount` changed to `{minimumFractionDigits:2, maximumFractionDigits:2}`; PROJECT.md column table and plan.md §6.5 updated.
+Count was formatted with 0–4 decimal places (`min:0, max:4`). Requirement clarified to exactly 2 decimal places matching Share Price format. — **Resolved 2026-03-24**: `fmtCount` changed to `{minimumFractionDigits:2, maximumFractionDigits:2}`; PROJECT.md column table and plan.md §6.5 updated. — **Updated 2026-03-26**: Count changed to 3 decimal places (`minimumFractionDigits:3, maximumFractionDigits:3`); negative values shown in red, positive in green via custom cell renderer.
 
 ---
 
