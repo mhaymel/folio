@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recha
 import { Flex } from '@dynatrace/strato-components/layouts';
 import { Heading, Paragraph } from '@dynatrace/strato-components/typography';
 import { DataTable, DataTablePagination } from '@dynatrace/strato-components/tables';
+import { Button } from '@dynatrace/strato-components/buttons';
 import api from '../api/client';
 import type { DiversificationDto } from '../types';
 
@@ -18,6 +19,7 @@ const fmt = (n: number) =>
 export default function Analytics() {
   const { type } = useParams<{ type: string }>();
   const [data, setData] = useState<DiversificationDto | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     api.get<DiversificationDto>(`/analytics/${type}`).then(r => setData(r.data));
@@ -61,8 +63,18 @@ export default function Analytics() {
               </PieChart>
             </ResponsiveContainer>
           </div>
+          <Flex alignItems="center" justifyContent="space-between">
+            <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
+              {tableData.length} entries
+            </Paragraph>
+            <Button variant="default" onClick={() => setShowAll(s => !s)}>
+              {showAll ? 'Paginate' : 'Show All'}
+            </Button>
+          </Flex>
           <DataTable data={tableData} columns={columns} sortable resizable fullWidth>
-            <DataTablePagination defaultPageSize={10} pageSizeOptions={[10, 20, 50, 100]} />
+            {!showAll && (
+              <DataTablePagination defaultPageSize={10} pageSizeOptions={[10, 20, 50, 100]} />
+            )}
           </DataTable>
         </>
       )}

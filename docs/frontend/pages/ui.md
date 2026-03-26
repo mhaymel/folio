@@ -63,7 +63,7 @@ All data tables in the application shall follow these conventions unless explici
 - **Default behavior**: Large datasets shall use pagination by default
 - **Page size**: Default page size shall be 10 rows
 - **Page size options**: User shall be able to select from `[10, 20, 50, 100]` rows per page
-- **Show All toggle**: Tables may provide a "Show All / Paginate" toggle for viewing all rows without pagination
+- **Show All toggle**: Tables shall provide a "Show All / Paginate" toggle button (top-right of the table) that switches between paginated view and showing all rows at once
 - **Implementation**: Use `DataTablePagination` component with `defaultPageSize={10}` and `pageSizeOptions={[10, 20, 50, 100]}`
 
 #### Row Count Display

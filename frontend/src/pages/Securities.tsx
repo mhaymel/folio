@@ -16,6 +16,7 @@ export default function Securities() {
   const [loading, setLoading] = useState(false);
   const [countryFilter, setCountryFilter] = useState('');
   const [branchFilter, setBranchFilter] = useState('');
+  const [showAll, setShowAll] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -89,13 +90,20 @@ export default function Securities() {
         </Flex>
       ) : (
         <>
-          <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
-            {filtered.length !== allSecurities.length
-              ? `${filtered.length} of ${allSecurities.length} securities`
-              : `${allSecurities.length} securities`}
-          </Paragraph>
+          <Flex alignItems="center" justifyContent="space-between">
+            <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
+              {filtered.length !== allSecurities.length
+                ? `${filtered.length} of ${allSecurities.length} securities`
+                : `${allSecurities.length} securities`}
+            </Paragraph>
+            <Button variant="default" onClick={() => setShowAll(s => !s)}>
+              {showAll ? 'Paginate' : 'Show All'}
+            </Button>
+          </Flex>
           <DataTable data={filtered} columns={columns} sortable resizable fullWidth>
-            <DataTablePagination defaultPageSize={10} pageSizeOptions={[10, 20, 50, 100]} />
+            {!showAll && (
+              <DataTablePagination defaultPageSize={10} pageSizeOptions={[10, 20, 50, 100]} />
+            )}
           </DataTable>
         </>
       )}
