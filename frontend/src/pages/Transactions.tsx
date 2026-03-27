@@ -75,9 +75,6 @@ export default function Transactions() {
     return matchesIsin && matchesName && matchesDepot;
   }), [allTxns, isinFilter, nameFilter, depotFilter]);
 
-  const filteredCountSum = useMemo(() => filteredTxns.reduce((sum, t) => sum + t.count, 0), [filteredTxns]);
-  const totalCountSum = useMemo(() => allTxns.reduce((sum, t) => sum + t.count, 0), [allTxns]);
-
   const exportParams = useMemo(() => ({
     isin: isinFilter || undefined,
     name: nameFilter || undefined,
@@ -128,8 +125,8 @@ export default function Transactions() {
           <Flex alignItems="center" justifyContent="space-between">
             <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
               {filteredTxns.length !== allTxns.length
-                ? `${filteredTxns.length} of ${allTxns.length} transactions — Count: ${fmtCount(filteredCountSum)} of ${fmtCount(totalCountSum)}`
-                : `${allTxns.length} transactions — Count: ${fmtCount(totalCountSum)}`}
+                ? `${filteredTxns.length} of ${allTxns.length} transactions`
+                : `${allTxns.length} transactions`}
             </Paragraph>
             <Flex gap={8} alignItems="center">
               <ExportButtons endpoint="/transactions/export" params={exportParams} />

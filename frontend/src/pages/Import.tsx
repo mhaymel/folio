@@ -60,7 +60,7 @@ function ImportCard({ section }: { section: ImportSection }) {
         )}
         {status === 'error' && result && (
           <Paragraph style={{ color: 'var(--dt-color-text-critical)' }}>
-            {result.errors.length > 0 ? result.errors.slice(0, 3).join(' | ') : 'Import failed'}
+            {result.errors.length > 0 ? result.errors.join(' | ') : 'Import failed'}
             {result.imported > 0 && ` (${result.imported} rows imported)`}
           </Paragraph>
         )}

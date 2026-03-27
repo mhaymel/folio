@@ -57,7 +57,7 @@ export default function IsinNames() {
             sortable
             resizable
             fullWidth
-            defaultSortBy={[{ id: 'name', desc: false }]}
+            defaultSortBy={[{ id: 'name', desc: false }, { id: 'isin', desc: false }]}
             onSortByChange={(s: any) => { if (s?.[0]) { setSortField(s[0].id); setSortDir(s[0].desc ? 'desc' : 'asc'); } }}
           >
             {!showAll && (

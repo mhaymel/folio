@@ -212,4 +212,45 @@ The data model defined `ticker_symbol` and `isin_ticker` tables, and import.md s
 - `TickerSymbolDto` + `TickerSymbolController`: `GET /api/ticker-symbols` returns ISIN/ticker/name via native SQL join.
 - Frontend: `TickerSymbols.tsx` page (3-column sortable table), route `/ticker-symbols`, nav entry, import card.
 
-> Last reviewed: 2026-03-25 — Gaps AN, AO (W), AP, AQ, AR, AS resolved. Open items: T (testing strategy), V (Clerk auth), X (parser/ extraction).
+### AT. Dashboard — timestamp format, label text, missing "—" for null
+
+Dashboard spec (`dashboard.md`) requires the last-fetch timestamp formatted as `DD.MM.YYYY HH:mm` with label "Last updated:" and `—` when null. Implementation used `toLocaleString('de-DE')` (wrong format), label "Last quote fetch:", and hid the line entirely when null. Dashboard tables were also missing the `sortable` prop. — **Resolved 2026-03-27**: Timestamp format fixed to `DD.MM.YYYY HH:mm`, label changed to "Last updated:", `—` shown when null, `sortable` added to both DataTables.
+
+### AU. Stocks — column headers abbreviated
+
+The stocks spec (`stocks.md`) defines full column headers (e.g. "Total Shares", "Avg Entry Price", "Current Quote", "Performance (%)", "Expected Dividend/Share", "Est. Annual Income"). The implementation used abbreviated headers ("Shares", "Avg Price", "Quote", "Perf %", "Div/Share", "Est. Income"). — **Resolved 2026-03-27**: All Stocks column headers updated to match spec exactly.
+
+### AV. Settings — missing custom interval input, timestamp format
+
+The settings spec (`settings.md`) requires a custom interval input alongside the dropdown. Implementation had only predefined intervals with no custom option. The last-fetch timestamp also used the wrong format. — **Resolved 2026-03-27**: "Custom" option added to interval dropdown with a `TextInput` for custom minutes. Timestamp format changed to `DD.MM.YYYY HH:mm`, displays `—` when null. Label changed to "Fetch Interval".
+
+### AW. IsinNames — missing secondary ISIN sort in frontend
+
+The ISIN names spec (`isin-names.md`) requires "sorted by name ascending, then ISIN ascending". Frontend only set `defaultSortBy` with name ascending, missing the ISIN secondary sort. — **Resolved 2026-03-27**: Secondary `{ id: 'isin', desc: false }` added to `defaultSortBy`.
+
+### AX. Transactions — summary displayed extra count sum info
+
+The transactions spec (`transactions.md`) requires the summary to show `"N transactions"` or `"N of M transactions"`. Implementation additionally displayed a count sum (total shares) which was not in the spec. — **Resolved 2026-03-27**: Extra count sum removed from summary display; unused `filteredCountSum` and `totalCountSum` memo computations removed.
+
+### AY. Import — error display limited to 3 errors
+
+Import page only displayed the first 3 error messages (`.slice(0, 3)`). The spec requires feedback about all errors. — **Resolved 2026-03-27**: `.slice(0, 3)` removed, all errors are now shown.
+
+### AZ. Analytics SQL — missing spaces in query string concatenation
+
+`PortfolioService.getDiversification()` used Java text block concatenation that produced `JOINisin_country` and `JOINcountry` (missing spaces). The analytics endpoints returned 500 errors. — **Resolved 2026-03-27**: SQL rewritten using plain string concatenation with explicit spaces.
+
+### T. Testing — REST API integration tests added
+
+PROJECT.md requires "a comprehensive test suite that covers all major functionality and edge cases." No REST API tests existed. — **Resolved 2026-03-27**: Integration tests added for all 12 REST controllers using `@SpringBootTest` + `@AutoConfigureMockMvc` with H2 test profile:
+- `ReferenceDataControllerTest`: depots, currencies, countries, branches (GET + export)
+- `DashboardControllerTest`: dashboard structure, empty portfolio, export
+- `TransactionControllerTest`: empty list, filters, date filters, export
+- `StockControllerTest`: empty positions, export with filters/sort
+- `AnalyticsControllerTest`: diversification structure, export
+- `QuoteControllerTest`: settings CRUD, enable/disable, interval validation, trigger fetch
+- `ImportControllerTest`: branches/countries/dividends/ticker-symbols import, empty CSV, invalid format
+- `IsinNameControllerTest` + `TickerSymbolControllerTest`: GET + export
+- `ImportToQueryIntegrationTest`: end-to-end pipeline (import countries/branches/dividends/ticker-symbols → verify via query endpoints)
+
+> Last reviewed: 2026-03-27 — Gaps AT–AZ, T resolved. Open items: V (Clerk auth), X (parser/ extraction).

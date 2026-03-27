@@ -9,6 +9,16 @@ import ExportButtons from '../components/ExportButtons';
 const fmt = (n: number) =>
   n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+const fmtDateTime = (iso: string): string => {
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${dd}.${mm}.${yyyy} ${hh}:${min}`;
+};
+
 const holdingColumns = [
   { id: 'isin', header: 'ISIN', accessor: 'isin' },
   { id: 'name', header: 'Name', accessor: 'name' },
@@ -50,18 +60,16 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {data.lastQuoteFetchAt && (
-        <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
-          Last quote fetch: {new Date(data.lastQuoteFetchAt).toLocaleString('de-DE')}
-        </Paragraph>
-      )}
+      <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
+        Last updated: {data.lastQuoteFetchAt ? fmtDateTime(data.lastQuoteFetchAt) : '—'}
+      </Paragraph>
 
       <div className="section">
         <Flex alignItems="center" justifyContent="space-between">
           <Heading level={2}>Top 5 Holdings</Heading>
           <ExportButtons endpoint="/dashboard/holdings/export" />
         </Flex>
-        <DataTable data={holdings} columns={holdingColumns} resizable fullWidth />
+        <DataTable data={holdings} columns={holdingColumns} sortable resizable fullWidth />
       </div>
 
       <div className="section">
@@ -69,7 +77,7 @@ export default function Dashboard() {
           <Heading level={2}>Top 5 Dividend Sources</Heading>
           <ExportButtons endpoint="/dashboard/dividends/export" />
         </Flex>
-        <DataTable data={dividends} columns={dividendColumns} resizable fullWidth />
+        <DataTable data={dividends} columns={dividendColumns} sortable resizable fullWidth />
       </div>
     </Flex>
   );

@@ -134,21 +134,20 @@ public class PortfolioService {
 
     @SuppressWarnings("unchecked")
     private DiversificationDto getDiversification(String joinTable, String refTable, String fkColumn) {
-        List<Object[]> rows = em.createNativeQuery("""
-            SELECT r.name, SUM(pos.invested) as invested
-            FROM (
-                SELECT t.isin_id,
-                       SUM(t.count * t.share_price) as invested
-                FROM transaction t
-                GROUP BY t.isin_id
-                HAVING SUM(t.count) > 0
-            ) pos
-            JOIN """ + joinTable + " jt ON jt.isin_id = pos.isin_id " + """
-            JOIN """ + refTable + " r ON r.id = jt." + fkColumn + """
+        String sql = "SELECT r.name, SUM(pos.invested) as invested"
+            + " FROM ("
+            + "     SELECT t.isin_id,"
+            + "            SUM(t.count * t.share_price) as invested"
+            + "     FROM transaction t"
+            + "     GROUP BY t.isin_id"
+            + "     HAVING SUM(t.count) > 0"
+            + " ) pos"
+            + " JOIN " + joinTable + " jt ON jt.isin_id = pos.isin_id"
+            + " JOIN " + refTable + " r ON r.id = jt." + fkColumn
+            + " GROUP BY r.name"
+            + " ORDER BY invested DESC";
 
-            GROUP BY r.name
-            ORDER BY invested DESC
-            """).getResultList();
+        List<Object[]> rows = em.createNativeQuery(sql).getResultList();
 
         double total = rows.stream().mapToDouble(r -> ((Number) r[1]).doubleValue()).sum();
 

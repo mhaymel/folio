@@ -337,16 +337,23 @@ settings         (id, key VARCHAR(100) UNIQUE NOT NULL, value VARCHAR(500) NOT N
 
 ## Testing
 
-PROJECT.md requires "a comprehensive test suite that covers all major functionality and edge cases." The testing strategy and tooling are not yet defined. The following is planned but not yet implemented:
-
 **Backend (JUnit 5 + Spring Boot Test):**
-- Unit tests for CSV parsers (each broker format), domain services (portfolio calculation, import logic), and tiny types.
-- Integration tests for REST controllers using `@WebMvcTest` and for repositories using `@DataJpaTest` with H2 in PostgreSQL mode.
+- **Unit tests:** Tiny types (`IsinCodeTest`), DTOs (`DashboardDtoTest`, `StockDtoTest`, `TransactionDtoTest`, `TransactionFilterTest`), models (`IsinTest`, `TransactionTest`, `DividendTest`, `DividendPaymentTest`, `IsinQuoteTest`), services (`ExportServiceTest`), quote system (`IsinsQuoteLoaderTest`, `QuoteFetchHelperTest`).
+- **REST API integration tests:** All 12 controllers tested using `@SpringBootTest` + `@AutoConfigureMockMvc` against H2 in PostgreSQL mode:
+  - `ReferenceDataControllerTest` — depots, currencies, countries, branches (GET + CSV/Excel export)
+  - `DashboardControllerTest` — dashboard structure, empty portfolio, holdings/dividends export
+  - `TransactionControllerTest` — transaction list, optional filters, date filters, export with sort
+  - `StockControllerTest` — positions list, export with country/branch filters and sorting
+  - `AnalyticsControllerTest` — country/branch diversification structure, export with sort
+  - `QuoteControllerTest` — settings GET/PUT, enable/disable toggle, interval validation, trigger fetch
+  - `ImportControllerTest` — branches/countries/dividends/ticker-symbols CSV import, empty/invalid input handling
+  - `IsinNameControllerTest`, `TickerSymbolControllerTest` — GET + export
+  - `ImportToQueryIntegrationTest` — end-to-end pipeline: import reference data → verify via query endpoints
 - Test profile uses `application-test.yml` (in-memory H2).
 
 **Frontend (Vitest + React Testing Library):**
-- Unit tests for utility functions (formatters, filters).
-- Component tests for pages with mocked API responses.
+- Unit tests for utility functions (formatters, filters) — planned.
+- Component tests for pages with mocked API responses — planned.
 
 ---
 

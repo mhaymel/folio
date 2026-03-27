@@ -54,12 +54,12 @@ export default function Stocks() {
     { id: 'name', header: 'Name', accessor: 'name', sortType: 'text' as const, width: 240, minWidth: 240 },
     { id: 'country', header: 'Country', accessor: 'country', sortType: 'text' as const, width: 120, minWidth: 80 },
     { id: 'branch', header: 'Branch', accessor: 'branch', sortType: 'text' as const, width: 160, minWidth: 80 },
-    { id: 'totalShares', header: 'Shares', accessor: (r: StockDto) => fmt(r.totalShares), sortType: 'number' as const, alignment: 'right' as const, minWidth: 80 },
-    { id: 'avgEntryPrice', header: 'Avg Price', accessor: (r: StockDto) => fmt(r.avgEntryPrice), sortType: 'number' as const, alignment: 'right' as const, minWidth: 90 },
-    { id: 'currentQuote', header: 'Quote', accessor: (r: StockDto) => fmt(r.currentQuote), sortType: 'number' as const, alignment: 'right' as const, minWidth: 80 },
-    { id: 'performancePercent', header: 'Perf %', accessor: (r: StockDto) => fmt(r.performancePercent), sortType: 'number' as const, alignment: 'right' as const, minWidth: 80 },
-    { id: 'dividendPerShare', header: 'Div/Share', accessor: (r: StockDto) => fmt(r.dividendPerShare), sortType: 'number' as const, alignment: 'right' as const, minWidth: 90 },
-    { id: 'estimatedAnnualIncome', header: 'Est. Income', accessor: (r: StockDto) => fmt(r.estimatedAnnualIncome), sortType: 'number' as const, alignment: 'right' as const, minWidth: 90 },
+    { id: 'totalShares', header: 'Total Shares', accessor: (r: StockDto) => fmt(r.totalShares), sortType: 'number' as const, alignment: 'right' as const, minWidth: 80 },
+    { id: 'avgEntryPrice', header: 'Avg Entry Price', accessor: (r: StockDto) => fmt(r.avgEntryPrice), sortType: 'number' as const, alignment: 'right' as const, minWidth: 90 },
+    { id: 'currentQuote', header: 'Current Quote', accessor: (r: StockDto) => fmt(r.currentQuote), sortType: 'number' as const, alignment: 'right' as const, minWidth: 80 },
+    { id: 'performancePercent', header: 'Performance (%)', accessor: (r: StockDto) => fmt(r.performancePercent), sortType: 'number' as const, alignment: 'right' as const, minWidth: 80 },
+    { id: 'dividendPerShare', header: 'Expected Dividend/Share', accessor: (r: StockDto) => fmt(r.dividendPerShare), sortType: 'number' as const, alignment: 'right' as const, minWidth: 90 },
+    { id: 'estimatedAnnualIncome', header: 'Est. Annual Income', accessor: (r: StockDto) => fmt(r.estimatedAnnualIncome), sortType: 'number' as const, alignment: 'right' as const, minWidth: 90 },
   ], []);
 
   const exportParams = useMemo(() => ({

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Flex, Surface } from '@dynatrace/strato-components/layouts';
 import { Heading, Paragraph } from '@dynatrace/strato-components/typography';
 import { Button } from '@dynatrace/strato-components/buttons';
-import { Select, Switch } from '@dynatrace/strato-components/forms';
+import { Select, Switch, TextInput } from '@dynatrace/strato-components/forms';
 import api from '../api/client';
 import type { QuoteSettingsDto } from '../types';
 
@@ -13,17 +13,35 @@ const INTERVALS = [
   { label: '4 hours', value: 240 },
   { label: '12 hours', value: 720 },
   { label: '24 hours', value: 1440 },
+  { label: 'Custom', value: -1 },
 ];
+
+const fmtDateTime = (iso: string): string => {
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${dd}.${mm}.${yyyy} ${hh}:${min}`;
+};
 
 export default function Settings() {
   const [settings, setSettings] = useState<QuoteSettingsDto | null>(null);
   const [selected, setSelected] = useState<number | null>(60);
+  const [customMinutes, setCustomMinutes] = useState('');
   const [fetchStatus, setFetchStatus] = useState('');
 
   const load = () => {
     api.get<QuoteSettingsDto>('/quotes/settings').then(r => {
       setSettings(r.data);
-      setSelected(r.data.intervalMinutes);
+      const preset = INTERVALS.find(i => i.value === r.data.intervalMinutes && i.value !== -1);
+      if (preset) {
+        setSelected(r.data.intervalMinutes);
+      } else {
+        setSelected(-1);
+        setCustomMinutes(String(r.data.intervalMinutes));
+      }
     });
   };
 
@@ -35,8 +53,9 @@ export default function Settings() {
   };
 
   const saveInterval = async () => {
-    if (selected == null) return;
-    await api.put('/quotes/settings/interval', { intervalMinutes: selected });
+    const minutes = selected === -1 ? parseInt(customMinutes, 10) : selected;
+    if (minutes == null || isNaN(minutes) || minutes <= 0) return;
+    await api.put('/quotes/settings/interval', { intervalMinutes: minutes });
     load();
   };
 
@@ -65,7 +84,7 @@ export default function Settings() {
             <Switch value={settings.enabled} onChange={toggleEnabled} />
             <Paragraph>{settings.enabled ? 'Automatic quote fetching is enabled' : 'Automatic quote fetching is disabled'}</Paragraph>
           </Flex>
-          <label style={{ fontSize: 14, color: 'var(--dt-color-text-subdued)' }}>Interval</label>
+          <label style={{ fontSize: 14, color: 'var(--dt-color-text-subdued)' }}>Fetch Interval</label>
           <Select<number> value={selected} onChange={val => setSelected(val)}>
             <Select.Content>
               {INTERVALS.map(i => (
@@ -73,6 +92,13 @@ export default function Settings() {
               ))}
             </Select.Content>
           </Select>
+          {selected === -1 && (
+            <TextInput
+              placeholder="Minutes"
+              value={customMinutes}
+              onChange={val => setCustomMinutes(val ?? '')}
+            />
+          )}
           <Flex gap={12} alignItems="center">
             <Button onClick={saveInterval} variant="accent">Save</Button>
           </Flex>
@@ -81,7 +107,7 @@ export default function Settings() {
             {fetchStatus && <Paragraph style={{ color: 'var(--dt-color-text-primary)' }}>{fetchStatus}</Paragraph>}
           </Flex>
           <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
-            Last fetch: {settings.lastFetchAt ? new Date(settings.lastFetchAt).toLocaleString('de-DE') : 'Never'}
+            Last fetch: {settings.lastFetchAt ? fmtDateTime(settings.lastFetchAt) : '—'}
           </Paragraph>
         </Flex>
       </Surface>

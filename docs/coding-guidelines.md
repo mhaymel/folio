@@ -76,6 +76,7 @@ Central coding conventions for the Folio project. All contributors (human and AI
   }
   ```
 - Test class naming: `<ClassUnderTest>Test` (e.g. `StockServiceTest`).
+- **Test classes must be package-private and `final`** — no `public` modifier, always `final`.
 - Test method naming: `should<ExpectedBehaviour>[When<Condition>]` — no `test` prefix.
 - One logical assertion per test (multiple `assertThat` calls are fine if they verify the same concept).
 - Use **AssertJ** (`assertThat`) for assertions — do not use JUnit's `assertEquals` / `assertTrue`.
