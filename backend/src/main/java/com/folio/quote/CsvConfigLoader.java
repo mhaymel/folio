@@ -1,13 +1,13 @@
 package com.folio.quote;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.slf4j.LoggerFactory.getLogger;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import static java.util.Collections.emptyMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,9 +15,9 @@ import java.util.Map;
  * Loads semicolon-delimited config CSV files from the classpath.
  * Format: ISIN;value (e.g. ISIN;url-path or ISIN;TICKER;Name)
  */
-public class CsvConfigLoader {
+public final class CsvConfigLoader {
 
-    private static final Logger log = LoggerFactory.getLogger(CsvConfigLoader.class);
+    private static final Logger log = getLogger(CsvConfigLoader.class);
 
     /**
      * Load a two-column config: ISIN → value.
@@ -28,7 +28,7 @@ public class CsvConfigLoader {
             ClassPathResource resource = new ClassPathResource(resourcePath);
             if (!resource.exists()) {
                 log.debug("Config file not found: {}", resourcePath);
-                return Collections.emptyMap();
+                return emptyMap();
             }
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
@@ -56,7 +56,7 @@ public class CsvConfigLoader {
             ClassPathResource resource = new ClassPathResource(resourcePath);
             if (!resource.exists()) {
                 log.debug("Config file not found: {}", resourcePath);
-                return Collections.emptyMap();
+                return emptyMap();
             }
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {

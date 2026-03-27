@@ -1,8 +1,9 @@
 package com.folio.controller;
 
+import com.folio.dto.ExportRequest;
 import com.folio.dto.StockDto;
 import com.folio.service.ExportService;
-import com.folio.service.ExportService.Column;
+import com.folio.dto.ExportColumn;
 import com.folio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -52,20 +53,20 @@ public class StockController {
             data = sorted(data, sortField, sortDir);
         }
 
-        List<Column<StockDto>> columns = List.of(
-                new Column<>("ISIN", StockDto::getIsin),
-                new Column<>("Name", StockDto::getName),
-                new Column<>("Country", StockDto::getCountry),
-                new Column<>("Branch", StockDto::getBranch),
-                new Column<>("Shares", StockDto::getTotalShares),
-                new Column<>("Avg Price", StockDto::getAvgEntryPrice),
-                new Column<>("Quote", StockDto::getCurrentQuote),
-                new Column<>("Perf %", StockDto::getPerformancePercent),
-                new Column<>("Div/Share", StockDto::getDividendPerShare),
-                new Column<>("Est. Income", StockDto::getEstimatedAnnualIncome)
+        List<ExportColumn<StockDto>> columns = List.of(
+                new ExportColumn<>("ISIN", StockDto::getIsin),
+                new ExportColumn<>("Name", StockDto::getName),
+                new ExportColumn<>("Country", StockDto::getCountry),
+                new ExportColumn<>("Branch", StockDto::getBranch),
+                new ExportColumn<>("Shares", StockDto::getTotalShares),
+                new ExportColumn<>("Avg Price", StockDto::getAvgEntryPrice),
+                new ExportColumn<>("Quote", StockDto::getCurrentQuote),
+                new ExportColumn<>("Perf %", StockDto::getPerformancePercent),
+                new ExportColumn<>("Div/Share", StockDto::getDividendPerShare),
+                new ExportColumn<>("Est. Income", StockDto::getEstimatedAnnualIncome)
         );
 
-        return exportService.export(data, columns, format, "stocks");
+        return exportService.export(new ExportRequest<>(data, columns, format, "stocks"));
     }
 
 

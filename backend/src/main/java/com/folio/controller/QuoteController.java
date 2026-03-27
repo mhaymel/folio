@@ -1,5 +1,8 @@
 package com.folio.controller;
 
+import static java.lang.Integer.parseInt;
+import static java.lang.String.valueOf;
+
 import com.folio.dto.QuoteSettingsDto;
 import com.folio.model.Setting;
 import com.folio.repository.SettingRepository;
@@ -28,8 +31,12 @@ public class QuoteController {
     @GetMapping("/settings")
     @Operation(summary = "Get quote fetch settings")
     public ResponseEntity<QuoteSettingsDto> getSettings() {
+        boolean enabled = settingRepo.findByKey("quote.fetch.enabled")
+            .map(s -> Boolean.parseBoolean(s.getValue()))
+            .orElse(false);
+
         Integer interval = settingRepo.findByKey("quote.fetch.interval.minutes")
-            .map(s -> Integer.parseInt(s.getValue()))
+            .map(s -> parseInt(s.getValue()))
             .orElse(60);
 
         LocalDateTime lastFetch = settingRepo.findByKey("quote.last.fetch.timestamp")
@@ -37,9 +44,26 @@ public class QuoteController {
             .orElse(null);
 
         return ResponseEntity.ok(QuoteSettingsDto.builder()
+            .enabled(enabled)
             .intervalMinutes(interval)
             .lastFetchAt(lastFetch)
             .build());
+    }
+
+    @PutMapping("/settings/enabled")
+    @Operation(summary = "Enable or disable automatic quote fetching")
+    public ResponseEntity<QuoteSettingsDto> updateEnabled(@RequestBody Map<String, Boolean> body) {
+        Boolean enabled = body.get("enabled");
+        if (enabled == null) {
+            throw new IllegalArgumentException("enabled must be provided");
+        }
+
+        Setting setting = settingRepo.findByKey("quote.fetch.enabled")
+            .orElseGet(() -> Setting.builder().key("quote.fetch.enabled").value("false").build());
+        setting.setValue(valueOf(enabled));
+        settingRepo.save(setting);
+
+        return getSettings();
     }
 
     @PutMapping("/settings/interval")
@@ -52,7 +76,7 @@ public class QuoteController {
 
         Setting setting = settingRepo.findByKey("quote.fetch.interval.minutes")
             .orElseGet(() -> Setting.builder().key("quote.fetch.interval.minutes").value("60").build());
-        setting.setValue(String.valueOf(minutes));
+        setting.setValue(valueOf(minutes));
         settingRepo.save(setting);
 
         return getSettings();

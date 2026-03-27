@@ -1,10 +1,20 @@
 package com.folio.quote.sources;
 
-import com.folio.quote.AbstractHtmlQuoteSource;
+import com.folio.domain.IsinCode;
+import static java.lang.String.format;
+import com.folio.quote.QuoteFetchHelper;
+import com.folio.quote.QuoteSource;
+import static java.lang.String.format;
+import org.slf4j.Logger;
+import static org.slf4j.LoggerFactory.getLogger;
+import static java.lang.String.format;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import static java.util.Optional.empty;
+
+import static java.lang.String.format;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,7 +24,9 @@ import java.util.regex.Pattern;
  */
 @Component
 @Order(7)
-public class FondsDiscountEurSource extends AbstractHtmlQuoteSource {
+public final class FondsDiscountEurSource implements QuoteSource {
+
+    private static final Logger log = getLogger(FondsDiscountEurSource.class);
 
     private static final String URL_TEMPLATE = "https://www.fondsdiscount.de/fonds/etf/%s/";
 
@@ -31,20 +43,19 @@ public class FondsDiscountEurSource extends AbstractHtmlQuoteSource {
     }
 
     @Override
-    public Optional<Double> fetchQuote(String isin) {
-        String url = String.format(URL_TEMPLATE, isin);
-        return fetchHtml(url).flatMap(html -> {
+    public Optional<Double> fetchQuote(IsinCode isin) {
+        String url = format(URL_TEMPLATE, isin.value());
+        return QuoteFetchHelper.fetchHtml(url, log, providerName()).flatMap(html -> {
             Matcher m = PRICE_PATTERN.matcher(html);
             if (m.find()) {
-                return parseDecimal(m.group(1));
+                return QuoteFetchHelper.parseDecimal(m.group(1));
             }
             Matcher gm = GENERIC_EUR_PRICE.matcher(html);
             if (gm.find()) {
-                return parseDecimal(gm.group(1));
+                return QuoteFetchHelper.parseDecimal(gm.group(1));
             }
             log.debug("FondsDiscount EUR: no price found for {}", isin);
-            return Optional.empty();
+            return empty();
         });
     }
 }
-

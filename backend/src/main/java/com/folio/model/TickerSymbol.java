@@ -4,12 +4,12 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "ticker_symbol")
-public class TickerSymbol {
+public final class TickerSymbol {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "isin_id", unique = true)
     private Isin isin;
 
@@ -31,16 +31,6 @@ public class TickerSymbol {
     public String getSymbol() { return symbol; }
     public void setSymbol(String symbol) { this.symbol = symbol; }
 
-    public static Builder builder() { return new Builder(); }
-
-    public static class Builder {
-        private Integer id;
-        private Isin isin;
-        private String symbol;
-        public Builder id(Integer id) { this.id = id; return this; }
-        public Builder isin(Isin isin) { this.isin = isin; return this; }
-        public Builder symbol(String symbol) { this.symbol = symbol; return this; }
-        public TickerSymbol build() { return new TickerSymbol(id, isin, symbol); }
-    }
+    public static TickerSymbolBuilder builder() { return new TickerSymbolBuilder(); }
 }
 

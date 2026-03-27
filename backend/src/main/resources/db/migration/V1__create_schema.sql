@@ -125,3 +125,4 @@ INSERT INTO quote_provider (name) VALUES
 
 -- Seed data: settings
 INSERT INTO settings ("key", "value") VALUES ('quote.fetch.interval.minutes', '60');
+INSERT INTO settings ("key", "value") VALUES ('quote.fetch.enabled', 'false');

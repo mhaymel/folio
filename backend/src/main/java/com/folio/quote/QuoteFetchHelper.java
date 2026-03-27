@@ -1,7 +1,8 @@
 package com.folio.quote;
 
+import static java.lang.Double.parseDouble;
+
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -9,24 +10,29 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Optional;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+
 
 /**
- * Base class for quote sources that scrape HTML pages.
- * Provides common HTTP fetching and decimal parsing utilities.
+ * Utility class providing common HTTP fetching and decimal parsing for quote sources.
  */
-public abstract class AbstractHtmlQuoteSource implements QuoteSource {
-
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+public final class QuoteFetchHelper {
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
         .connectTimeout(Duration.ofSeconds(10))
         .followRedirects(HttpClient.Redirect.NORMAL)
         .build();
 
+    private QuoteFetchHelper() {
+        // utility class — not instantiable
+    }
+
     /**
      * Fetch an HTML page. Returns empty on any HTTP error or non-200 status.
      */
-    protected Optional<String> fetchHtml(String url) {
+    public static Optional<String> fetchHtml(String url, Logger log, String providerName) {
+        log.info("{}: fetching HTML from {}", providerName, url);
         try {
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -40,20 +46,21 @@ public abstract class AbstractHtmlQuoteSource implements QuoteSource {
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
-                return Optional.of(response.body());
+                return of(response.body());
             }
-            log.debug("{}: HTTP {} for {}", providerName(), response.statusCode(), url);
-            return Optional.empty();
+            log.debug("{}: HTTP {} for {}", providerName, response.statusCode(), url);
+            return empty();
         } catch (Exception e) {
-            log.debug("{}: fetch failed for {}: {}", providerName(), url, e.getMessage());
-            return Optional.empty();
+            log.debug("{}: fetch failed for {}: {}", providerName, url, e.getMessage());
+            return empty();
         }
     }
 
     /**
      * Fetch JSON content from a URL.
      */
-    protected Optional<String> fetchJson(String url) {
+    public static Optional<String> fetchJson(String url, Logger log, String providerName) {
+        log.info("{}: fetching JSON from {}", providerName, url);
         try {
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -66,13 +73,13 @@ public abstract class AbstractHtmlQuoteSource implements QuoteSource {
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
-                return Optional.of(response.body());
+                return of(response.body());
             }
-            log.debug("{}: HTTP {} for {}", providerName(), response.statusCode(), url);
-            return Optional.empty();
+            log.debug("{}: HTTP {} for {}", providerName, response.statusCode(), url);
+            return empty();
         } catch (Exception e) {
-            log.debug("{}: fetch failed for {}: {}", providerName(), url, e.getMessage());
-            return Optional.empty();
+            log.debug("{}: fetch failed for {}: {}", providerName, url, e.getMessage());
+            return empty();
         }
     }
 
@@ -80,7 +87,7 @@ public abstract class AbstractHtmlQuoteSource implements QuoteSource {
      * Parse a decimal string that may use German format (comma as decimal separator).
      * Strips whitespace, non-breaking spaces, thousands separators.
      */
-    protected Optional<Double> parseDecimal(String raw) {
+    public static Optional<Double> parseDecimal(String raw) {
         try {
             String s = raw.trim()
                 .replace("\u00a0", "")   // non-breaking space
@@ -94,13 +101,13 @@ public abstract class AbstractHtmlQuoteSource implements QuoteSource {
                 s = s.replace(",", ".");
             }
 
-            double value = Double.parseDouble(s);
+            double value = parseDouble(s);
             if (value <= 0 || Double.isNaN(value) || Double.isInfinite(value)) {
-                return Optional.empty();
+                return empty();
             }
-            return Optional.of(value);
+            return of(value);
         } catch (Exception e) {
-            return Optional.empty();
+            return empty();
         }
     }
 }

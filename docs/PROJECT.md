@@ -27,13 +27,14 @@ It is a personal tool, just for me. Only one portfolio is managed. There can be 
 - The application should have a clear and modern design, with a focus on usability and accessibility
 - The application should have a clean separation of concerns between frontend and backend that allows for scalability and maintainability
 - The application should have a well-defined API that allows for easy integration with other systems and services
-- The application should have a clear and consistent coding style and follow best practices for software development
+- The application should have a clear and consistent coding style and follow best practices for software development (see [Coding Guidelines](coding-guidelines.md))
 - The application should have a comprehensive test suite that covers all major functionality and edge cases
 
 ### Data Import
 
 #### Fetching Quotes
 The backend fetches periodically quote data via webscrapping. The interval can be changed dynamically via the UI and is stored database in table settings. The quotes are stored in the database and used for performance calculation and display in the UI.
+- The backend shall log the URLs it navigates to when fetching quotes from each provider.
 
 #### Broker Transaction Import
 - The system shall import transaction data from **DeGiro** broker CSV exports (see sample: [`docs/samples/Transactions.csv`](docs/samples/Transactions.csv)). The share price stored per transaction shall be derived from the `Wert EUR` column (index 11, total trade value in EUR) divided by the absolute share count, not from the `Kurs` column (index 7), which is denominated in the stock's local trading currency and may not be EUR. Rows where `Anzahl` (count) is zero shall be skipped entirely — they represent non-trade entries such as fees or dividends and would cause division by zero in the price formula.
@@ -359,6 +360,29 @@ PROJECT.md requires "a comprehensive test suite that covers all major functional
 **Frontend:**
 - Axios interceptor: 401 → redirect to `/sign-in`; 4xx/5xx → show Strato notification/toast.
 - File type validation before upload (client-side).
+
+---
+
+## Developer Utility Components
+
+### DevModeOnlyH2Server
+
+- `@Component @Profile("dev")` in `com.folio.config`.
+- On `@PostConstruct`, checks if the configured datasource driver is `org.h2.Driver`.
+- If so, starts an H2 TCP server (`Server.createTcpServer("-tcpAllowOthers").start()`) and logs the connection URL.
+- Allows external database tools to connect to the in-memory H2 instance during development.
+
+### SwaggerUiUrlLogger
+
+- `@Component` in `com.folio.config`.
+- Reads `SwaggerUiConfigProperties.getPath()` on `@PostConstruct`.
+- Listens for `WebServerInitializedEvent` to resolve the actual server port.
+- Once both path and port are known, logs the full Swagger UI URL at INFO level.
+
+### RequestLoggingFilter
+
+- `@Component` in `com.folio.config` implementing `jakarta.servlet.Filter`.
+- Logs every incoming HTTP request (`method` + `URI`) at INFO level before passing the request through the filter chain.
 
 ---
 

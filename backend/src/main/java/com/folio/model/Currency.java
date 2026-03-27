@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "currency")
-public class Currency {
+public final class Currency {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -24,13 +24,5 @@ public class Currency {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public static Builder builder() { return new Builder(); }
-
-    public static class Builder {
-        private Integer id;
-        private String name;
-        public Builder id(Integer id) { this.id = id; return this; }
-        public Builder name(String name) { this.name = name; return this; }
-        public Currency build() { return new Currency(id, name); }
-    }
+    public static CurrencyBuilder builder() { return new CurrencyBuilder(); }
 }

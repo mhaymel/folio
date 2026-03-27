@@ -2,29 +2,25 @@ package com.folio.dto;
 
 import java.time.LocalDateTime;
 
-public class QuoteSettingsDto {
+public final class QuoteSettingsDto {
+    private boolean enabled;
     private Integer intervalMinutes;
     private LocalDateTime lastFetchAt;
 
     public QuoteSettingsDto() {}
 
-    public QuoteSettingsDto(Integer intervalMinutes, LocalDateTime lastFetchAt) {
+    public QuoteSettingsDto(boolean enabled, Integer intervalMinutes, LocalDateTime lastFetchAt) {
+        this.enabled = enabled;
         this.intervalMinutes = intervalMinutes;
         this.lastFetchAt = lastFetchAt;
     }
 
+    public boolean isEnabled() { return enabled; }
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
     public Integer getIntervalMinutes() { return intervalMinutes; }
     public void setIntervalMinutes(Integer intervalMinutes) { this.intervalMinutes = intervalMinutes; }
     public LocalDateTime getLastFetchAt() { return lastFetchAt; }
     public void setLastFetchAt(LocalDateTime lastFetchAt) { this.lastFetchAt = lastFetchAt; }
 
-    public static Builder builder() { return new Builder(); }
-
-    public static class Builder {
-        private Integer intervalMinutes;
-        private LocalDateTime lastFetchAt;
-        public Builder intervalMinutes(Integer intervalMinutes) { this.intervalMinutes = intervalMinutes; return this; }
-        public Builder lastFetchAt(LocalDateTime lastFetchAt) { this.lastFetchAt = lastFetchAt; return this; }
-        public QuoteSettingsDto build() { return new QuoteSettingsDto(intervalMinutes, lastFetchAt); }
-    }
+    public static QuoteSettingsDtoBuilder builder() { return new QuoteSettingsDtoBuilder(); }
 }

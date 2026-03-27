@@ -4,7 +4,9 @@
 
 ## Use Case
 
-The UI should provide a way for the user to change the interval at which the backend fetches live quotes for the stocks. This could be implemented as a settings page where the user can select from predefined intervals (e.g. every 15 minutes, every hour, every 4 hours) or enter a custom interval. The selected interval should be stored in the database in table settings and used by the backend to schedule the quote fetching task. The UI should also provide feedback to the user about the current quote fetch interval and any changes made to it. REST API endpoint should be provided to update the quote fetch interval in the backend. The UI should also provide a way to trigger an immediate quote fetch, in case the user wants to update the quotes right away without waiting for the next scheduled fetch. The UI should show the date and time of the last successful quote fetch, so the user can see how up-to-date the displayed quotes are.
+The UI should provide a way for the user to turn automatic quote fetching on and off. On application startup, automatic quote fetching must be **off** by default. The user can enable it via a toggle switch on the settings page.
+
+The UI should also provide a way for the user to change the interval at which the backend fetches live quotes for the stocks. This could be implemented as a settings page where the user can select from predefined intervals (e.g. every 15 minutes, every hour, every 4 hours) or enter a custom interval. The selected interval should be stored in the database in table settings and used by the backend to schedule the quote fetching task. The UI should also provide feedback to the user about the current quote fetch interval and any changes made to it. REST API endpoint should be provided to update the quote fetch interval in the backend. The UI should also provide a way to trigger an immediate quote fetch, in case the user wants to update the quotes right away without waiting for the next scheduled fetch. The UI should show the date and time of the last successful quote fetch, so the user can see how up-to-date the displayed quotes are.
 
 ---
 
@@ -45,6 +47,10 @@ If an ISIN has no entry in the relevant config file, that source is skipped for 
 - USD→EUR conversion uses the ECB online XML exchange rate feed (with static fallback) for steps 4 and 8.
 - WallstreetOnline (step 10) uses a hardcoded factor of `0.86` for USD instead of the dynamic rate.
 
+### Logging
+
+- The backend shall log (at INFO level) the URL it navigates to when fetching a quote from each provider, so operators can trace which external endpoints are being called.
+
 ### Error Handling
 
 - Each source returns `Optional.empty()` on any failure (HTTP non-200, parse error, missing config entry, network error).
@@ -55,7 +61,8 @@ If an ISIN has no entry in the relevant config file, that source is skipped for 
 
 ## Quote Fetcher Scheduling & Persistence
 
-- **Scheduling:** `@Scheduled` Spring task reads `settings.quote.fetch.interval.minutes` before each run (so UI changes take effect without restart). Runs for all ISINs where `SUM(count) > 0`. Requires `@EnableScheduling` on the application class.
+- **Enabled flag:** The setting `quote.fetch.enabled` controls whether automatic quote fetching is active. Default on startup is `false` (off). The scheduler skips execution when disabled.
+- **Scheduling:** `@Scheduled` Spring task reads `quote.fetch.enabled` and `quote.fetch.interval.minutes` before each run (so UI changes take effect without restart). Runs for all ISINs where `SUM(count) > 0`. Requires `@EnableScheduling` on the application class.
 - **Persistence:** After each fetch batch, upsert results into `isin_quote` (one row per ISIN; `quote_provider_id` = provider that succeeded; `fetched_at` = now). Update `settings` key `quote.last.fetch.timestamp`.
 - **Disabled source:** Lemon Markets batch API — API token expired; do not implement.
 
@@ -67,16 +74,18 @@ If an ISIN has no entry in the relevant config file, that source is skipped for 
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/quotes/settings` | Current fetch interval + last fetch timestamp |
+| GET | `/api/quotes/settings` | Current enabled state, fetch interval + last fetch timestamp |
+| PUT | `/api/quotes/settings/enabled` | Enable or disable automatic quote fetching |
 | PUT | `/api/quotes/settings/interval` | Update `quote.fetch.interval.minutes` |
 | POST | `/api/quotes/fetch` | Trigger immediate fetch for all held ISINs |
 
-`GET /api/quotes/settings` response: `{ "intervalMinutes": 60, "lastFetchAt": "2026-03-22T14:30:00" }` (`lastFetchAt` null if no fetch yet).
+`GET /api/quotes/settings` response: `{ "enabled": false, "intervalMinutes": 60, "lastFetchAt": "2026-03-22T14:30:00" }` (`lastFetchAt` null if no fetch yet).
 
 ---
 
 ## UI Specification
 
+- **Enable/Disable toggle:** Switch component to turn automatic quote fetching on/off → `PUT /api/quotes/settings/enabled`. Default on startup: off.
 - Fetch interval: dropdown (15 min, 30 min, 1 h, 4 h, 12 h, 24 h) + custom input.
 - "Save interval" → `PUT /api/quotes/settings/interval`.
 - "Fetch now" → `POST /api/quotes/fetch`; loading spinner while running.

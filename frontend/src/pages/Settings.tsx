@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Flex, Surface } from '@dynatrace/strato-components/layouts';
 import { Heading, Paragraph } from '@dynatrace/strato-components/typography';
 import { Button } from '@dynatrace/strato-components/buttons';
-import { Select } from '@dynatrace/strato-components/forms';
+import { Select, Switch } from '@dynatrace/strato-components/forms';
 import api from '../api/client';
 import type { QuoteSettingsDto } from '../types';
 
@@ -28,6 +28,11 @@ export default function Settings() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const toggleEnabled = async (enabled: boolean) => {
+    await api.put('/quotes/settings/enabled', { enabled });
+    load();
+  };
 
   const saveInterval = async () => {
     if (selected == null) return;
@@ -55,7 +60,11 @@ export default function Settings() {
       <Heading level={1}>Settings</Heading>
       <Surface p={24} style={{ maxWidth: 480 }}>
         <Flex flexDirection="column" gap={16}>
-          <Heading level={2}>Quote Fetch Interval</Heading>
+          <Heading level={2}>Quote Fetching</Heading>
+          <Flex gap={12} alignItems="center">
+            <Switch value={settings.enabled} onChange={toggleEnabled} />
+            <Paragraph>{settings.enabled ? 'Automatic quote fetching is enabled' : 'Automatic quote fetching is disabled'}</Paragraph>
+          </Flex>
           <label style={{ fontSize: 14, color: 'var(--dt-color-text-subdued)' }}>Interval</label>
           <Select<number> value={selected} onChange={val => setSelected(val)}>
             <Select.Content>

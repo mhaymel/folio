@@ -1,8 +1,9 @@
 package com.folio.controller;
 
+import com.folio.dto.ExportRequest;
 import com.folio.dto.IsinNameDto;
 import com.folio.service.ExportService;
-import com.folio.service.ExportService.Column;
+import com.folio.dto.ExportColumn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityManager;
@@ -46,11 +47,11 @@ public class IsinNameController {
         if (sortField != null && !sortField.isBlank()) {
             data = sorted(data, sortField, sortDir);
         }
-        List<Column<IsinNameDto>> columns = List.of(
-                new Column<>("ISIN", IsinNameDto::getIsin),
-                new Column<>("Name", IsinNameDto::getName)
+        List<ExportColumn<IsinNameDto>> columns = List.of(
+                new ExportColumn<>("ISIN", IsinNameDto::getIsin),
+                new ExportColumn<>("Name", IsinNameDto::getName)
         );
-        return exportService.export(data, columns, format, "isin-names");
+        return exportService.export(new ExportRequest<>(data, columns, format, "isin-names"));
     }
 
     @SuppressWarnings("unchecked")

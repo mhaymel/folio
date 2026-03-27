@@ -1,8 +1,10 @@
 package com.folio.controller;
 
 import com.folio.dto.DiversificationDto;
+import com.folio.dto.DiversificationEntry;
+import com.folio.dto.ExportRequest;
 import com.folio.service.ExportService;
-import com.folio.service.ExportService.Column;
+import com.folio.dto.ExportColumn;
 import com.folio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -49,27 +51,27 @@ public class AnalyticsController {
                 ? portfolioService.getCountryDiversification()
                 : portfolioService.getBranchDiversification();
 
-        List<DiversificationDto.Entry> data = dto.getEntries();
+        List<DiversificationEntry> data = dto.getEntries();
         if (sortField != null && !sortField.isBlank()) {
             data = sortEntries(data, sortField, sortDir);
         }
 
         String label = "countries".equals(type) ? "Country" : "Branch";
 
-        List<Column<DiversificationDto.Entry>> columns = List.of(
-                new Column<>(label, DiversificationDto.Entry::getName),
-                new Column<>("Invested (EUR)", DiversificationDto.Entry::getInvestedAmount),
-                new Column<>("%", DiversificationDto.Entry::getPercentage)
+        List<ExportColumn<DiversificationEntry>> columns = List.of(
+                new ExportColumn<>(label, DiversificationEntry::getName),
+                new ExportColumn<>("Invested (EUR)", DiversificationEntry::getInvestedAmount),
+                new ExportColumn<>("%", DiversificationEntry::getPercentage)
         );
 
-        return exportService.export(data, columns, format, type + "-diversification");
+        return exportService.export(new ExportRequest<>(data, columns, format, type + "-diversification"));
     }
 
-    private static List<DiversificationDto.Entry> sortEntries(List<DiversificationDto.Entry> data, String field, String dir) {
-        Comparator<DiversificationDto.Entry> cmp = switch (field) {
-            case "name" -> Comparator.comparing(DiversificationDto.Entry::getName, Comparator.nullsLast(String::compareToIgnoreCase));
-            case "investedAmount" -> Comparator.comparing(DiversificationDto.Entry::getInvestedAmount, Comparator.nullsLast(Double::compareTo));
-            case "percentage" -> Comparator.comparing(DiversificationDto.Entry::getPercentage, Comparator.nullsLast(Double::compareTo));
+    private static List<DiversificationEntry> sortEntries(List<DiversificationEntry> data, String field, String dir) {
+        Comparator<DiversificationEntry> cmp = switch (field) {
+            case "name" -> Comparator.comparing(DiversificationEntry::getName, Comparator.nullsLast(String::compareToIgnoreCase));
+            case "investedAmount" -> Comparator.comparing(DiversificationEntry::getInvestedAmount, Comparator.nullsLast(Double::compareTo));
+            case "percentage" -> Comparator.comparing(DiversificationEntry::getPercentage, Comparator.nullsLast(Double::compareTo));
             default -> null;
         };
         if (cmp == null) return data;

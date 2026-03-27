@@ -1,13 +1,24 @@
 package com.folio.quote.sources;
 
-import com.folio.quote.AbstractHtmlQuoteSource;
+import static java.lang.Math.min;
+
+import static java.lang.Math.max;
+
+import com.folio.domain.IsinCode;
 import com.folio.quote.CsvConfigLoader;
+import com.folio.quote.QuoteFetchHelper;
+import com.folio.quote.QuoteSource;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import static org.slf4j.LoggerFactory.getLogger;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Optional;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,7 +29,9 @@ import java.util.regex.Pattern;
  */
 @Component
 @Order(10)
-public class WallstreetOnlineSource extends AbstractHtmlQuoteSource {
+public final class WallstreetOnlineSource implements QuoteSource {
+
+    private static final Logger log = getLogger(WallstreetOnlineSource.class);
 
     private static final String BASE_URL = "https://www.wallstreet-online.de/";
     private static final double USD_TO_EUR_FACTOR = 0.86;
@@ -44,29 +57,28 @@ public class WallstreetOnlineSource extends AbstractHtmlQuoteSource {
     }
 
     @Override
-    public Optional<Double> fetchQuote(String isin) {
-        String path = config.get(isin);
-        if (path == null) return Optional.empty();
+    public Optional<Double> fetchQuote(IsinCode isin) {
+        String path = config.get(isin.value());
+        if (path == null) return empty();
 
         String url = BASE_URL + path;
-        return fetchHtml(url).flatMap(html -> {
+        return QuoteFetchHelper.fetchHtml(url, log, providerName()).flatMap(html -> {
             Matcher m = PRICE_PATTERN.matcher(html);
             if (m.find()) {
-                Optional<Double> price = parseDecimal(m.group(1));
+                Optional<Double> price = QuoteFetchHelper.parseDecimal(m.group(1));
                 if (price.isPresent()) {
                     // Auto-detect USD: look for USD/$ near the price in the HTML
-                    int start = Math.max(0, m.start() - 300);
-                    int end = Math.min(html.length(), m.end() + 300);
+                    int start = max(0, m.start() - 300);
+                    int end = min(html.length(), m.end() + 300);
                     String context = html.substring(start, end);
                     if (CURRENCY_PATTERN.matcher(context).find()) {
-                        return Optional.of(price.get() * USD_TO_EUR_FACTOR);
+                        return of(price.get() * USD_TO_EUR_FACTOR);
                     }
                     return price;
                 }
             }
             log.debug("WallstreetOnline: no price found for {}", isin);
-            return Optional.empty();
+            return empty();
         });
     }
 }
-

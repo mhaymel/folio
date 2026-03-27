@@ -1,11 +1,15 @@
 package com.folio.service;
 
+import static java.lang.Double.parseDouble;
+
+import static java.lang.Math.abs;
+
 import com.folio.dto.ImportResult;
 import com.folio.model.*;
 import com.folio.repository.*;
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.slf4j.LoggerFactory.getLogger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,74 +23,63 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class ImportService {
 
-    private static final Logger log = LoggerFactory.getLogger(ImportService.class);
+    private static final Logger log = getLogger(ImportService.class);
 
-    private final IsinRepository isinRepo;
-    private final IsinNameRepository isinNameRepo;
-    private final DepotRepository depotRepo;
-    private final CurrencyRepository currencyRepo;
-    private final TransactionRepository transactionRepo;
-    private final DividendRepository dividendRepo;
-    private final DividendPaymentRepository dividendPaymentRepo;
-    private final CountryRepository countryRepo;
-    private final BranchRepository branchRepo;
-    private final TickerSymbolRepository tickerSymbolRepo;
+    /**
+     * Serialises all import operations so that concurrent HTTP requests do not
+     * produce lock-timeout errors on the shared {@code isin} table.
+     * Each {@code @Transactional} import method acquires this lock before
+     * touching the database and releases it in a {@code finally} block.
+     */
+    private final ReentrantLock importLock = new ReentrantLock();
+
+    private final ImportRepositories repos;
     private final EntityManager em;
 
-    public ImportService(IsinRepository isinRepo, IsinNameRepository isinNameRepo, DepotRepository depotRepo,
-                         CurrencyRepository currencyRepo, TransactionRepository transactionRepo,
-                         DividendRepository dividendRepo, DividendPaymentRepository dividendPaymentRepo,
-                         CountryRepository countryRepo, BranchRepository branchRepo,
-                         TickerSymbolRepository tickerSymbolRepo, EntityManager em) {
-        this.isinRepo = isinRepo;
-        this.isinNameRepo = isinNameRepo;
-        this.depotRepo = depotRepo;
-        this.currencyRepo = currencyRepo;
-        this.transactionRepo = transactionRepo;
-        this.dividendRepo = dividendRepo;
-        this.dividendPaymentRepo = dividendPaymentRepo;
-        this.countryRepo = countryRepo;
-        this.branchRepo = branchRepo;
-        this.tickerSymbolRepo = tickerSymbolRepo;
+    public ImportService(ImportRepositories repos, EntityManager em) {
+        this.repos = repos;
         this.em = em;
     }
 
     private Isin upsertIsin(String isinCode) {
-        return isinRepo.findByIsin(isinCode)
-            .orElseGet(() -> isinRepo.save(Isin.builder().isin(isinCode).build()));
+        return repos.isin().findByIsin(isinCode)
+            .orElseGet(() -> repos.isin().save(Isin.builder().isin(isinCode).build()));
     }
 
     private void upsertIsinName(Isin isin, String name) {
-        if (name != null && !name.isBlank() && !isinNameRepo.existsByIsinIdAndName(isin.getId(), name)) {
-            isinNameRepo.save(IsinName.builder().isin(isin).name(name.trim()).build());
+        if (name != null && !name.isBlank() && !repos.isinName().existsByIsinIdAndName(isin.getId(), name)) {
+            repos.isinName().save(IsinName.builder().isin(isin).name(name.trim()).build());
         }
     }
 
     private Currency upsertCurrency(String code) {
-        return currencyRepo.findByName(code)
-            .orElseGet(() -> currencyRepo.save(Currency.builder().name(code).build()));
+        return repos.currency().findByName(code)
+            .orElseGet(() -> repos.currency().save(Currency.builder().name(code).build()));
     }
 
-    private double parseDouble(String s) {
+    private double parseGermanDouble(String s) {
         String v = s.trim();
         // German locale: '.' = thousands separator, ',' or '~' = decimal separator
         // e.g. "1.234,56" or "1.234~56" -> "1234.56"
         if (v.contains(",") || v.contains("~")) {
             v = v.replace(".", "").replace(",", ".").replace("~", ".");
         }
-        return Double.parseDouble(v);
+        return parseDouble(v);
     }
 
     // ---- DeGiro Transactions.csv ----
     @Transactional
     public ImportResult importDegiroTransactions(MultipartFile file) {
+        importLock.lock();
+        try {
         List<String> errors = new ArrayList<>();
-        Depot depot = depotRepo.findByName("DeGiro").orElseThrow();
-        transactionRepo.deleteByDepotId(depot.getId());
+        Depot depot = repos.depot().findByName("DeGiro").orElseThrow();
+        repos.transaction().deleteByDepotId(depot.getId());
 
         List<Transaction> transactions = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
@@ -113,13 +106,13 @@ public class ImportService {
                     LocalTime time = LocalTime.parse(timeStr, DateTimeFormatter.ofPattern("HH:mm"));
                     LocalDateTime dateTime = LocalDateTime.of(date, time);
 
-                    double count = parseDouble(countStr);
+                    double count = parseGermanDouble(countStr);
                     if (count == 0) continue; // skip non-trade rows (fees, dividends, etc.)
 
                     // Derive EUR share price from total EUR value to guarantee EUR denomination
                     // regardless of the security's trading currency (Kurs at index 7 may be USD etc.)
-                    double eurValue = parseDouble(eurValueStr);
-                    double price = Math.abs(eurValue) / Math.abs(count);
+                    double eurValue = parseGermanDouble(eurValueStr);
+                    double price = abs(eurValue) / abs(count);
 
                     Isin isin = upsertIsin(isinCode);
                     upsertIsinName(isin, product);
@@ -135,17 +128,22 @@ public class ImportService {
             return ImportResult.fail(List.of("Failed to read file: " + e.getMessage()));
         }
 
-        transactionRepo.saveAll(transactions);
+        repos.transaction().saveAll(transactions);
         log.info("Imported {} DeGiro transactions", transactions.size());
         return ImportResult.builder().success(errors.isEmpty()).imported(transactions.size()).errors(errors).build();
+        } finally {
+            importLock.unlock();
+        }
     }
 
     // ---- ZERO Orders CSV ----
     @Transactional
     public ImportResult importZeroOrders(MultipartFile file) {
+        importLock.lock();
+        try {
         List<String> errors = new ArrayList<>();
-        Depot depot = depotRepo.findByName("ZERO").orElseThrow();
-        transactionRepo.deleteByDepotId(depot.getId());
+        Depot depot = repos.depot().findByName("ZERO").orElseThrow();
+        repos.transaction().deleteByDepotId(depot.getId());
 
         List<Transaction> transactions = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
@@ -175,8 +173,8 @@ public class ImportService {
                     LocalTime time = LocalTime.parse(execTime, DateTimeFormatter.ofPattern("HH:mm:ss"));
                     LocalDateTime dateTime = LocalDateTime.of(date, time);
 
-                    double count = parseDouble(execCount);
-                    double price = parseDouble(execPrice);
+                    double count = parseGermanDouble(execCount);
+                    double price = parseGermanDouble(execPrice);
                     if ("Verkauf".equals(direction)) {
                         count = -count;
                     }
@@ -195,17 +193,22 @@ public class ImportService {
             return ImportResult.fail(List.of("Failed to read file: " + e.getMessage()));
         }
 
-        transactionRepo.saveAll(transactions);
+        repos.transaction().saveAll(transactions);
         log.info("Imported {} ZERO transactions", transactions.size());
         return ImportResult.builder().success(errors.isEmpty()).imported(transactions.size()).errors(errors).build();
+        } finally {
+            importLock.unlock();
+        }
     }
 
     // ---- DeGiro Account.csv (dividends) ----
     @Transactional
     public ImportResult importDegiroAccount(MultipartFile file) {
+        importLock.lock();
+        try {
         List<String> errors = new ArrayList<>();
-        Depot depot = depotRepo.findByName("DeGiro").orElseThrow();
-        dividendPaymentRepo.deleteByDepotId(depot.getId());
+        Depot depot = repos.depot().findByName("DeGiro").orElseThrow();
+        repos.dividendPayment().deleteByDepotId(depot.getId());
 
         List<DividendPayment> payments = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
@@ -229,7 +232,7 @@ public class ImportService {
                     if (isinCode.isBlank()) continue;
 
                     LocalDate date = LocalDate.parse(valuta, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-                    double amount = parseDouble(amountStr);
+                    double amount = parseGermanDouble(amountStr);
 
                     Isin isin = upsertIsin(isinCode);
                     Currency currency = upsertCurrency(currencyCode);
@@ -245,17 +248,22 @@ public class ImportService {
             return ImportResult.fail(List.of("Failed to read file: " + e.getMessage()));
         }
 
-        dividendPaymentRepo.saveAll(payments);
+        repos.dividendPayment().saveAll(payments);
         log.info("Imported {} DeGiro dividend payments", payments.size());
         return ImportResult.builder().success(errors.isEmpty()).imported(payments.size()).errors(errors).build();
+        } finally {
+            importLock.unlock();
+        }
     }
 
     // ---- ZERO Kontoumsaetze (dividends) ----
     @Transactional
     public ImportResult importZeroAccount(MultipartFile file) {
+        importLock.lock();
+        try {
         List<String> errors = new ArrayList<>();
-        Depot depot = depotRepo.findByName("ZERO").orElseThrow();
-        dividendPaymentRepo.deleteByDepotId(depot.getId());
+        Depot depot = repos.depot().findByName("ZERO").orElseThrow();
+        repos.dividendPayment().deleteByDepotId(depot.getId());
         Currency eur = upsertCurrency("EUR");
 
         List<DividendPayment> payments = new ArrayList<>();
@@ -282,7 +290,7 @@ public class ImportService {
                     String isinCode = purpose.substring(isinIdx + 5, isinIdx + 17);
 
                     LocalDate date = LocalDate.parse(valuta, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-                    double amount = parseDouble(amountStr);
+                    double amount = parseGermanDouble(amountStr);
 
                     Isin isin = upsertIsin(isinCode);
 
@@ -297,16 +305,21 @@ public class ImportService {
             return ImportResult.fail(List.of("Failed to read file: " + e.getMessage()));
         }
 
-        dividendPaymentRepo.saveAll(payments);
+        repos.dividendPayment().saveAll(payments);
         log.info("Imported {} ZERO dividend payments", payments.size());
         return ImportResult.builder().success(errors.isEmpty()).imported(payments.size()).errors(errors).build();
+        } finally {
+            importLock.unlock();
+        }
     }
 
     // ---- dividende.csv ----
     @Transactional
     public ImportResult importDividends(MultipartFile file) {
+        importLock.lock();
+        try {
         List<String> errors = new ArrayList<>();
-        dividendRepo.deleteAll();
+        repos.dividend().deleteAll();
 
         List<Dividend> dividends = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
@@ -328,7 +341,7 @@ public class ImportService {
                     Isin isin = upsertIsin(isinCode);
                     upsertIsinName(isin, name);
                     Currency currency = upsertCurrency(currencyCode);
-                    double dps = parseDouble(dpsStr);
+                    double dps = parseGermanDouble(dpsStr);
 
                     dividends.add(Dividend.builder()
                         .isin(isin).currency(currency).dividendPerShare(dps).build());
@@ -340,14 +353,19 @@ public class ImportService {
             return ImportResult.fail(List.of("Failed to read file: " + e.getMessage()));
         }
 
-        dividendRepo.saveAll(dividends);
+        repos.dividend().saveAll(dividends);
         log.info("Imported {} dividend entries", dividends.size());
         return ImportResult.builder().success(errors.isEmpty()).imported(dividends.size()).errors(errors).build();
+        } finally {
+            importLock.unlock();
+        }
     }
 
     // ---- branches.csv ----
     @Transactional
     public ImportResult importBranches(MultipartFile file) {
+        importLock.lock();
+        try {
         List<String> errors = new ArrayList<>();
         int imported = 0;
 
@@ -369,8 +387,8 @@ public class ImportService {
                     Isin isin = upsertIsin(isinCode);
                     upsertIsinName(isin, name);
 
-                    Branch branch = branchRepo.findByName(branchName)
-                        .orElseGet(() -> branchRepo.save(Branch.builder().name(branchName).build()));
+                    Branch branch = repos.branch().findByName(branchName)
+                        .orElseGet(() -> repos.branch().save(Branch.builder().name(branchName).build()));
 
                     // Upsert isin_branch: delete old, insert new (1:1 assumption)
                     em.createNativeQuery("DELETE FROM isin_branch WHERE isin_id = :isinId")
@@ -390,11 +408,16 @@ public class ImportService {
 
         log.info("Imported {} branch mappings", imported);
         return ImportResult.builder().success(errors.isEmpty()).imported(imported).errors(errors).build();
+        } finally {
+            importLock.unlock();
+        }
     }
 
     // ---- countries.csv ----
     @Transactional
     public ImportResult importCountries(MultipartFile file) {
+        importLock.lock();
+        try {
         List<String> errors = new ArrayList<>();
         int imported = 0;
 
@@ -416,8 +439,8 @@ public class ImportService {
                     Isin isin = upsertIsin(isinCode);
                     upsertIsinName(isin, name);
 
-                    Country country = countryRepo.findByName(countryName)
-                        .orElseGet(() -> countryRepo.save(Country.builder().name(countryName).build()));
+                    Country country = repos.country().findByName(countryName)
+                        .orElseGet(() -> repos.country().save(Country.builder().name(countryName).build()));
 
                     // Upsert isin_country: delete old, insert new (1:1 assumption)
                     em.createNativeQuery("DELETE FROM isin_country WHERE isin_id = :isinId")
@@ -437,12 +460,17 @@ public class ImportService {
 
         log.info("Imported {} country mappings", imported);
         return ImportResult.builder().success(errors.isEmpty()).imported(imported).errors(errors).build();
+        } finally {
+            importLock.unlock();
+        }
     }
 
     // ---- ticker_symbol.csv ----
     // Format: ISIN;TickerSymbol;Name (Name is optional)
     @Transactional
     public ImportResult importTickerSymbols(MultipartFile file) {
+        importLock.lock();
+        try {
         List<String> errors = new ArrayList<>();
         int imported = 0;
 
@@ -463,26 +491,21 @@ public class ImportService {
 
                     if (isinCode.isBlank() || symbol.isBlank()) continue;
 
-                    // Upsert ISIN — creates it if not yet in the isin table
                     Isin isin = upsertIsin(isinCode);
 
-                    // If name is present, add it to isin_name
                     if (!name.isBlank()) {
                         upsertIsinName(isin, name);
                     }
 
-                    // Find or create ticker symbol
-                    TickerSymbol tickerSymbol = tickerSymbolRepo.findBySymbol(symbol)
-                        .orElseGet(() -> tickerSymbolRepo.save(TickerSymbol.builder()
+                    TickerSymbol tickerSymbol = repos.tickerSymbol().findBySymbol(symbol)
+                        .orElseGet(() -> repos.tickerSymbol().save(TickerSymbol.builder()
                             .isin(isin).symbol(symbol).build()));
 
-                    // Update isin reference if not set
                     if (tickerSymbol.getIsin() == null) {
                         tickerSymbol.setIsin(isin);
-                        tickerSymbolRepo.save(tickerSymbol);
+                        repos.tickerSymbol().save(tickerSymbol);
                     }
 
-                    // Upsert isin_ticker mapping
                     Long count = (Long) em.createNativeQuery(
                             "SELECT COUNT(*) FROM isin_ticker WHERE isin_id = :isinId AND ticker_symbol_id = :tsId")
                         .setParameter("isinId", isin.getId())
@@ -506,6 +529,9 @@ public class ImportService {
 
         log.info("Imported {} ticker symbol mappings", imported);
         return ImportResult.builder().success(errors.isEmpty()).imported(imported).errors(errors).build();
+        } finally {
+            importLock.unlock();
+        }
     }
 
     // Simple CSV line parser that handles quoted fields

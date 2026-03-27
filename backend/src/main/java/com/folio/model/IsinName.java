@@ -4,12 +4,12 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "isin_name", uniqueConstraints = @UniqueConstraint(columnNames = {"isin_id", "name"}))
-public class IsinName {
+public final class IsinName {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "isin_id", nullable = false)
     private Isin isin;
 
@@ -31,15 +31,5 @@ public class IsinName {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public static Builder builder() { return new Builder(); }
-
-    public static class Builder {
-        private Integer id;
-        private Isin isin;
-        private String name;
-        public Builder id(Integer id) { this.id = id; return this; }
-        public Builder isin(Isin isin) { this.isin = isin; return this; }
-        public Builder name(String name) { this.name = name; return this; }
-        public IsinName build() { return new IsinName(id, isin, name); }
-    }
+    public static IsinNameBuilder builder() { return new IsinNameBuilder(); }
 }

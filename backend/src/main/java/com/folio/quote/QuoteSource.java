@@ -1,5 +1,7 @@
 package com.folio.quote;
 
+import com.folio.domain.IsinCode;
+
 import java.util.Optional;
 
 /**
@@ -16,9 +18,9 @@ public interface QuoteSource {
     /**
      * Try to fetch an EUR price for the given ISIN.
      *
-     * @param isin the 12-character ISIN code
+     * @param isin the validated ISIN code
      * @return the price in EUR, or empty if this source cannot resolve it
      */
-    Optional<Double> fetchQuote(String isin);
+    Optional<Double> fetchQuote(IsinCode isin);
 }
 

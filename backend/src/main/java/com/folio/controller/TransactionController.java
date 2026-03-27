@@ -1,8 +1,10 @@
 package com.folio.controller;
 
+import com.folio.dto.ExportRequest;
 import com.folio.dto.TransactionDto;
+import com.folio.dto.TransactionFilter;
 import com.folio.service.ExportService;
-import com.folio.service.ExportService.Column;
+import com.folio.dto.ExportColumn;
 import com.folio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,7 +39,7 @@ public class TransactionController {
             @RequestParam(required = false) String depot,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate) {
-        return ResponseEntity.ok(portfolioService.getTransactions(isin, depot, fromDate, toDate));
+        return ResponseEntity.ok(portfolioService.getTransactions(new TransactionFilter(isin, depot, fromDate, toDate)));
     }
 
     @GetMapping("/export")
@@ -50,7 +52,7 @@ public class TransactionController {
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "desc") String sortDir) {
 
-        List<TransactionDto> data = portfolioService.getTransactions(null, null, null, null);
+        List<TransactionDto> data = portfolioService.getTransactions(TransactionFilter.none());
 
         // Client-side-style partial filters (matching frontend behaviour)
         if (isin != null && !isin.isBlank()) {
@@ -68,16 +70,16 @@ public class TransactionController {
             data = sorted(data, sortField, sortDir);
         }
 
-        List<Column<TransactionDto>> columns = List.of(
-                new Column<>("Date", t -> t.getDate() != null ? t.getDate().format(DATE_FMT) : ""),
-                new Column<>("ISIN", TransactionDto::getIsin),
-                new Column<>("Name", TransactionDto::getName),
-                new Column<>("Depot", TransactionDto::getDepot),
-                new Column<>("Count", TransactionDto::getCount),
-                new Column<>("Share Price", TransactionDto::getSharePrice)
+        List<ExportColumn<TransactionDto>> columns = List.of(
+                new ExportColumn<>("Date", t -> t.getDate() != null ? t.getDate().format(DATE_FMT) : ""),
+                new ExportColumn<>("ISIN", TransactionDto::getIsin),
+                new ExportColumn<>("Name", TransactionDto::getName),
+                new ExportColumn<>("Depot", TransactionDto::getDepot),
+                new ExportColumn<>("Count", TransactionDto::getCount),
+                new ExportColumn<>("Share Price", TransactionDto::getSharePrice)
         );
 
-        return exportService.export(data, columns, format, "transactions");
+        return exportService.export(new ExportRequest<>(data, columns, format, "transactions"));
     }
 
     private static List<TransactionDto> sorted(List<TransactionDto> data, String field, String dir) {

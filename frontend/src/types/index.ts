@@ -60,6 +60,7 @@ export interface DiversificationEntry {
 }
 
 export interface QuoteSettingsDto {
+  enabled: boolean;
   intervalMinutes: number;
   lastFetchAt: string | null;
 }

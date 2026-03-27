@@ -1,8 +1,11 @@
 package com.folio.controller;
 
 import com.folio.dto.DashboardDto;
+import com.folio.dto.DividendSourceDto;
+import com.folio.dto.HoldingDto;
+import com.folio.dto.ExportRequest;
 import com.folio.service.ExportService;
-import com.folio.service.ExportService.Column;
+import com.folio.dto.ExportColumn;
 import com.folio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,23 +37,23 @@ public class DashboardController {
     @Operation(summary = "Export top-5 holdings as CSV or Excel")
     public ResponseEntity<byte[]> exportHoldings(@RequestParam(defaultValue = "csv") String format) {
         DashboardDto dto = portfolioService.getDashboard();
-        List<Column<DashboardDto.HoldingDto>> columns = List.of(
-                new Column<>("ISIN", DashboardDto.HoldingDto::getIsin),
-                new Column<>("Name", DashboardDto.HoldingDto::getName),
-                new Column<>("Invested (EUR)", DashboardDto.HoldingDto::getInvestedAmount)
+        List<ExportColumn<HoldingDto>> columns = List.of(
+                new ExportColumn<>("ISIN", HoldingDto::getIsin),
+                new ExportColumn<>("Name", HoldingDto::getName),
+                new ExportColumn<>("Invested (EUR)", HoldingDto::getInvestedAmount)
         );
-        return exportService.export(dto.getTop5Holdings(), columns, format, "top5-holdings");
+        return exportService.export(new ExportRequest<>(dto.getTop5Holdings(), columns, format, "top5-holdings"));
     }
 
     @GetMapping("/dividends/export")
     @Operation(summary = "Export top-5 dividend sources as CSV or Excel")
     public ResponseEntity<byte[]> exportDividends(@RequestParam(defaultValue = "csv") String format) {
         DashboardDto dto = portfolioService.getDashboard();
-        List<Column<DashboardDto.DividendSourceDto>> columns = List.of(
-                new Column<>("ISIN", DashboardDto.DividendSourceDto::getIsin),
-                new Column<>("Name", DashboardDto.DividendSourceDto::getName),
-                new Column<>("Est. Annual Income (EUR)", DashboardDto.DividendSourceDto::getEstimatedAnnualIncome)
+        List<ExportColumn<DividendSourceDto>> columns = List.of(
+                new ExportColumn<>("ISIN", DividendSourceDto::getIsin),
+                new ExportColumn<>("Name", DividendSourceDto::getName),
+                new ExportColumn<>("Est. Annual Income (EUR)", DividendSourceDto::getEstimatedAnnualIncome)
         );
-        return exportService.export(dto.getTop5DividendSources(), columns, format, "top5-dividends");
+        return exportService.export(new ExportRequest<>(dto.getTop5DividendSources(), columns, format, "top5-dividends"));
     }
 }

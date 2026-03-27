@@ -28,7 +28,7 @@ dependencies {
     implementation 'com.opencsv:opencsv:5.9'
     implementation 'org.apache.poi:poi-ooxml:5.2.5'
 
-    runtimeOnly 'com.h2database:h2'
+    implementation 'com.h2database:h2'
     runtimeOnly 'org.postgresql:postgresql'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

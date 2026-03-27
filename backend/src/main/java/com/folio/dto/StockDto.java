@@ -1,6 +1,6 @@
 package com.folio.dto;
 
-public class StockDto {
+public final class StockDto {
     private String isin;
     private String name;
     private String country;
@@ -13,21 +13,6 @@ public class StockDto {
     private Double estimatedAnnualIncome;
 
     public StockDto() {}
-
-    public StockDto(String isin, String name, String country, String branch, Double totalShares,
-                       Double avgEntryPrice, Double currentQuote, Double performancePercent,
-                       Double dividendPerShare, Double estimatedAnnualIncome) {
-        this.isin = isin;
-        this.name = name;
-        this.country = country;
-        this.branch = branch;
-        this.totalShares = totalShares;
-        this.avgEntryPrice = avgEntryPrice;
-        this.currentQuote = currentQuote;
-        this.performancePercent = performancePercent;
-        this.dividendPerShare = dividendPerShare;
-        this.estimatedAnnualIncome = estimatedAnnualIncome;
-    }
 
     public String getIsin() { return isin; }
     public void setIsin(String isin) { this.isin = isin; }
@@ -50,33 +35,5 @@ public class StockDto {
     public Double getEstimatedAnnualIncome() { return estimatedAnnualIncome; }
     public void setEstimatedAnnualIncome(Double estimatedAnnualIncome) { this.estimatedAnnualIncome = estimatedAnnualIncome; }
 
-    public static Builder builder() { return new Builder(); }
-
-    public static class Builder {
-        private String isin;
-        private String name;
-        private String country;
-        private String branch;
-        private Double totalShares;
-        private Double avgEntryPrice;
-        private Double currentQuote;
-        private Double performancePercent;
-        private Double dividendPerShare;
-        private Double estimatedAnnualIncome;
-        public Builder isin(String isin) { this.isin = isin; return this; }
-        public Builder name(String name) { this.name = name; return this; }
-        public Builder country(String country) { this.country = country; return this; }
-        public Builder branch(String branch) { this.branch = branch; return this; }
-        public Builder totalShares(Double totalShares) { this.totalShares = totalShares; return this; }
-        public Builder avgEntryPrice(Double avgEntryPrice) { this.avgEntryPrice = avgEntryPrice; return this; }
-        public Builder currentQuote(Double currentQuote) { this.currentQuote = currentQuote; return this; }
-        public Builder performancePercent(Double performancePercent) { this.performancePercent = performancePercent; return this; }
-        public Builder dividendPerShare(Double dividendPerShare) { this.dividendPerShare = dividendPerShare; return this; }
-        public Builder estimatedAnnualIncome(Double estimatedAnnualIncome) { this.estimatedAnnualIncome = estimatedAnnualIncome; return this; }
-        public StockDto build() {
-            return new StockDto(isin, name, country, branch, totalShares, avgEntryPrice,
-                    currentQuote, performancePercent, dividendPerShare, estimatedAnnualIncome);
-        }
-    }
+    public static StockDtoBuilder builder() { return new StockDtoBuilder(); }
 }
-

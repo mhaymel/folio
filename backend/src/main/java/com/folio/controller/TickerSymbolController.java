@@ -1,8 +1,9 @@
 package com.folio.controller;
 
+import com.folio.dto.ExportRequest;
 import com.folio.dto.TickerSymbolDto;
 import com.folio.service.ExportService;
-import com.folio.service.ExportService.Column;
+import com.folio.dto.ExportColumn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityManager;
@@ -46,12 +47,12 @@ public class TickerSymbolController {
         if (sortField != null && !sortField.isBlank()) {
             data = sorted(data, sortField, sortDir);
         }
-        List<Column<TickerSymbolDto>> columns = List.of(
-                new Column<>("ISIN", TickerSymbolDto::getIsin),
-                new Column<>("Ticker Symbol", TickerSymbolDto::getTickerSymbol),
-                new Column<>("Name", TickerSymbolDto::getName)
+        List<ExportColumn<TickerSymbolDto>> columns = List.of(
+                new ExportColumn<>("ISIN", TickerSymbolDto::getIsin),
+                new ExportColumn<>("Ticker Symbol", TickerSymbolDto::getTickerSymbol),
+                new ExportColumn<>("Name", TickerSymbolDto::getName)
         );
-        return exportService.export(data, columns, format, "ticker-symbols");
+        return exportService.export(new ExportRequest<>(data, columns, format, "ticker-symbols"));
     }
 
     @SuppressWarnings("unchecked")

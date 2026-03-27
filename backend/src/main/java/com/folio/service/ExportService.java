@@ -1,5 +1,7 @@
 package com.folio.service;
 
+import com.folio.dto.ExportColumn;
+import com.folio.dto.ExportRequest;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpHeaders;
@@ -28,7 +30,7 @@ import java.util.function.Function;
  * </ul>
  */
 @Service
-public class ExportService {
+public final class ExportService {
 
     private static final NumberFormat DE_NF;
     static {
@@ -38,29 +40,18 @@ public class ExportService {
     }
 
     /**
-     * Descriptor for a single export column.
+     * Build a downloadable response for the given export request.
      */
-    public record Column<T>(String header, Function<T, Object> accessor) {}
-
-    /**
-     * Build a downloadable response for the given data.
-     *
-     * @param data         rows to export
-     * @param columns      column definitions (header + accessor returning raw values)
-     * @param format       "csv" or "xlsx"
-     * @param filenameBase base file name without extension (e.g. "stocks")
-     */
-    public <T> ResponseEntity<byte[]> export(List<T> data, List<Column<T>> columns,
-                                              String format, String filenameBase) {
-        if ("xlsx".equalsIgnoreCase(format)) {
-            return buildExcel(data, columns, filenameBase);
+    public <T> ResponseEntity<byte[]> export(ExportRequest<T> request) {
+        if ("xlsx".equalsIgnoreCase(request.format())) {
+            return buildExcel(request.data(), request.columns(), request.filenameBase());
         }
-        return buildCsv(data, columns, filenameBase);
+        return buildCsv(request.data(), request.columns(), request.filenameBase());
     }
 
     // ── CSV ─────────────────────────────────────────────────────────────────
 
-    private <T> ResponseEntity<byte[]> buildCsv(List<T> data, List<Column<T>> columns,
+    private <T> ResponseEntity<byte[]> buildCsv(List<T> data, List<ExportColumn<T>> columns,
                                                  String filenameBase) {
         var sb = new StringBuilder();
         sb.append('\uFEFF'); // BOM
@@ -103,7 +94,7 @@ public class ExportService {
 
     // ── Excel ───────────────────────────────────────────────────────────────
 
-    private <T> ResponseEntity<byte[]> buildExcel(List<T> data, List<Column<T>> columns,
+    private <T> ResponseEntity<byte[]> buildExcel(List<T> data, List<ExportColumn<T>> columns,
                                                    String filenameBase) {
         try (Workbook wb = new XSSFWorkbook()) {
             Sheet sheet = wb.createSheet(filenameBase);

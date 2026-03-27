@@ -1,11 +1,16 @@
 package com.folio.quote;
 
+import static java.lang.Double.parseDouble;
+
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.String.format;
+import static org.slf4j.LoggerFactory.getLogger;
 import org.springframework.stereotype.Component;
+import static java.lang.String.format;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
+import static java.lang.String.format;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -14,9 +19,9 @@ import java.util.concurrent.ConcurrentMap;
  * Falls back to a static rate on failure. Caches for 1 hour.
  */
 @Component
-public class EcbExchangeRateProvider {
+public final class EcbExchangeRateProvider {
 
-    private static final Logger log = LoggerFactory.getLogger(EcbExchangeRateProvider.class);
+    private static final Logger log = getLogger(EcbExchangeRateProvider.class);
     private static final String ECB_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
     private static final double FALLBACK_EUR_USD = 0.92;
 
@@ -41,10 +46,10 @@ public class EcbExchangeRateProvider {
                 if (idx > 0) {
                     int rateStart = xml.indexOf("rate='", idx) + 6;
                     int rateEnd = xml.indexOf("'", rateStart);
-                    double eurPerUsd = Double.parseDouble(xml.substring(rateStart, rateEnd));
+                    double eurPerUsd = parseDouble(xml.substring(rateStart, rateEnd));
                     double usdToEur = 1.0 / eurPerUsd;
                     cache.put("USD", new CachedRate(usdToEur));
-                    log.info("ECB EUR/USD rate fetched: 1 USD = {} EUR", String.format("%.4f", usdToEur));
+                    log.info("ECB EUR/USD rate fetched: 1 USD = {} EUR", format("%.4f", usdToEur));
                     return usdToEur;
                 }
             }
@@ -59,20 +64,6 @@ public class EcbExchangeRateProvider {
      */
     public double usdToEur(double usdPrice) {
         return usdPrice * getUsdToEurRate();
-    }
-
-    private static class CachedRate {
-        final double rate;
-        final long timestamp;
-
-        CachedRate(double rate) {
-            this.rate = rate;
-            this.timestamp = System.currentTimeMillis();
-        }
-
-        boolean isExpired() {
-            return System.currentTimeMillis() - timestamp > 3_600_000; // 1 hour
-        }
     }
 }
 

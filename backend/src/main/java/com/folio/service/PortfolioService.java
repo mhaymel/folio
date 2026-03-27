@@ -89,20 +89,20 @@ public class PortfolioService {
 
         double dividendRatio = totalValue > 0 ? (totalDividendIncome / totalValue) * 100 : 0;
 
-        List<DashboardDto.HoldingDto> top5Holdings = stocks.stream()
+        List<HoldingDto> top5Holdings = stocks.stream()
             .sorted(Comparator.comparingDouble((StockDto s) -> s.getTotalShares() * s.getAvgEntryPrice()).reversed())
             .limit(5)
-            .map(s -> DashboardDto.HoldingDto.builder()
+            .map(s -> HoldingDto.builder()
                 .isin(s.getIsin()).name(s.getName())
                 .investedAmount(s.getTotalShares() * s.getAvgEntryPrice())
                 .build())
             .toList();
 
-        List<DashboardDto.DividendSourceDto> top5Dividends = stocks.stream()
+        List<DividendSourceDto> top5Dividends = stocks.stream()
             .filter(s -> s.getEstimatedAnnualIncome() != null && s.getEstimatedAnnualIncome() > 0)
             .sorted(Comparator.comparingDouble(StockDto::getEstimatedAnnualIncome).reversed())
             .limit(5)
-            .map(s -> DashboardDto.DividendSourceDto.builder()
+            .map(s -> DividendSourceDto.builder()
                 .isin(s.getIsin()).name(s.getName())
                 .estimatedAnnualIncome(s.getEstimatedAnnualIncome())
                 .build())
@@ -152,8 +152,8 @@ public class PortfolioService {
 
         double total = rows.stream().mapToDouble(r -> ((Number) r[1]).doubleValue()).sum();
 
-        List<DiversificationDto.Entry> entries = rows.stream()
-            .map(r -> DiversificationDto.Entry.builder()
+        List<DiversificationEntry> entries = rows.stream()
+            .map(r -> DiversificationEntry.builder()
                 .name((String) r[0])
                 .investedAmount(((Number) r[1]).doubleValue())
                 .percentage(total > 0 ? ((Number) r[1]).doubleValue() / total * 100 : 0)
@@ -165,27 +165,26 @@ public class PortfolioService {
 
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<TransactionDto> getTransactions(String isinFilter, String depotFilter,
-                                                 LocalDateTime fromDate, LocalDateTime toDate) {
+    public List<TransactionDto> getTransactions(TransactionFilter filter) {
         StringBuilder jpql = new StringBuilder(
             "SELECT t FROM Transaction t JOIN FETCH t.isin JOIN FETCH t.depot WHERE 1=1");
         Map<String, Object> params = new HashMap<>();
 
-        if (isinFilter != null && !isinFilter.isBlank()) {
+        if (filter.isin() != null && !filter.isin().isBlank()) {
             jpql.append(" AND t.isin.isin = :isin");
-            params.put("isin", isinFilter);
+            params.put("isin", filter.isin());
         }
-        if (depotFilter != null && !depotFilter.isBlank()) {
+        if (filter.depot() != null && !filter.depot().isBlank()) {
             jpql.append(" AND t.depot.name = :depot");
-            params.put("depot", depotFilter);
+            params.put("depot", filter.depot());
         }
-        if (fromDate != null) {
+        if (filter.fromDate() != null) {
             jpql.append(" AND t.date >= :fromDate");
-            params.put("fromDate", fromDate);
+            params.put("fromDate", filter.fromDate());
         }
-        if (toDate != null) {
+        if (filter.toDate() != null) {
             jpql.append(" AND t.date <= :toDate");
-            params.put("toDate", toDate);
+            params.put("toDate", filter.toDate());
         }
         jpql.append(" ORDER BY t.date DESC");
 

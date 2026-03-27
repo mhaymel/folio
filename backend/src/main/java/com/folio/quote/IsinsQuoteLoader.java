@@ -1,7 +1,10 @@
 package com.folio.quote;
 
+import com.folio.domain.IsinCode;
+import static java.lang.String.format;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.slf4j.LoggerFactory.getLogger;
+import static java.lang.String.format;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -11,9 +14,9 @@ import java.util.*;
  * ISINs successfully resolved are removed before the next source is attempted.
  */
 @Component
-public class IsinsQuoteLoader {
+public final class IsinsQuoteLoader {
 
-    private static final Logger log = LoggerFactory.getLogger(IsinsQuoteLoader.class);
+    private static final Logger log = getLogger(IsinsQuoteLoader.class);
 
     private final List<QuoteSource> sources;
 
@@ -30,26 +33,26 @@ public class IsinsQuoteLoader {
     /**
      * Fetch EUR quotes for a set of ISINs using cascade fallback.
      *
-     * @param isins set of ISIN codes to fetch
-     * @return map of ISIN → QuoteResult (price + provider name)
+     * @param isins set of validated ISIN codes to fetch
+     * @return map of IsinCode → QuoteResult (price + provider name)
      */
-    public Map<String, QuoteResult> fetchQuotes(Set<String> isins) {
-        Map<String, QuoteResult> results = new HashMap<>();
-        Set<String> remaining = new LinkedHashSet<>(isins);
+    public Map<IsinCode, QuoteResult> fetchQuotes(Set<IsinCode> isins) {
+        Map<IsinCode, QuoteResult> results = new HashMap<>();
+        Set<IsinCode> remaining = new LinkedHashSet<>(isins);
 
         for (QuoteSource source : sources) {
             if (remaining.isEmpty()) break;
 
             log.debug("Trying source {} for {} remaining ISINs", source.providerName(), remaining.size());
-            Set<String> resolved = new HashSet<>();
+            Set<IsinCode> resolved = new HashSet<>();
 
-            for (String isin : remaining) {
+            for (IsinCode isin : remaining) {
                 try {
                     Optional<Double> price = source.fetchQuote(isin);
                     if (price.isPresent()) {
                         results.put(isin, new QuoteResult(price.get(), source.providerName()));
                         resolved.add(isin);
-                        log.debug("{}: {} → {}", source.providerName(), isin, String.format("%.2f", price.get()));
+                        log.debug("{}: {} → {}", source.providerName(), isin, format("%.2f", price.get()));
                     }
                 } catch (Exception e) {
                     log.debug("{}: error fetching {}: {}", source.providerName(), isin, e.getMessage());

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "quote_provider")
-public class QuoteProvider {
+public final class QuoteProvider {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -24,13 +24,5 @@ public class QuoteProvider {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public static Builder builder() { return new Builder(); }
-
-    public static class Builder {
-        private Integer id;
-        private String name;
-        public Builder id(Integer id) { this.id = id; return this; }
-        public Builder name(String name) { this.name = name; return this; }
-        public QuoteProvider build() { return new QuoteProvider(id, name); }
-    }
+    public static QuoteProviderBuilder builder() { return new QuoteProviderBuilder(); }
 }

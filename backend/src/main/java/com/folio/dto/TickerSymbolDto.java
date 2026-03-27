@@ -1,6 +1,6 @@
 package com.folio.dto;
 
-public class TickerSymbolDto {
+public final class TickerSymbolDto {
     private String isin;
     private String tickerSymbol;
     private String name;
@@ -20,16 +20,6 @@ public class TickerSymbolDto {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public static Builder builder() { return new Builder(); }
-
-    public static class Builder {
-        private String isin;
-        private String tickerSymbol;
-        private String name;
-        public Builder isin(String isin) { this.isin = isin; return this; }
-        public Builder tickerSymbol(String tickerSymbol) { this.tickerSymbol = tickerSymbol; return this; }
-        public Builder name(String name) { this.name = name; return this; }
-        public TickerSymbolDto build() { return new TickerSymbolDto(isin, tickerSymbol, name); }
-    }
+    public static TickerSymbolDtoBuilder builder() { return new TickerSymbolDtoBuilder(); }
 }
 

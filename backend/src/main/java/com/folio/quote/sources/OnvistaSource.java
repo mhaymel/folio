@@ -1,14 +1,25 @@
 package com.folio.quote.sources;
 
-import com.folio.quote.AbstractHtmlQuoteSource;
+import static java.lang.Math.min;
+
+import static java.lang.Math.max;
+
+import com.folio.domain.IsinCode;
 import com.folio.quote.CsvConfigLoader;
 import com.folio.quote.EcbExchangeRateProvider;
+import com.folio.quote.QuoteFetchHelper;
+import com.folio.quote.QuoteSource;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import static org.slf4j.LoggerFactory.getLogger;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Optional;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,7 +29,9 @@ import java.util.regex.Pattern;
  */
 @Component
 @Order(2)
-public class OnvistaSource extends AbstractHtmlQuoteSource {
+public final class OnvistaSource implements QuoteSource {
+
+    private static final Logger log = getLogger(OnvistaSource.class);
 
     private static final String BASE_URL = "https://www.onvista.de/";
 
@@ -53,22 +66,22 @@ public class OnvistaSource extends AbstractHtmlQuoteSource {
     }
 
     @Override
-    public Optional<Double> fetchQuote(String isin) {
-        String path = config.get(isin);
-        if (path == null) return Optional.empty();
+    public Optional<Double> fetchQuote(IsinCode isin) {
+        String path = config.get(isin.value());
+        if (path == null) return empty();
 
         String url = BASE_URL + path;
-        return fetchHtml(url).flatMap(html -> {
+        return QuoteFetchHelper.fetchHtml(url, log, providerName()).flatMap(html -> {
             // Try JSON price first
             Matcher jm = JSON_PRICE_PATTERN.matcher(html);
             if (jm.find()) {
-                Optional<Double> price = parseDecimal(jm.group(1));
+                Optional<Double> price = QuoteFetchHelper.parseDecimal(jm.group(1));
                 if (price.isPresent()) {
                     // Check if page indicates USD
                     if (CURRENCY_PATTERN.matcher(html.substring(
-                            Math.max(0, jm.start() - 200),
-                            Math.min(html.length(), jm.end() + 200))).find()) {
-                        return Optional.of(ecb.usdToEur(price.get()));
+                            max(0, jm.start() - 200),
+                            min(html.length(), jm.end() + 200))).find()) {
+                        return of(ecb.usdToEur(price.get()));
                     }
                     return price;
                 }
@@ -77,12 +90,11 @@ public class OnvistaSource extends AbstractHtmlQuoteSource {
             // Try HTML pattern
             Matcher m = PRICE_PATTERN.matcher(html);
             if (m.find()) {
-                return parseDecimal(m.group(1));
+                return QuoteFetchHelper.parseDecimal(m.group(1));
             }
 
             log.debug("Onvista: no price found for {}", isin);
-            return Optional.empty();
+            return empty();
         });
     }
 }
-

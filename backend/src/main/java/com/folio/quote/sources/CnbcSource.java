@@ -1,15 +1,29 @@
 package com.folio.quote.sources;
 
-import com.folio.quote.AbstractHtmlQuoteSource;
+import com.folio.domain.IsinCode;
+import static java.lang.String.format;
 import com.folio.quote.CsvConfigLoader;
 import com.folio.quote.EcbExchangeRateProvider;
+import static java.lang.String.format;
+import com.folio.quote.QuoteFetchHelper;
+import com.folio.quote.QuoteSource;
+import static java.lang.String.format;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import static java.lang.String.format;
+import static org.slf4j.LoggerFactory.getLogger;
 import org.springframework.core.annotation.Order;
+import static java.lang.String.format;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import static java.lang.String.format;
 import java.util.Optional;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+
 import java.util.regex.Matcher;
+import static java.lang.String.format;
 import java.util.regex.Pattern;
 
 /**
@@ -18,7 +32,9 @@ import java.util.regex.Pattern;
  */
 @Component
 @Order(4)
-public class CnbcSource extends AbstractHtmlQuoteSource {
+public final class CnbcSource implements QuoteSource {
+
+    private static final Logger log = getLogger(CnbcSource.class);
 
     private static final String URL_TEMPLATE = "https://www.cnbc.com/quotes/%s";
 
@@ -48,31 +64,30 @@ public class CnbcSource extends AbstractHtmlQuoteSource {
     }
 
     @Override
-    public Optional<Double> fetchQuote(String isin) {
-        String ticker = config.get(isin);
-        if (ticker == null) return Optional.empty();
+    public Optional<Double> fetchQuote(IsinCode isin) {
+        String ticker = config.get(isin.value());
+        if (ticker == null) return empty();
 
-        String url = String.format(URL_TEMPLATE, ticker);
-        return fetchHtml(url).flatMap(html -> {
+        String url = format(URL_TEMPLATE, ticker);
+        return QuoteFetchHelper.fetchHtml(url, log, providerName()).flatMap(html -> {
             // Try JSON/structured data
             Matcher m = PRICE_PATTERN.matcher(html);
             if (m.find()) {
-                Optional<Double> usdPrice = parseDecimal(m.group(1));
+                Optional<Double> usdPrice = QuoteFetchHelper.parseDecimal(m.group(1));
                 if (usdPrice.isPresent()) {
-                    return Optional.of(ecb.usdToEur(usdPrice.get()));
+                    return of(ecb.usdToEur(usdPrice.get()));
                 }
             }
             // Try HTML pattern
             Matcher hm = HTML_PRICE.matcher(html);
             if (hm.find()) {
-                Optional<Double> usdPrice = parseDecimal(hm.group(1));
+                Optional<Double> usdPrice = QuoteFetchHelper.parseDecimal(hm.group(1));
                 if (usdPrice.isPresent()) {
-                    return Optional.of(ecb.usdToEur(usdPrice.get()));
+                    return of(ecb.usdToEur(usdPrice.get()));
                 }
             }
             log.debug("CNBC: no price found for {} ({})", isin, ticker);
-            return Optional.empty();
+            return empty();
         });
     }
 }
-

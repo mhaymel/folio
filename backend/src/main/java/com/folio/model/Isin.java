@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "isin")
-public class Isin {
+public final class Isin {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -24,13 +24,5 @@ public class Isin {
     public String getIsin() { return isin; }
     public void setIsin(String isin) { this.isin = isin; }
 
-    public static Builder builder() { return new Builder(); }
-
-    public static class Builder {
-        private Integer id;
-        private String isin;
-        public Builder id(Integer id) { this.id = id; return this; }
-        public Builder isin(String isin) { this.isin = isin; return this; }
-        public Isin build() { return new Isin(id, isin); }
-    }
+    public static IsinBuilder builder() { return new IsinBuilder(); }
 }
