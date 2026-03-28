@@ -41,7 +41,8 @@
       "Bash(ls -1 /c/daten/dev/folio/frontend/src/pages/*.tsx)",
       "Bash(xargs basename:*)",
       "Bash(./gradlew :backend:compileJava)",
-      "Bash(./gradlew :backend:compileTestJava)"
+      "Bash(./gradlew :backend:compileTestJava)",
+      "Bash(find /c/daten/dev/folio/frontend -type f -path */src/main/react/pages/*.tsx -o -path */src/pages/*.tsx)"
     ]
   }
 }

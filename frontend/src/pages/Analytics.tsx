@@ -8,6 +8,7 @@ import { ProgressCircle } from '@dynatrace/strato-components/content';
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
 import api from '../api/client';
 import type { DiversificationEntry, PaginatedResponse } from '../types';
+import useServerTable from '../hooks/useServerTable';
 import ExportButtons from '../components/ExportButtons';
 import PaginationControls from '../components/PaginationControls';
 
@@ -21,48 +22,40 @@ export default function Analytics() {
   const { type } = useParams<{ type: string }>();
   const label = type === 'countries' ? 'Country' : 'Branch';
 
-  const [data, setData] = useState<DiversificationEntry[]>([]);
   const [allEntries, setAllEntries] = useState<DiversificationEntry[]>([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [sortField, setSortField] = useState('investedAmount');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [chartLoading, setChartLoading] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const table = useServerTable<DiversificationEntry>({
+    endpoint: `/analytics/${type}`,
+    defaultSortField: 'investedAmount',
+    defaultSortDir: 'desc',
+  });
+
+  // Reset page when type changes
+  useEffect(() => { table.setPage(1); }, [type]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch all entries for pie chart
+  const loadChart = useCallback(async () => {
+    setChartLoading(true);
     try {
-      const [paged, all] = await Promise.all([
-        api.get<PaginatedResponse<DiversificationEntry>>(`/analytics/${type}`, {
-          params: { sortField, sortDir, page, pageSize },
-        }),
-        api.get<PaginatedResponse<DiversificationEntry>>(`/analytics/${type}`, {
-          params: { sortField: 'investedAmount', sortDir: 'desc', pageSize: -1 },
-        }),
-      ]);
-      setData(paged.data.items);
-      setTotalItems(paged.data.totalItems);
-      setTotalPages(paged.data.totalPages);
-      setAllEntries(all.data.items);
+      const r = await api.get<PaginatedResponse<DiversificationEntry>>(`/analytics/${type}`, {
+        params: { sortField: 'investedAmount', sortDir: 'desc', pageSize: -1 },
+      });
+      setAllEntries(r.data.items);
     } finally {
-      setLoading(false);
+      setChartLoading(false);
     }
-  }, [type, sortField, sortDir, page, pageSize]);
+  }, [type]);
 
-  useEffect(() => { setPage(1); }, [type]);
-  useEffect(() => { load(); }, [load]);
-
-  const handleShowAll = () => {
-    if (pageSize === -1) { setPageSize(10); setPage(1); } else { setPageSize(-1); }
-  };
+  useEffect(() => { loadChart(); }, [loadChart]);
 
   const columns = [
     { id: 'name', header: label, accessor: 'name', sortType: 'text' as const, alignment: 'left' as const, width: 240, minWidth: 200 },
     { id: 'investedAmount', header: 'Invested (EUR)', accessor: (row: DiversificationEntry) => fmtEur(row.investedAmount), sortType: 'number' as const, alignment: 'right' as const, width: 160, minWidth: 120 },
     { id: 'percentage', header: '%', accessor: (row: DiversificationEntry) => fmtPct(row.percentage), sortType: 'number' as const, alignment: 'right' as const, width: 120, minWidth: 80 },
   ];
+
+  const loading = table.loading || chartLoading;
 
   return (
     <Flex flexDirection="column" gap={16}>
@@ -89,21 +82,20 @@ export default function Analytics() {
 
           <Flex alignItems="center" justifyContent="space-between">
             <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
-              {totalItems} entries
+              {table.totalItems} entries
             </Paragraph>
             <Flex gap={8} alignItems="center">
-              <ExportButtons endpoint={`/analytics/${type}/export`} params={{ sortField, sortDir }} />
-              <Button variant="default" onClick={handleShowAll}>
-                {pageSize === -1 ? 'Paginate' : 'Show All'}
+              <ExportButtons endpoint={`/analytics/${type}/export`} params={table.exportParams} />
+              <Button variant="default" onClick={table.handleShowAll}>
+                {table.pageSize === -1 ? 'Paginate' : 'Show All'}
               </Button>
             </Flex>
           </Flex>
-          <DataTable data={data} columns={columns} sortable={{ manualSort: true }} resizable fullWidth sortBy={[{ id: sortField, desc: sortDir === 'desc' }]}
-            onSortByChange={(s: any) => { if (s?.[0]) { setSortField(s[0].id); setSortDir(s[0].desc ? 'desc' : 'asc'); } else { setSortDir(d => d === 'asc' ? 'desc' : 'asc'); } setPage(1); }}>
-          </DataTable>
-          {pageSize !== -1 && (
-            <PaginationControls page={page} totalPages={totalPages} pageSize={pageSize}
-              onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <DataTable data={table.data} columns={columns} sortable={{ manualSort: true }} resizable fullWidth
+            sortBy={table.sortBy} onSortByChange={table.handleSortChange} />
+          {table.pageSize !== -1 && (
+            <PaginationControls page={table.page} totalPages={table.totalPages} pageSize={table.pageSize}
+              onPageChange={table.setPage} onPageSizeChange={table.handlePageSizeChange} />
           )}
         </>
       )}

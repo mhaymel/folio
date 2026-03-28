@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Flex } from '@dynatrace/strato-components/layouts';
 import { Heading, Paragraph } from '@dynatrace/strato-components/typography';
 import { DataTable } from '@dynatrace/strato-components/tables';
@@ -7,6 +7,7 @@ import { TextInput, Select } from '@dynatrace/strato-components/forms';
 import { ProgressCircle } from '@dynatrace/strato-components/content';
 import api from '../api/client';
 import type { TransactionDto, TransactionPaginatedResponse, TransactionFiltersDto } from '../types';
+import useServerTable from '../hooks/useServerTable';
 import ExportButtons from '../components/ExportButtons';
 import PaginationControls from '../components/PaginationControls';
 
@@ -14,20 +15,31 @@ const fmtNum2 = (v: number) => v.toLocaleString('de-DE', { minimumFractionDigits
 const fmtNum3 = (v: number) => v.toLocaleString('de-DE', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 
 export default function Transactions() {
-  const [data, setData] = useState<TransactionDto[]>([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
   const [filteredCount, setFilteredCount] = useState(0);
   const [sumCount, setSumCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [sortField, setSortField] = useState('date');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [isinFilter, setIsinFilter] = useState('');
   const [nameFilter, setNameFilter] = useState('');
   const [depotFilter, setDepotFilter] = useState('');
   const [depotOptions, setDepotOptions] = useState<string[]>([]);
+
+  const extraParams = useMemo(() => {
+    const p: Record<string, string> = {};
+    if (isinFilter) p.isin = isinFilter;
+    if (nameFilter) p.name = nameFilter;
+    if (depotFilter) p.depot = depotFilter;
+    return p;
+  }, [isinFilter, nameFilter, depotFilter]);
+
+  const table = useServerTable<TransactionDto, TransactionPaginatedResponse>({
+    endpoint: '/transactions',
+    defaultSortField: 'date',
+    defaultSortDir: 'desc',
+    extraParams,
+    responseMapper: (resp) => {
+      setFilteredCount(resp.filteredCount);
+      setSumCount(resp.sumCount);
+    },
+  });
 
   const loadFilters = useCallback(async () => {
     try {
@@ -36,41 +48,13 @@ export default function Transactions() {
     } catch { /* ignore */ }
   }, []);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params: Record<string, string | number> = { sortField, sortDir, page, pageSize };
-      if (isinFilter) params.isin = isinFilter;
-      if (nameFilter) params.name = nameFilter;
-      if (depotFilter) params.depot = depotFilter;
-      const r = await api.get<TransactionPaginatedResponse>('/transactions', { params });
-      setData(r.data.items);
-      setTotalItems(r.data.totalItems);
-      setTotalPages(r.data.totalPages);
-      setFilteredCount(r.data.filteredCount);
-      setSumCount(r.data.sumCount);
-    } finally {
-      setLoading(false);
-    }
-  }, [sortField, sortDir, page, pageSize, isinFilter, nameFilter, depotFilter]);
-
   useEffect(() => { loadFilters(); }, [loadFilters]);
-  useEffect(() => { load(); }, [load]);
-
-  const handleShowAll = () => {
-    if (pageSize === -1) { setPageSize(10); setPage(1); } else { setPageSize(-1); }
-  };
 
   const handleCellDoubleClick = (field: string, value: string) => {
-    if (field === 'isin') { setIsinFilter(value); setPage(1); }
-    else if (field === 'name') { setNameFilter(value); setPage(1); }
-    else if (field === 'depot') { setDepotFilter(value); setPage(1); }
+    if (field === 'isin') { setIsinFilter(value); table.setPage(1); }
+    else if (field === 'name') { setNameFilter(value); table.setPage(1); }
+    else if (field === 'depot') { setDepotFilter(value); table.setPage(1); }
   };
-
-  const exportParams: Record<string, string> = { sortField, sortDir };
-  if (isinFilter) exportParams.isin = isinFilter;
-  if (nameFilter) exportParams.name = nameFilter;
-  if (depotFilter) exportParams.depot = depotFilter;
 
   const columns = [
     { id: 'date', header: 'Date', accessor: 'date', sortType: 'text' as const, alignment: 'center' as const, width: 105, minWidth: 105 },
@@ -107,16 +91,16 @@ export default function Transactions() {
 
       <Flex gap={16} alignItems="center" flexWrap="wrap">
         <TextInput placeholder="Filter ISIN..." value={isinFilter}
-          onChange={(v: string) => { setIsinFilter(v); setPage(1); }} />
+          onChange={(v: string) => { setIsinFilter(v); table.setPage(1); }} />
         <TextInput placeholder="Filter Name..." value={nameFilter}
-          onChange={(v: string) => { setNameFilter(v); setPage(1); }} />
-        <Select value={depotFilter || '__all'} onChange={(v: string) => { setDepotFilter(v === '__all' ? '' : v); setPage(1); }}>
+          onChange={(v: string) => { setNameFilter(v); table.setPage(1); }} />
+        <Select value={depotFilter || '__all'} onChange={(v: string) => { setDepotFilter(v === '__all' ? '' : v); table.setPage(1); }}>
           <Select.Content>
             <Select.Option value="__all">All depots</Select.Option>
             {depotOptions.map(d => <Select.Option key={d} value={d}>{d}</Select.Option>)}
           </Select.Content>
         </Select>
-        <Button variant="default" onClick={() => { setIsinFilter(''); setNameFilter(''); setDepotFilter(''); setPage(1); }}>Clear</Button>
+        <Button variant="default" onClick={() => { setIsinFilter(''); setNameFilter(''); setDepotFilter(''); table.setPage(1); }}>Clear</Button>
       </Flex>
 
       <Flex alignItems="center" justifyContent="space-between">
@@ -131,27 +115,25 @@ export default function Transactions() {
           </Paragraph>
         </Flex>
         <Flex gap={8} alignItems="center">
-          <ExportButtons endpoint="/transactions/export" params={exportParams} />
-          <Button variant="default" onClick={handleShowAll}>
-            {pageSize === -1 ? 'Paginate' : 'Show All'}
+          <ExportButtons endpoint="/transactions/export" params={table.exportParams} />
+          <Button variant="default" onClick={table.handleShowAll}>
+            {table.pageSize === -1 ? 'Paginate' : 'Show All'}
           </Button>
         </Flex>
       </Flex>
 
-      {loading ? (
+      {table.loading ? (
         <Flex alignItems="center" gap={12}>
           <ProgressCircle aria-label="Loading transactions" size="small" />
           <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>Loading...</Paragraph>
         </Flex>
       ) : (
         <>
-          <DataTable data={data} columns={columns} sortable={{ manualSort: true }} resizable fullWidth sortBy={[{ id: sortField, desc: sortDir === 'desc' }]}
-            onSortByChange={(s: any) => { if (s?.[0]) { setSortField(s[0].id); setSortDir(s[0].desc ? 'desc' : 'asc'); } else { setSortDir(d => d === 'asc' ? 'desc' : 'asc'); } setPage(1); }}>
-          </DataTable>
-
-          {pageSize !== -1 && (
-            <PaginationControls page={page} totalPages={totalPages} pageSize={pageSize}
-              onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <DataTable data={table.data} columns={columns} sortable={{ manualSort: true }} resizable fullWidth
+            sortBy={table.sortBy} onSortByChange={table.handleSortChange} />
+          {table.pageSize !== -1 && (
+            <PaginationControls page={table.page} totalPages={table.totalPages} pageSize={table.pageSize}
+              onPageChange={table.setPage} onPageSizeChange={table.handlePageSizeChange} />
           )}
         </>
       )}
