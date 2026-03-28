@@ -40,8 +40,9 @@ public final class IsinsQuoteLoader {
         Map<IsinCode, QuoteResult> results = new HashMap<>();
         Set<IsinCode> remaining = new LinkedHashSet<>(isins);
 
-        for (QuoteSource source : sources) {
-            if (remaining.isEmpty()) break;
+        var iterator = sources.iterator();
+        while (iterator.hasNext() && !remaining.isEmpty()) {
+            QuoteSource source = iterator.next();
 
             log.debug("Trying source {} for {} remaining ISINs", source.providerName(), remaining.size());
             Set<IsinCode> resolved = new HashSet<>();

@@ -35,7 +35,8 @@
       "Bash(npx vitest:*)",
       "Bash(npm test:*)",
       "Bash(ls \"C:/daten/dev/folio/frontend/src/pages/\"*.test.* \"C:/daten/dev/folio/frontend/src/\"*.test.*)",
-      "Bash(git -C \"C:/daten/dev/folio\" status --short -- 'frontend/src/**/*.test.*')"
+      "Bash(git -C \"C:/daten/dev/folio\" status --short -- 'frontend/src/**/*.test.*')",
+      "Bash(./gradlew :backend:build)"
     ]
   }
 }

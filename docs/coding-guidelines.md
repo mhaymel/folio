@@ -10,6 +10,7 @@ Central coding conventions for the Folio project. All contributors (human and AI
 - Prefer composition over inheritance.
 - Do **not** use abstract classes; use interfaces (with default methods where appropriate) instead.
 - Avoid deep nesting; return early on error/guard conditions.
+- Do **not** use `continue` or `break` in loops; restructure the logic instead (e.g. invert the condition, extract a method, or use streams).
 - Use meaningful, self-documenting names for classes, methods, and variables.
 - Remove dead code — do not leave commented-out blocks in the codebase.
 
