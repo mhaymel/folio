@@ -20,10 +20,15 @@ final class TransactionControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getTransactions_returnsEmptyListWhenNoData() throws Exception {
+    void getTransactions_returnsEnvelopeWithEmptyItems() throws Exception {
         mockMvc.perform(get("/api/transactions"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", is(empty())));
+            .andExpect(jsonPath("$.items", is(empty())))
+            .andExpect(jsonPath("$.page", is(1)))
+            .andExpect(jsonPath("$.pageSize", is(10)))
+            .andExpect(jsonPath("$.totalItems", is(0)))
+            .andExpect(jsonPath("$.filteredCount", is(0)))
+            .andExpect(jsonPath("$.sumCount", is(0.0)));
     }
 
     @Test
@@ -32,7 +37,15 @@ final class TransactionControllerTest {
                 .param("isin", "DE000BASF111")
                 .param("depot", "DeGiro"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$").isArray());
+            .andExpect(jsonPath("$.items").isArray());
+    }
+
+    @Test
+    void getTransactions_supportsNameFilter() throws Exception {
+        mockMvc.perform(get("/api/transactions")
+                .param("name", "Apple"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items").isArray());
     }
 
     @Test
@@ -41,7 +54,34 @@ final class TransactionControllerTest {
                 .param("fromDate", "2025-01-01T00:00:00")
                 .param("toDate", "2026-12-31T23:59:59"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$").isArray());
+            .andExpect(jsonPath("$.items").isArray());
+    }
+
+    @Test
+    void getTransactions_supportsSortAndPagination() throws Exception {
+        mockMvc.perform(get("/api/transactions")
+                .param("sortField", "date")
+                .param("sortDir", "asc")
+                .param("page", "1")
+                .param("pageSize", "20"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.page", is(1)))
+            .andExpect(jsonPath("$.pageSize", is(20)));
+    }
+
+    @Test
+    void getTransactions_pageSizeMinusOne_returnsAll() throws Exception {
+        mockMvc.perform(get("/api/transactions").param("pageSize", "-1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.pageSize", is(-1)))
+            .andExpect(jsonPath("$.totalPages", is(1)));
+    }
+
+    @Test
+    void getTransactionFilters_returnsDepots() throws Exception {
+        mockMvc.perform(get("/api/transactions/filters"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.depots").isArray());
     }
 
     @Test

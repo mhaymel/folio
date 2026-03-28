@@ -47,11 +47,11 @@ Returns a paginated envelope per [ui.md](ui.md):
 
 Two-column table displaying ISIN, ticker symbol, and stock name.
 
-| Column | Description | Alignment | Width | MinWidth |
-|--------|-------------|-----------|-------|----------|
-| ISIN | Stock identifier | left | 140 | 140 |
-| Ticker Symbol | Ticker symbol | left | 140 | 100 |
-| Name | Stock name | left | 300 | 200 |
+| Column | Alignment | `width` | `minWidth` |
+|--------|-----------|---------|------------|
+| ISIN | left | 140 | 140 |
+| Ticker Symbol | left | 140 | 100 |
+| Name | left | 300 | 200 |
 
 ### Features
 

@@ -1,9 +1,12 @@
 package com.folio.dto;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public final class DashboardDtoBuilder {
+    private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
     private Double totalPortfolioValue;
     private Integer stockCount;
     private Double totalDividendRatio;
@@ -25,7 +28,7 @@ public final class DashboardDtoBuilder {
         d.setTotalDividendRatio(totalDividendRatio);
         d.setTop5Holdings(top5Holdings);
         d.setTop5DividendSources(top5DividendSources);
-        d.setLastQuoteFetchAt(lastQuoteFetchAt);
+        d.setLastQuoteFetchAt(lastQuoteFetchAt != null ? lastQuoteFetchAt.format(DATETIME_FMT) : null);
         return d;
     }
 }

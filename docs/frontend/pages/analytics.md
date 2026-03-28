@@ -30,8 +30,16 @@ Both endpoints accept optional `sortField` (`name`, `investedAmount`, `percentag
 ## UI Specification
 
 - Donut chart (Recharts `PieChart`) with legend.
-- Detail table below: name, invested amount (EUR), percentage.
-- Country and branch pages share the same layout pattern.
+- Detail table below the chart. Country and branch pages share the same layout pattern.
+
+### Columns
+
+| Column | Alignment | `width` | `minWidth` |
+|--------|-----------|---------|------------|
+| Name | left | 240 | 200 |
+| Invested Amount (EUR) | right | 160 | 120 |
+| Percentage (%) | right | 120 | 80 |
+
 - Table conventions per [ui.md](ui.md) apply (sortable, resizable, full width).
 - Default sort: invested amount descending. Sort changes trigger a re-fetch with `sortField` and `sortDir` query params.
 

@@ -3,7 +3,10 @@ package com.folio.controller;
 import com.folio.dto.DiversificationDto;
 import com.folio.dto.DiversificationEntry;
 import com.folio.dto.ExportRequest;
+import com.folio.dto.PaginatedResponseDto;
 import com.folio.service.ExportService;
+import com.folio.service.PaginationHelper;
+import com.folio.service.SortHelper;
 import com.folio.dto.ExportColumn;
 import com.folio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,11 +16,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/analytics")
 @Tag(name = "Analytics", description = "Portfolio diversification analytics")
 public class AnalyticsController {
+
+    private static final Map<String, Comparator<DiversificationEntry>> SORT_FIELDS = Map.of(
+        "name", SortHelper.text(DiversificationEntry::getName),
+        "investedAmount", SortHelper.number(DiversificationEntry::getInvestedAmount),
+        "percentage", SortHelper.number(DiversificationEntry::getPercentage)
+    );
 
     private final PortfolioService portfolioService;
     private final ExportService exportService;
@@ -29,14 +39,26 @@ public class AnalyticsController {
 
     @GetMapping("/countries")
     @Operation(summary = "Country diversification breakdown")
-    public ResponseEntity<DiversificationDto> getCountryDiversification() {
-        return ResponseEntity.ok(portfolioService.getCountryDiversification());
+    public ResponseEntity<PaginatedResponseDto<DiversificationEntry>> getCountryDiversification(
+            @RequestParam(required = false, defaultValue = "investedAmount") String sortField,
+            @RequestParam(required = false, defaultValue = "desc") String sortDir,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int pageSize) {
+        List<DiversificationEntry> entries = portfolioService.getCountryDiversification().getEntries();
+        entries = SortHelper.sort(entries, sortField, sortDir, SORT_FIELDS);
+        return ResponseEntity.ok(PaginationHelper.paginate(entries, page, pageSize));
     }
 
     @GetMapping("/branches")
     @Operation(summary = "Branch diversification breakdown")
-    public ResponseEntity<DiversificationDto> getBranchDiversification() {
-        return ResponseEntity.ok(portfolioService.getBranchDiversification());
+    public ResponseEntity<PaginatedResponseDto<DiversificationEntry>> getBranchDiversification(
+            @RequestParam(required = false, defaultValue = "investedAmount") String sortField,
+            @RequestParam(required = false, defaultValue = "desc") String sortDir,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int pageSize) {
+        List<DiversificationEntry> entries = portfolioService.getBranchDiversification().getEntries();
+        entries = SortHelper.sort(entries, sortField, sortDir, SORT_FIELDS);
+        return ResponseEntity.ok(PaginationHelper.paginate(entries, page, pageSize));
     }
 
     @GetMapping("/{type}/export")
@@ -53,7 +75,7 @@ public class AnalyticsController {
 
         List<DiversificationEntry> data = dto.getEntries();
         if (sortField != null && !sortField.isBlank()) {
-            data = sortEntries(data, sortField, sortDir);
+            data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
         }
 
         String label = "countries".equals(type) ? "Country" : "Branch";
@@ -65,17 +87,5 @@ public class AnalyticsController {
         );
 
         return exportService.export(new ExportRequest<>(data, columns, format, type + "-diversification"));
-    }
-
-    private static List<DiversificationEntry> sortEntries(List<DiversificationEntry> data, String field, String dir) {
-        Comparator<DiversificationEntry> cmp = switch (field) {
-            case "name" -> Comparator.comparing(DiversificationEntry::getName, Comparator.nullsLast(String::compareToIgnoreCase));
-            case "investedAmount" -> Comparator.comparing(DiversificationEntry::getInvestedAmount, Comparator.nullsLast(Double::compareTo));
-            case "percentage" -> Comparator.comparing(DiversificationEntry::getPercentage, Comparator.nullsLast(Double::compareTo));
-            default -> null;
-        };
-        if (cmp == null) return data;
-        if ("desc".equalsIgnoreCase(dir)) cmp = cmp.reversed();
-        return data.stream().sorted(cmp).toList();
     }
 }

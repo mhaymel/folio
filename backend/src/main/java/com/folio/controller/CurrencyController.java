@@ -1,9 +1,12 @@
 package com.folio.controller;
 
 import com.folio.dto.ExportRequest;
+import com.folio.dto.PaginatedResponseDto;
 import com.folio.model.Currency;
 import com.folio.repository.CurrencyRepository;
 import com.folio.service.ExportService;
+import com.folio.service.PaginationHelper;
+import com.folio.service.SortHelper;
 import com.folio.dto.ExportColumn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,11 +15,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/currencies")
 @Tag(name = "Currencies", description = "Currency reference data")
 public class CurrencyController {
+
+    private static final Map<String, Comparator<Currency>> SORT_FIELDS = Map.of(
+        "name", SortHelper.text(Currency::getName)
+    );
 
     private final CurrencyRepository currencyRepo;
     private final ExportService exportService;
@@ -27,9 +35,14 @@ public class CurrencyController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all currencies sorted alphabetically")
-    public ResponseEntity<List<Currency>> getCurrencies() {
-        return ResponseEntity.ok(currencyRepo.findAllByOrderByNameAsc());
+    @Operation(summary = "Get all currencies with sorting and pagination")
+    public ResponseEntity<PaginatedResponseDto<Currency>> getCurrencies(
+            @RequestParam(required = false, defaultValue = "name") String sortField,
+            @RequestParam(required = false, defaultValue = "asc") String sortDir,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int pageSize) {
+        List<Currency> data = sorted(sortField, sortDir);
+        return ResponseEntity.ok(PaginationHelper.paginate(data, page, pageSize));
     }
 
     @GetMapping("/export")
@@ -38,12 +51,13 @@ public class CurrencyController {
             @RequestParam(defaultValue = "csv") String format,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        List<Currency> data = currencyRepo.findAllByOrderByNameAsc();
-        if ("name".equals(sortField) && "desc".equalsIgnoreCase(sortDir)) {
-            data = data.stream().sorted(Comparator.comparing(Currency::getName).reversed()).toList();
-        }
+        List<Currency> data = sorted(sortField != null ? sortField : "name", sortDir);
         List<ExportColumn<Currency>> columns = List.of(new ExportColumn<>("Currency", Currency::getName));
         return exportService.export(new ExportRequest<>(data, columns, format, "currencies"));
     }
-}
 
+    private List<Currency> sorted(String sortField, String sortDir) {
+        List<Currency> data = currencyRepo.findAllByOrderByNameAsc();
+        return SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
+    }
+}

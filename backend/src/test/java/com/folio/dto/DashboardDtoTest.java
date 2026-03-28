@@ -31,7 +31,7 @@ final class DashboardDtoTest {
         assertThat(dto.getTotalDividendRatio()).isEqualTo(2.5);
         assertThat(dto.getTop5Holdings()).hasSize(1);
         assertThat(dto.getTop5DividendSources()).isEmpty();
-        assertThat(dto.getLastQuoteFetchAt()).isNotNull();
+        assertThat(dto.getLastQuoteFetchAt()).isEqualTo("27.03.2026 10:00");
     }
 
     @Test

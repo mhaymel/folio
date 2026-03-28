@@ -170,8 +170,8 @@ public class PortfolioService {
         Map<String, Object> params = new HashMap<>();
 
         if (filter.isin() != null && !filter.isin().isBlank()) {
-            jpql.append(" AND t.isin.isin = :isin");
-            params.put("isin", filter.isin());
+            jpql.append(" AND LOWER(t.isin.isin) LIKE :isin");
+            params.put("isin", "%" + filter.isin().toLowerCase() + "%");
         }
         if (filter.depot() != null && !filter.depot().isBlank()) {
             jpql.append(" AND t.depot.name = :depot");
@@ -191,7 +191,7 @@ public class PortfolioService {
         params.forEach(query::setParameter);
         List<com.folio.model.Transaction> txns = query.getResultList();
 
-        return txns.stream().map(t -> TransactionDto.builder()
+        List<TransactionDto> result = txns.stream().map(t -> TransactionDto.builder()
             .id(t.getId())
             .date(t.getDate())
             .isin(t.getIsin().getIsin())
@@ -201,6 +201,22 @@ public class PortfolioService {
             .sharePrice(t.getSharePrice())
             .build())
             .toList();
+
+        // Apply name filter in-memory (name comes from a separate lookup).
+        // Filter by matching ISIN codes so that all transactions (buy + sell) for a
+        // matching stock are included, even if some transactions lack a resolved name.
+        if (filter.name() != null && !filter.name().isBlank()) {
+            String lower = filter.name().toLowerCase();
+            Set<String> matchingIsins = result.stream()
+                .filter(t -> t.getName() != null && t.getName().toLowerCase().contains(lower))
+                .map(TransactionDto::getIsin)
+                .collect(Collectors.toSet());
+            result = result.stream()
+                .filter(t -> matchingIsins.contains(t.getIsin()))
+                .toList();
+        }
+
+        return result;
     }
 
     private String getFirstName(Integer isinId) {

@@ -1,10 +1,9 @@
 package com.folio.controller;
 
-import com.folio.dto.ExportRequest;
-import com.folio.dto.TransactionDto;
-import com.folio.dto.TransactionFilter;
+import com.folio.dto.*;
 import com.folio.service.ExportService;
-import com.folio.dto.ExportColumn;
+import com.folio.service.PaginationHelper;
+import com.folio.service.SortHelper;
 import com.folio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -23,6 +23,15 @@ import java.util.List;
 public class TransactionController {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+    private static final Map<String, Comparator<TransactionDto>> SORT_FIELDS = Map.of(
+        "date", SortHelper.comparing(TransactionDto::getRawDate),
+        "isin", SortHelper.text(TransactionDto::getIsin),
+        "name", SortHelper.text(TransactionDto::getName),
+        "depot", SortHelper.text(TransactionDto::getDepot),
+        "count", SortHelper.number(TransactionDto::getCount),
+        "sharePrice", SortHelper.number(TransactionDto::getSharePrice)
+    );
 
     private final PortfolioService portfolioService;
     private final ExportService exportService;
@@ -33,13 +42,43 @@ public class TransactionController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all transactions with optional filters")
-    public ResponseEntity<List<TransactionDto>> getTransactions(
+    @Operation(summary = "Get all transactions with optional filters, sorting, and pagination")
+    public ResponseEntity<TransactionPaginatedResponseDto> getTransactions(
             @RequestParam(required = false) String isin,
+            @RequestParam(required = false) String name,
             @RequestParam(required = false) String depot,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate) {
-        return ResponseEntity.ok(portfolioService.getTransactions(new TransactionFilter(isin, depot, fromDate, toDate)));
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate,
+            @RequestParam(required = false, defaultValue = "date") String sortField,
+            @RequestParam(required = false, defaultValue = "desc") String sortDir,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int pageSize) {
+
+        List<TransactionDto> data = portfolioService.getTransactions(
+            new TransactionFilter(isin, name, depot, fromDate, toDate));
+
+        data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
+
+        long filteredCount = data.size();
+        double sumCount = data.stream().mapToDouble(t -> t.getCount() != null ? t.getCount() : 0).sum();
+
+        PaginatedResponseDto<TransactionDto> paginated = PaginationHelper.paginate(data, page, pageSize);
+
+        return ResponseEntity.ok(new TransactionPaginatedResponseDto(
+            paginated.getItems(), paginated.getPage(), paginated.getPageSize(),
+            paginated.getTotalItems(), paginated.getTotalPages(),
+            filteredCount, sumCount
+        ));
+    }
+
+    @GetMapping("/filters")
+    @Operation(summary = "Get distinct filter options for transactions")
+    public ResponseEntity<TransactionFiltersDto> getTransactionFilters() {
+        List<TransactionDto> allTxns = portfolioService.getTransactions(TransactionFilter.none());
+        List<String> depots = allTxns.stream()
+            .map(TransactionDto::getDepot).filter(d -> d != null && !d.isBlank())
+            .distinct().sorted().toList();
+        return ResponseEntity.ok(new TransactionFiltersDto(depots));
     }
 
     @GetMapping("/export")
@@ -52,26 +91,15 @@ public class TransactionController {
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "desc") String sortDir) {
 
-        List<TransactionDto> data = portfolioService.getTransactions(TransactionFilter.none());
+        List<TransactionDto> data = portfolioService.getTransactions(
+            new TransactionFilter(isin, name, depot, null, null));
 
-        // Client-side-style partial filters (matching frontend behaviour)
-        if (isin != null && !isin.isBlank()) {
-            String lower = isin.toLowerCase();
-            data = data.stream().filter(t -> t.getIsin() != null && t.getIsin().toLowerCase().contains(lower)).toList();
-        }
-        if (name != null && !name.isBlank()) {
-            String lower = name.toLowerCase();
-            data = data.stream().filter(t -> t.getName() != null && t.getName().toLowerCase().contains(lower)).toList();
-        }
-        if (depot != null && !depot.isBlank()) {
-            data = data.stream().filter(t -> depot.equals(t.getDepot())).toList();
-        }
         if (sortField != null && !sortField.isBlank()) {
-            data = sorted(data, sortField, sortDir);
+            data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
         }
 
         List<ExportColumn<TransactionDto>> columns = List.of(
-                new ExportColumn<>("Date", t -> t.getDate() != null ? t.getDate().format(DATE_FMT) : ""),
+                new ExportColumn<>("Date", TransactionDto::getDate),
                 new ExportColumn<>("ISIN", TransactionDto::getIsin),
                 new ExportColumn<>("Name", TransactionDto::getName),
                 new ExportColumn<>("Depot", TransactionDto::getDepot),
@@ -80,20 +108,5 @@ public class TransactionController {
         );
 
         return exportService.export(new ExportRequest<>(data, columns, format, "transactions"));
-    }
-
-    private static List<TransactionDto> sorted(List<TransactionDto> data, String field, String dir) {
-        Comparator<TransactionDto> cmp = switch (field) {
-            case "date" -> Comparator.comparing(TransactionDto::getDate, Comparator.nullsLast(Comparator.naturalOrder()));
-            case "isin" -> Comparator.comparing(TransactionDto::getIsin, Comparator.nullsLast(String::compareToIgnoreCase));
-            case "name" -> Comparator.comparing(TransactionDto::getName, Comparator.nullsLast(String::compareToIgnoreCase));
-            case "depot" -> Comparator.comparing(TransactionDto::getDepot, Comparator.nullsLast(String::compareToIgnoreCase));
-            case "count" -> Comparator.comparing(TransactionDto::getCount, Comparator.nullsLast(Double::compareTo));
-            case "sharePrice" -> Comparator.comparing(TransactionDto::getSharePrice, Comparator.nullsLast(Double::compareTo));
-            default -> null;
-        };
-        if (cmp == null) return data;
-        if ("desc".equalsIgnoreCase(dir)) cmp = cmp.reversed();
-        return data.stream().sorted(cmp).toList();
     }
 }

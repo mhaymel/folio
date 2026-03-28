@@ -1,9 +1,12 @@
 package com.folio.controller;
 
 import com.folio.dto.ExportRequest;
+import com.folio.dto.PaginatedResponseDto;
 import com.folio.model.Branch;
 import com.folio.repository.BranchRepository;
 import com.folio.service.ExportService;
+import com.folio.service.PaginationHelper;
+import com.folio.service.SortHelper;
 import com.folio.dto.ExportColumn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,11 +15,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/branches")
 @Tag(name = "Branches", description = "Branch reference data")
 public class BranchController {
+
+    private static final Map<String, Comparator<Branch>> SORT_FIELDS = Map.of(
+        "name", SortHelper.text(Branch::getName)
+    );
 
     private final BranchRepository branchRepo;
     private final ExportService exportService;
@@ -27,9 +35,14 @@ public class BranchController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all branches sorted alphabetically")
-    public ResponseEntity<List<Branch>> getBranches() {
-        return ResponseEntity.ok(branchRepo.findAllByOrderByNameAsc());
+    @Operation(summary = "Get all branches with sorting and pagination")
+    public ResponseEntity<PaginatedResponseDto<Branch>> getBranches(
+            @RequestParam(required = false, defaultValue = "name") String sortField,
+            @RequestParam(required = false, defaultValue = "asc") String sortDir,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int pageSize) {
+        List<Branch> data = sorted(sortField, sortDir);
+        return ResponseEntity.ok(PaginationHelper.paginate(data, page, pageSize));
     }
 
     @GetMapping("/export")
@@ -38,12 +51,13 @@ public class BranchController {
             @RequestParam(defaultValue = "csv") String format,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        List<Branch> data = branchRepo.findAllByOrderByNameAsc();
-        if ("name".equals(sortField) && "desc".equalsIgnoreCase(sortDir)) {
-            data = data.stream().sorted(Comparator.comparing(Branch::getName).reversed()).toList();
-        }
+        List<Branch> data = sorted(sortField != null ? sortField : "name", sortDir);
         List<ExportColumn<Branch>> columns = List.of(new ExportColumn<>("Branch", Branch::getName));
         return exportService.export(new ExportRequest<>(data, columns, format, "branches"));
     }
-}
 
+    private List<Branch> sorted(String sortField, String sortDir) {
+        List<Branch> data = branchRepo.findAllByOrderByNameAsc();
+        return SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
+    }
+}

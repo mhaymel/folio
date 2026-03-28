@@ -1,8 +1,11 @@
 package com.folio.dto;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public final class TransactionDtoBuilder {
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
     private Integer id;
     private LocalDateTime date;
     private String isin;
@@ -21,8 +24,14 @@ public final class TransactionDtoBuilder {
 
     public TransactionDto build() {
         TransactionDto t = new TransactionDto();
-        t.setId(id); t.setDate(date); t.setIsin(isin); t.setName(name);
-        t.setDepot(depot); t.setCount(count); t.setSharePrice(sharePrice);
+        t.setId(id);
+        t.setDate(date != null ? date.format(DATE_FMT) : null);
+        t.setRawDate(date);
+        t.setIsin(isin);
+        t.setName(name);
+        t.setDepot(depot);
+        t.setCount(count);
+        t.setSharePrice(sharePrice);
         return t;
     }
 }

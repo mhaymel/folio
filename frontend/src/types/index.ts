@@ -4,6 +4,19 @@ export interface ImportResult {
   errors: string[];
 }
 
+export interface PaginatedResponse<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface TransactionPaginatedResponse extends PaginatedResponse<TransactionDto> {
+  filteredCount: number;
+  sumCount: number;
+}
+
 export interface TransactionDto {
   id: number;
   date: string;
@@ -27,6 +40,15 @@ export interface StockDto {
   estimatedAnnualIncome: number | null;
 }
 
+export interface StockFiltersDto {
+  countries: string[];
+  branches: string[];
+}
+
+export interface TransactionFiltersDto {
+  depots: string[];
+}
+
 export interface DashboardDto {
   totalPortfolioValue: number;
   stockCount: number;
@@ -46,11 +68,6 @@ export interface DividendSourceDto {
   isin: string;
   name: string | null;
   estimatedAnnualIncome: number;
-}
-
-export interface DiversificationDto {
-  entries: DiversificationEntry[];
-  totalInvested: number;
 }
 
 export interface DiversificationEntry {
@@ -95,4 +112,3 @@ export interface IsinNameDto {
   isin: string;
   name: string;
 }
-

@@ -20,7 +20,7 @@ vi.mock('@dynatrace/strato-components/forms', () => ({
   ),
   Select: Object.assign(
     ({ children, value, onChange, ...props }: any) => (
-      <select value={value ?? ''} onChange={(e: any) => onChange?.(Number(e.target.value))} {...props}>
+      <select value={value ?? ''} onChange={(e: any) => onChange?.(e.target.value)} {...props}>
         {children}
       </select>
     ),
@@ -29,8 +29,8 @@ vi.mock('@dynatrace/strato-components/forms', () => ({
       Option: ({ value, children }: any) => <option value={value}>{children}</option>,
     },
   ),
-  Switch: ({ value, onChange }: any) => (
-    <input type="checkbox" role="switch" checked={value} onChange={(e) => onChange?.(e.target.checked)} />
+  Switch: ({ checked, onChange }: any) => (
+    <input type="checkbox" role="switch" checked={checked} onChange={(e) => onChange?.(e.target.checked)} />
   ),
 }));
 
@@ -39,20 +39,20 @@ import api from '../api/client';
 const mockSettings: QuoteSettingsDto = {
   enabled: true,
   intervalMinutes: 60,
-  lastFetchAt: '2026-03-27T10:00:00',
+  lastFetchAt: '27.03.2026 10:00',
 };
 
 beforeEach(() => {
   vi.mocked(api.get).mockResolvedValue({ data: mockSettings });
   vi.mocked(api.put).mockResolvedValue({ data: {} });
-  vi.mocked(api.post).mockResolvedValue({ data: { status: 'ok', fetchedCount: 5 } });
+  vi.mocked(api.post).mockResolvedValue({ data: 5 });
 });
 
 describe('Settings', () => {
   it('shows loading state initially', () => {
     vi.mocked(api.get).mockReturnValue(new Promise(() => {}));
     renderWithRouter(<Settings />);
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 
   it('renders settings page after loading', async () => {
@@ -63,18 +63,18 @@ describe('Settings', () => {
     expect(screen.getByText('Quote Fetching')).toBeInTheDocument();
   });
 
-  it('shows enabled/disabled status text', async () => {
+  it('shows enable toggle checked when enabled', async () => {
     renderWithRouter(<Settings />);
     await waitFor(() => {
-      expect(screen.getByText('Automatic quote fetching is enabled')).toBeInTheDocument();
+      expect(screen.getByRole('switch')).toBeChecked();
     });
   });
 
-  it('shows disabled text when quotes are disabled', async () => {
+  it('shows enable toggle unchecked when disabled', async () => {
     vi.mocked(api.get).mockResolvedValue({ data: { ...mockSettings, enabled: false } });
     renderWithRouter(<Settings />);
     await waitFor(() => {
-      expect(screen.getByText('Automatic quote fetching is disabled')).toBeInTheDocument();
+      expect(screen.getByRole('switch')).not.toBeChecked();
     });
   });
 
@@ -83,14 +83,14 @@ describe('Settings', () => {
     await waitFor(() => {
       expect(screen.getByText(/Last fetch:/)).toBeInTheDocument();
     });
-    expect(screen.getByText(/Last fetch:/).textContent).toMatch(/\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}/);
+    expect(screen.getByText(/27\.03\.2026 10:00/)).toBeInTheDocument();
   });
 
   it('shows dash when no last fetch', async () => {
     vi.mocked(api.get).mockResolvedValue({ data: { ...mockSettings, lastFetchAt: null } });
     renderWithRouter(<Settings />);
     await waitFor(() => {
-      expect(screen.getByText('Last fetch: —')).toBeInTheDocument();
+      expect(screen.getByText(/Last fetch:.*\u2014/)).toBeInTheDocument();
     });
   });
 

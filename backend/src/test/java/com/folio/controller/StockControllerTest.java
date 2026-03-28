@@ -20,10 +20,47 @@ final class StockControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getStocks_returnsEmptyListWhenNoPositions() throws Exception {
+    void getStocks_returnsPaginatedEmptyListWhenNoPositions() throws Exception {
         mockMvc.perform(get("/api/stocks"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", is(empty())));
+            .andExpect(jsonPath("$.items", is(empty())))
+            .andExpect(jsonPath("$.page", is(1)))
+            .andExpect(jsonPath("$.totalItems", is(0)));
+    }
+
+    @Test
+    void getStocks_supportsSortParams() throws Exception {
+        mockMvc.perform(get("/api/stocks")
+                .param("sortField", "name")
+                .param("sortDir", "desc"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items").isArray());
+    }
+
+    @Test
+    void getStocks_supportsFilterParams() throws Exception {
+        mockMvc.perform(get("/api/stocks")
+                .param("country", "Germany")
+                .param("branch", "Technology"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items").isArray());
+    }
+
+    @Test
+    void getStocks_supportsPaginationParams() throws Exception {
+        mockMvc.perform(get("/api/stocks")
+                .param("page", "1")
+                .param("pageSize", "20"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.pageSize", is(20)));
+    }
+
+    @Test
+    void getStockFilters_returnsCountriesAndBranches() throws Exception {
+        mockMvc.perform(get("/api/stocks/filters"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.countries").isArray())
+            .andExpect(jsonPath("$.branches").isArray());
     }
 
     @Test

@@ -46,8 +46,21 @@ The data should be fetched from the backend via a dedicated REST API endpoint.
 ## UI Specification
 
 - **KPI row:** Total Portfolio Value (EUR), Number of Stocks, Total Dividend Ratio (%).
-- **Top 5 Holdings:** table with ISIN, Stock Name, Invested Amount (EUR).
-- **Top 5 Dividend Sources:** table with ISIN, Stock Name, Est. Annual Income (EUR).
+- **Top 5 Holdings:**
+
+  | Column | Alignment | `width` | `minWidth` |
+  |--------|-----------|---------|------------|
+  | ISIN | left | 140 | 140 |
+  | Stock Name | left | 240 | 200 |
+  | Invested Amount (EUR) | right | 160 | 120 |
+
+- **Top 5 Dividend Sources:**
+
+  | Column | Alignment | `width` | `minWidth` |
+  |--------|-----------|---------|------------|
+  | ISIN | left | 140 | 140 |
+  | Stock Name | left | 240 | 200 |
+  | Est. Annual Income (EUR) | right | 160 | 120 |
 - **Last Quote Fetch:** pre-formatted by the backend as `DD.MM.YYYY HH:mm` (e.g., "Last updated: 22.03.2026 14:30"); rendered as-is. `—` if null (not yet fetched).
 - Data from `GET /api/dashboard`.
 - Table conventions per [ui.md](ui.md) apply (sortable, resizable, full width).

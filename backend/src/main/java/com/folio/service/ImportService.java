@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -141,38 +142,57 @@ public class ImportService {
             .count(count).sharePrice(price).build());
     }
 
+    private static List<String> linesFrom(MultipartFile file) {
+        try (InputStream is = file.getInputStream()) {
+            return linesFrom(reader(is));
+        } catch (Exception e) {
+            log.warn("Failed to read lines from file: {}", e.getMessage());
+            return null;
+        }
+    }
+
     // ---- ZERO Orders CSV ----
     @Transactional
     public ImportResult importZeroOrders(MultipartFile file) {
-        importLock.lock();
-        try {
+        List<String> lines = linesFrom(file);
+        if (lines == null)  return ImportResult.fail("Error on reading File " + file.getName());
+
         List<String> errors = new ArrayList<>();
         Depot depot = repos.depot().findByName("ZERO").orElseThrow();
-        repos.transaction().deleteByDepotId(depot.getId());
+        List<Transaction> transactions = transactionsFrom(lines, depot, errors);
 
-        List<Transaction> transactions = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
-            reader.readLine(); // skip header
-            String line;
-            int lineNum = 1;
-            while ((line = reader.readLine()) != null) {
-                lineNum++;
-                try {
-                    parseZeroOrder(line, depot).ifPresent(transactions::add);
-                } catch (Exception e) {
-                    errors.add("Line " + lineNum + ": " + e.getMessage());
-                }
-            }
-        } catch (Exception e) {
-            return ImportResult.fail(List.of("Failed to read file: " + e.getMessage()));
-        }
-
-        repos.transaction().saveAll(transactions);
-        log.info("Imported {} ZERO transactions", transactions.size());
-        return ImportResult.builder().success(errors.isEmpty()).imported(transactions.size()).errors(errors).build();
-        } finally {
+        try {
+            importLock.lock();
+            repos.transaction().deleteByDepotId(depot.getId());
+            repos.transaction().saveAll(transactions);
+          } finally {
             importLock.unlock();
         }
+        log.info("Imported {} ZERO transactions", transactions.size());
+        return ImportResult.builder().success(errors.isEmpty()).imported(transactions.size()).errors(errors).build();
+    }
+
+    private List<Transaction> transactionsFrom(List<String> lines, Depot depot, List<String> errors) {
+        List<Transaction> transactions = new ArrayList<>();
+        // Skip header (first line), process remaining lines
+        for (int i = 1; i < lines.size(); i++) {
+            System.out.println(i);
+            int lineNum = i + 1;
+            try {
+                parseZeroOrder(lines.get(i), depot).ifPresent(transactions::add);
+            } catch (Exception e) {
+                errors.add("Line " + lineNum + ": " + e.getMessage());
+            }
+        }
+        return transactions;
+    }
+
+    private static List<String> linesFrom(BufferedReader reader) {
+        return reader.lines().toList();
+    }
+
+    private static BufferedReader reader(InputStream is) {
+        return new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
     }
 
     private Optional<Transaction> parseZeroOrder(String line, Depot depot) {

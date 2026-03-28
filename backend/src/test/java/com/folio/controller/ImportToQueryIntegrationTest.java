@@ -83,41 +83,41 @@ final class ImportToQueryIntegrationTest {
     @Test
     @Order(5)
     void step5_verifyCountriesImported() throws Exception {
-        mockMvc.perform(get("/api/countries"))
+        mockMvc.perform(get("/api/countries").param("pageSize", "-1"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(2))))
-            .andExpect(jsonPath("$[?(@.name == 'Germany')]").exists())
-            .andExpect(jsonPath("$[?(@.name == 'USA')]").exists());
+            .andExpect(jsonPath("$.items", hasSize(greaterThanOrEqualTo(2))))
+            .andExpect(jsonPath("$.items[?(@.name == 'Germany')]").exists())
+            .andExpect(jsonPath("$.items[?(@.name == 'USA')]").exists());
     }
 
     @Test
     @Order(6)
     void step6_verifyBranchesImported() throws Exception {
-        mockMvc.perform(get("/api/branches"))
+        mockMvc.perform(get("/api/branches").param("pageSize", "-1"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(2))))
-            .andExpect(jsonPath("$[?(@.name == 'Chemicals')]").exists())
-            .andExpect(jsonPath("$[?(@.name == 'Technology')]").exists());
+            .andExpect(jsonPath("$.items", hasSize(greaterThanOrEqualTo(2))))
+            .andExpect(jsonPath("$.items[?(@.name == 'Chemicals')]").exists())
+            .andExpect(jsonPath("$.items[?(@.name == 'Technology')]").exists());
     }
 
     @Test
     @Order(7)
     void step7_verifyIsinNames() throws Exception {
-        mockMvc.perform(get("/api/isin-names"))
+        mockMvc.perform(get("/api/isin-names").param("pageSize", "-1"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(2))))
-            .andExpect(jsonPath("$[?(@.name == 'BASF SE')]").exists())
-            .andExpect(jsonPath("$[?(@.name == 'Apple Inc.')]").exists());
+            .andExpect(jsonPath("$.items", hasSize(greaterThanOrEqualTo(2))))
+            .andExpect(jsonPath("$.items[?(@.name == 'BASF SE')]").exists())
+            .andExpect(jsonPath("$.items[?(@.name == 'Apple Inc.')]").exists());
     }
 
     @Test
     @Order(8)
     void step8_verifyTickerSymbols() throws Exception {
-        mockMvc.perform(get("/api/ticker-symbols"))
+        mockMvc.perform(get("/api/ticker-symbols").param("pageSize", "-1"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(2))))
-            .andExpect(jsonPath("$[?(@.isin == 'DE000BASF111')].tickerSymbol", contains("BAS.DE")))
-            .andExpect(jsonPath("$[?(@.isin == 'US0378331005')].tickerSymbol", contains("AAPL")));
+            .andExpect(jsonPath("$.items", hasSize(greaterThanOrEqualTo(2))))
+            .andExpect(jsonPath("$.items[?(@.isin == 'DE000BASF111')].tickerSymbol", contains("BAS.DE")))
+            .andExpect(jsonPath("$.items[?(@.isin == 'US0378331005')].tickerSymbol", contains("AAPL")));
     }
 
     @Test
@@ -125,7 +125,7 @@ final class ImportToQueryIntegrationTest {
     void step9_verifyStocksEmptyWithoutTransactions() throws Exception {
         mockMvc.perform(get("/api/stocks"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", is(empty())));
+            .andExpect(jsonPath("$.items", is(empty())));
     }
 
     @Test
@@ -142,10 +142,10 @@ final class ImportToQueryIntegrationTest {
     void step11_verifyAnalyticsEmptyWithoutTransactions() throws Exception {
         mockMvc.perform(get("/api/analytics/countries"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalInvested", is(0.0)));
+            .andExpect(jsonPath("$.items", is(empty())));
 
         mockMvc.perform(get("/api/analytics/branches"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalInvested", is(0.0)));
+            .andExpect(jsonPath("$.items", is(empty())));
     }
 }

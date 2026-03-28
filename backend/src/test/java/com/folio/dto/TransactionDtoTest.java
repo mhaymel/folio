@@ -18,6 +18,7 @@ final class TransactionDtoTest {
 
         // then
         assertThat(dto.getId()).isEqualTo(1);
+        assertThat(dto.getDate()).isEqualTo("15-01-2026");
         assertThat(dto.getIsin()).isEqualTo("IE00B1");
         assertThat(dto.getCount()).isEqualTo(10.0);
         assertThat(dto.getSharePrice()).isEqualTo(50.0);

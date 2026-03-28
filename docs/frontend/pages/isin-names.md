@@ -45,10 +45,10 @@ Returns a paginated envelope per [ui.md](ui.md):
 
 ### Table
 
-| Column | Description | Alignment | Width | MinWidth |
-|--------|-------------|-----------|-------|----------|
-| ISIN | Stock identifier | left | 140 | 140 |
-| Name | Stock name | left | 400 | 200 |
+| Column | Alignment | `width` | `minWidth` |
+|--------|-----------|---------|------------|
+| ISIN | left | 140 | 140 |
+| Name | left | 400 | 200 |
 
 ### Features
 

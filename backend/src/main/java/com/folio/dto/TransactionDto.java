@@ -1,10 +1,12 @@
 package com.folio.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 public final class TransactionDto {
     private Integer id;
-    private LocalDateTime date;
+    private String date;
+    private LocalDateTime rawDate;
     private String isin;
     private String name;
     private String depot;
@@ -13,11 +15,13 @@ public final class TransactionDto {
 
     public TransactionDto() {}
 
-
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
-    public LocalDateTime getDate() { return date; }
-    public void setDate(LocalDateTime date) { this.date = date; }
+    public String getDate() { return date; }
+    public void setDate(String date) { this.date = date; }
+    @JsonIgnore
+    public LocalDateTime getRawDate() { return rawDate; }
+    public void setRawDate(LocalDateTime rawDate) { this.rawDate = rawDate; }
     public String getIsin() { return isin; }
     public void setIsin(String isin) { this.isin = isin; }
     public String getName() { return name; }

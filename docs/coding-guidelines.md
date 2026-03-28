@@ -100,6 +100,9 @@ Do **not** use Lombok. Write explicit Java: getters, setters, constructors, manu
 - `Paragraph` has no `color` prop — use `style={{ color: 'var(--dt-color-...)' }}`.
 - `TextInput` onChange signature: `(value: string, event) => void`.
 - `Select` uses `Select.Content` + `Select.Option` children pattern.
+- `DataTable` `sortable` prop enables sort indicator arrows but the component also sorts rows client-side by default. Since all sorting is server-side, the frontend must ensure column header clicks only trigger a backend request — the DataTable must not reorder data on its own.
+- `DataTable` sorting cycles through three states by default (asc → desc → unsorted). Since server-side sorting always requires an active sort, the `onSortByChange` handler must treat the empty-array (removal) state as a direction toggle so that only asc ↔ desc is possible.
+- Use Strato `Select` (not native `<select>`) for all dropdown controls, including the page-size selector in the pagination bar.
 - Install packages with `--legacy-peer-deps` (required by `@dynatrace-sdk/*` peer deps).
 
 ### Design

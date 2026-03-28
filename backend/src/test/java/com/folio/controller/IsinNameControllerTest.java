@@ -20,19 +20,30 @@ final class IsinNameControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getIsinNames_returnsJsonArray() throws Exception {
+    void getIsinNames_returnsPaginatedResponse() throws Exception {
         mockMvc.perform(get("/api/isin-names"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$").isArray());
+            .andExpect(jsonPath("$.items").isArray())
+            .andExpect(jsonPath("$.page", is(1)))
+            .andExpect(jsonPath("$.totalItems").isNumber());
     }
 
     @Test
-    void getIsinNames_entriesHaveRequiredFields() throws Exception {
-        // If data exists, each entry must have isin and name
-        mockMvc.perform(get("/api/isin-names"))
+    void getIsinNames_supportsSortParams() throws Exception {
+        mockMvc.perform(get("/api/isin-names")
+                .param("sortField", "isin")
+                .param("sortDir", "desc"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[*].isin").exists())
-            .andExpect(jsonPath("$[*].name").exists());
+            .andExpect(jsonPath("$.items").isArray());
+    }
+
+    @Test
+    void getIsinNames_supportsPagination() throws Exception {
+        mockMvc.perform(get("/api/isin-names")
+                .param("page", "1")
+                .param("pageSize", "20"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.pageSize", is(20)));
     }
 
     @Test

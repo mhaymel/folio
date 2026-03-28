@@ -33,5 +33,7 @@ public final class ImportResult {
         return new ImportResult(false, 0, errors);
     }
 
+    public static ImportResult fail(String error) { return fail(List.of(error)); }
+
     public static ImportResultBuilder builder() { return new ImportResultBuilder(); }
 }

@@ -1,8 +1,11 @@
 package com.folio.controller;
 
 import com.folio.dto.ExportRequest;
+import com.folio.dto.PaginatedResponseDto;
 import com.folio.dto.TickerSymbolDto;
 import com.folio.service.ExportService;
+import com.folio.service.PaginationHelper;
+import com.folio.service.SortHelper;
 import com.folio.dto.ExportColumn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,11 +16,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ticker-symbols")
 @Tag(name = "Ticker Symbols", description = "ISIN to ticker symbol mappings")
 public class TickerSymbolController {
+
+    private static final Map<String, Comparator<TickerSymbolDto>> SORT_FIELDS = Map.of(
+        "isin", SortHelper.text(TickerSymbolDto::getIsin),
+        "tickerSymbol", SortHelper.text(TickerSymbolDto::getTickerSymbol),
+        "name", SortHelper.text(TickerSymbolDto::getName)
+    );
 
     private final EntityManager em;
     private final ExportService exportService;
@@ -30,9 +40,13 @@ public class TickerSymbolController {
     @GetMapping
     @Operation(summary = "Get all ISIN to ticker symbol mappings")
     @Transactional(readOnly = true)
-    @SuppressWarnings("unchecked")
-    public ResponseEntity<List<TickerSymbolDto>> getTickerSymbols() {
-        return ResponseEntity.ok(loadAll());
+    public ResponseEntity<PaginatedResponseDto<TickerSymbolDto>> getTickerSymbols(
+            @RequestParam(required = false, defaultValue = "isin") String sortField,
+            @RequestParam(required = false, defaultValue = "asc") String sortDir,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int pageSize) {
+        List<TickerSymbolDto> data = SortHelper.sort(loadAll(), sortField, sortDir, SORT_FIELDS);
+        return ResponseEntity.ok(PaginationHelper.paginate(data, page, pageSize));
     }
 
     @GetMapping("/export")
@@ -42,10 +56,9 @@ public class TickerSymbolController {
             @RequestParam(defaultValue = "csv") String format,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir) {
-
         List<TickerSymbolDto> data = loadAll();
         if (sortField != null && !sortField.isBlank()) {
-            data = sorted(data, sortField, sortDir);
+            data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
         }
         List<ExportColumn<TickerSymbolDto>> columns = List.of(
                 new ExportColumn<>("ISIN", TickerSymbolDto::getIsin),
@@ -73,17 +86,5 @@ public class TickerSymbolController {
                 .name((String) r[2])
                 .build())
             .toList();
-    }
-
-    private static List<TickerSymbolDto> sorted(List<TickerSymbolDto> data, String field, String dir) {
-        Comparator<TickerSymbolDto> cmp = switch (field) {
-            case "isin" -> Comparator.comparing(TickerSymbolDto::getIsin, Comparator.nullsLast(String::compareToIgnoreCase));
-            case "tickerSymbol" -> Comparator.comparing(TickerSymbolDto::getTickerSymbol, Comparator.nullsLast(String::compareToIgnoreCase));
-            case "name" -> Comparator.comparing(TickerSymbolDto::getName, Comparator.nullsLast(String::compareToIgnoreCase));
-            default -> null;
-        };
-        if (cmp == null) return data;
-        if ("desc".equalsIgnoreCase(dir)) cmp = cmp.reversed();
-        return data.stream().sorted(cmp).toList();
     }
 }

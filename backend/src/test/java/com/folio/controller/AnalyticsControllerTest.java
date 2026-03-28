@@ -20,19 +20,38 @@ final class AnalyticsControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getCountryDiversification_returnsExpectedStructure() throws Exception {
+    void getCountryDiversification_returnsPaginatedResponse() throws Exception {
         mockMvc.perform(get("/api/analytics/countries"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.entries").isArray())
-            .andExpect(jsonPath("$.totalInvested").isNumber());
+            .andExpect(jsonPath("$.items").isArray())
+            .andExpect(jsonPath("$.page", is(1)))
+            .andExpect(jsonPath("$.totalItems").isNumber());
     }
 
     @Test
-    void getBranchDiversification_returnsExpectedStructure() throws Exception {
+    void getBranchDiversification_returnsPaginatedResponse() throws Exception {
         mockMvc.perform(get("/api/analytics/branches"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.entries").isArray())
-            .andExpect(jsonPath("$.totalInvested").isNumber());
+            .andExpect(jsonPath("$.items").isArray())
+            .andExpect(jsonPath("$.page", is(1)));
+    }
+
+    @Test
+    void getCountryDiversification_supportsSortParams() throws Exception {
+        mockMvc.perform(get("/api/analytics/countries")
+                .param("sortField", "name")
+                .param("sortDir", "asc"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items").isArray());
+    }
+
+    @Test
+    void getCountryDiversification_supportsPagination() throws Exception {
+        mockMvc.perform(get("/api/analytics/countries")
+                .param("page", "1")
+                .param("pageSize", "20"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.pageSize", is(20)));
     }
 
     @Test

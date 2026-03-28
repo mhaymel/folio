@@ -42,18 +42,18 @@ Returns distinct countries and branches from current positions:
 
 ### Columns
 
-| Column | width | minWidth |
-|--------|-------|----------|
-| ISIN | 140 | 140 |
-| Name | 240 | 240 |
-| Country | 120 | 80 |
-| Branch | 160 | 80 |
-| Total Shares | — | — |
-| Avg Entry Price | — | — |
-| Current Quote | — | — |
-| Performance (%) | — | — |
-| Expected Dividend/Share | — | — |
-| Est. Annual Income | — | — |
+| Column | Alignment | `width` | `minWidth` |
+|--------|-----------|---------|------------|
+| ISIN | left | 140 | 140 |
+| Name | left | 240 | 240 |
+| Country | left | 120 | 80 |
+| Branch | left | 160 | 80 |
+| Total Shares | right | 100 | 80 |
+| Avg Entry Price | right | 120 | 100 |
+| Current Quote | right | 110 | 100 |
+| Performance (%) | right | 120 | 100 |
+| Expected Dividend/Share | right | 160 | 130 |
+| Est. Annual Income | right | 140 | 110 |
 
 - Current Quote and Performance show `—` if no quote fetched yet.
 - Filter bar: country dropdown (values from `GET /api/stocks/filters`), branch dropdown (values from `GET /api/stocks/filters`).

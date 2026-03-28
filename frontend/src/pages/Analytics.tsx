@@ -1,89 +1,110 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { useEffect, useState, useCallback } from 'react';
+import { useParams } from 'react-router';
 import { Flex } from '@dynatrace/strato-components/layouts';
 import { Heading, Paragraph } from '@dynatrace/strato-components/typography';
-import { DataTable, DataTablePagination } from '@dynatrace/strato-components/tables';
+import { DataTable } from '@dynatrace/strato-components/tables';
 import { Button } from '@dynatrace/strato-components/buttons';
+import { ProgressCircle } from '@dynatrace/strato-components/content';
+import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
 import api from '../api/client';
-import type { DiversificationDto } from '../types';
+import type { DiversificationEntry, PaginatedResponse } from '../types';
 import ExportButtons from '../components/ExportButtons';
+import PaginationControls from '../components/PaginationControls';
 
-const COLORS = [
-  '#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f',
-  '#edc948', '#b07aa1', '#ff9da7', '#9c755f', '#bab0ac',
-];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#845EC2',
+  '#D65DB1', '#FF6F91', '#FF9671', '#FFC75F', '#F9F871'];
 
-const fmt = (n: number) =>
-  n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtEur = (v: number) => v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' EUR';
+const fmtPct = (v: number) => v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
 
 export default function Analytics() {
   const { type } = useParams<{ type: string }>();
-  const [data, setData] = useState<DiversificationDto | null>(null);
-  const [showAll, setShowAll] = useState(false);
+  const label = type === 'countries' ? 'Country' : 'Branch';
+
+  const [data, setData] = useState<DiversificationEntry[]>([]);
+  const [allEntries, setAllEntries] = useState<DiversificationEntry[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [sortField, setSortField] = useState('investedAmount');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  useEffect(() => {
-    api.get<DiversificationDto>(`/analytics/${type}`).then(r => setData(r.data));
-  }, [type]);
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [paged, all] = await Promise.all([
+        api.get<PaginatedResponse<DiversificationEntry>>(`/analytics/${type}`, {
+          params: { sortField, sortDir, page, pageSize },
+        }),
+        api.get<PaginatedResponse<DiversificationEntry>>(`/analytics/${type}`, {
+          params: { sortField: 'investedAmount', sortDir: 'desc', pageSize: -1 },
+        }),
+      ]);
+      setData(paged.data.items);
+      setTotalItems(paged.data.totalItems);
+      setTotalPages(paged.data.totalPages);
+      setAllEntries(all.data.items);
+    } finally {
+      setLoading(false);
+    }
+  }, [type, sortField, sortDir, page, pageSize]);
 
-  const title = type === 'countries' ? 'Country' : 'Branch';
-  const tableData = useMemo(() => data?.entries ?? [], [data]);
+  useEffect(() => { setPage(1); }, [type]);
+  useEffect(() => { load(); }, [load]);
 
-  const columns = useMemo(() => [
-    { id: 'name', header: title, accessor: 'name', sortType: 'text' as const },
-    { id: 'investedAmount', header: 'Invested (EUR)', accessor: (r: any) => fmt(r.investedAmount), sortType: 'number' as const, alignment: 'right' as const },
-    { id: 'percentage', header: '%', accessor: (r: any) => fmt(r.percentage) + '%', sortType: 'number' as const, alignment: 'right' as const },
-  ], [title]);
+  const handleShowAll = () => {
+    if (pageSize === -1) { setPageSize(10); setPage(1); } else { setPageSize(-1); }
+  };
 
-  if (!data) return <Paragraph>Loading...</Paragraph>;
+  const columns = [
+    { id: 'name', header: label, accessor: 'name', sortType: 'text' as const, alignment: 'left' as const, width: 240, minWidth: 200 },
+    { id: 'investedAmount', header: 'Invested (EUR)', accessor: (row: DiversificationEntry) => fmtEur(row.investedAmount), sortType: 'number' as const, alignment: 'right' as const, width: 160, minWidth: 120 },
+    { id: 'percentage', header: '%', accessor: (row: DiversificationEntry) => fmtPct(row.percentage), sortType: 'number' as const, alignment: 'right' as const, width: 120, minWidth: 80 },
+  ];
 
   return (
-    <Flex flexDirection="column" gap={24}>
-      <Heading level={1}>{title} Diversification</Heading>
+    <Flex flexDirection="column" gap={16}>
+      <Heading level={1}>{label} Diversification</Heading>
 
-      {data.entries.length === 0 ? (
-        <Paragraph>No data available. Import transactions and {type} first.</Paragraph>
+      {loading ? (
+        <Flex alignItems="center" gap={12}>
+          <ProgressCircle aria-label={`Loading ${type}`} size="small" />
+          <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>Loading...</Paragraph>
+        </Flex>
       ) : (
         <>
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={400}>
+          {allEntries.length > 0 && (
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <Pie
-                  data={data.entries}
-                  dataKey="investedAmount"
-                  nameKey="name"
-                  cx="50%" cy="50%"
-                  outerRadius={150}
-                  innerRadius={80}
-                  label={({ name, payload }: any) => `${name} ${payload.percentage.toFixed(1)}%`}
-                >
-                  {data.entries.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                <Pie data={allEntries} dataKey="investedAmount" nameKey="name" innerRadius={60} outerRadius={120} paddingAngle={2}>
+                  {allEntries.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
-                <Tooltip formatter={(value: any) => fmt(Number(value)) + ' EUR'} />
                 <Legend />
+                <Tooltip formatter={(v: number) => fmtEur(v)} />
               </PieChart>
             </ResponsiveContainer>
-          </div>
+          )}
+
           <Flex alignItems="center" justifyContent="space-between">
             <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
-              {tableData.length} entries
+              {totalItems} entries
             </Paragraph>
             <Flex gap={8} alignItems="center">
               <ExportButtons endpoint={`/analytics/${type}/export`} params={{ sortField, sortDir }} />
-              <Button variant="default" onClick={() => setShowAll(s => !s)}>
-                {showAll ? 'Paginate' : 'Show All'}
+              <Button variant="default" onClick={handleShowAll}>
+                {pageSize === -1 ? 'Paginate' : 'Show All'}
               </Button>
             </Flex>
           </Flex>
-          <DataTable data={tableData} columns={columns} sortable resizable fullWidth
-            defaultSortBy={[{ id: 'investedAmount', desc: true }]}
-            onSortByChange={(s: any) => { if (s?.[0]) { setSortField(s[0].id); setSortDir(s[0].desc ? 'desc' : 'asc'); } }}>
-            {!showAll && (
-              <DataTablePagination defaultPageSize={10} pageSizeOptions={[10, 20, 50, 100]} />
-            )}
+          <DataTable data={data} columns={columns} sortable={{ manualSort: true }} resizable fullWidth sortBy={[{ id: sortField, desc: sortDir === 'desc' }]}
+            onSortByChange={(s: any) => { if (s?.[0]) { setSortField(s[0].id); setSortDir(s[0].desc ? 'desc' : 'asc'); } else { setSortDir(d => d === 'asc' ? 'desc' : 'asc'); } setPage(1); }}>
           </DataTable>
+          {pageSize !== -1 && (
+            <PaginationControls page={page} totalPages={totalPages} pageSize={pageSize}
+              onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          )}
         </>
       )}
     </Flex>

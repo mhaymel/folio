@@ -38,7 +38,12 @@ Returns a paginated envelope per [ui.md](ui.md):
 
 ## UI Specification
 
-- Single-column table displaying country names.
+### Columns
+
+| Column | Alignment | `width` | `minWidth` |
+|--------|-----------|---------|------------|
+| Name | left | 300 | 200 |
+
 - Table conventions per [ui.md](ui.md) apply (sortable, resizable, full width).
 - Default sort: name ascending. Sort changes trigger a re-fetch with `sortField` and `sortDir` query params.
 

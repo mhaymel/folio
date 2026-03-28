@@ -20,10 +20,30 @@ final class TickerSymbolControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getTickerSymbols_returnsJsonArray() throws Exception {
+    void getTickerSymbols_returnsPaginatedResponse() throws Exception {
         mockMvc.perform(get("/api/ticker-symbols"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$").isArray());
+            .andExpect(jsonPath("$.items").isArray())
+            .andExpect(jsonPath("$.page", is(1)))
+            .andExpect(jsonPath("$.totalItems").isNumber());
+    }
+
+    @Test
+    void getTickerSymbols_supportsSortParams() throws Exception {
+        mockMvc.perform(get("/api/ticker-symbols")
+                .param("sortField", "tickerSymbol")
+                .param("sortDir", "desc"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items").isArray());
+    }
+
+    @Test
+    void getTickerSymbols_supportsPagination() throws Exception {
+        mockMvc.perform(get("/api/ticker-symbols")
+                .param("page", "1")
+                .param("pageSize", "50"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.pageSize", is(50)));
     }
 
     @Test

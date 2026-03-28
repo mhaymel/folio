@@ -1,153 +1,158 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Flex } from '@dynatrace/strato-components/layouts';
 import { Heading, Paragraph } from '@dynatrace/strato-components/typography';
-import { DataTable, DataTablePagination } from '@dynatrace/strato-components/tables';
+import { DataTable } from '@dynatrace/strato-components/tables';
 import { Button } from '@dynatrace/strato-components/buttons';
 import { TextInput, Select } from '@dynatrace/strato-components/forms';
 import { ProgressCircle } from '@dynatrace/strato-components/content';
 import api from '../api/client';
-import type { TransactionDto } from '../types';
+import type { TransactionDto, TransactionPaginatedResponse, TransactionFiltersDto } from '../types';
 import ExportButtons from '../components/ExportButtons';
+import PaginationControls from '../components/PaginationControls';
 
-const fmtPrice = (n: number) =>
-  n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-const fmtCount = (n: number) =>
-  n.toLocaleString('de-DE', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
-
-// ISO date → DD-MM-YYYY (avoids timezone shifts; raw ISO used for sort)
-const isoDate = (s: string) => s.substring(0, 10);
-const fmtDate = (s: string) => {
-  const d = isoDate(s);
-  return `${d.substring(8, 10)}-${d.substring(5, 7)}-${d.substring(0, 4)}`;
-};
-
+const fmtNum2 = (v: number) => v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtNum3 = (v: number) => v.toLocaleString('de-DE', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 
 export default function Transactions() {
-  const [allTxns, setAllTxns] = useState<TransactionDto[]>([]);
+  const [data, setData] = useState<TransactionDto[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [filteredCount, setFilteredCount] = useState(0);
+  const [sumCount, setSumCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [sortField, setSortField] = useState('date');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [isinFilter, setIsinFilter] = useState('');
   const [nameFilter, setNameFilter] = useState('');
   const [depotFilter, setDepotFilter] = useState('');
-  const [showAll, setShowAll] = useState(false);
-  const [sortField, setSortField] = useState('date');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [depotOptions, setDepotOptions] = useState<string[]>([]);
 
-  const cellStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' };
+  const loadFilters = useCallback(async () => {
+    try {
+      const r = await api.get<TransactionFiltersDto>('/transactions/filters');
+      setDepotOptions(r.data.depots);
+    } catch { /* ignore */ }
+  }, []);
 
-  const columns = useMemo(() => [
-    { id: 'date', header: 'Date', accessor: (r: TransactionDto) => fmtDate(r.date), sortAccessor: (r: TransactionDto) => isoDate(r.date), sortType: 'text' as const, width: 105, minWidth: 105 },
-    { id: 'isin', header: 'ISIN', accessor: (r: TransactionDto) => r.isin, cell: (info: { value: string }) => (
-      <span style={cellStyle} onDoubleClick={() => setIsinFilter(info.value)} title="Double-click to filter by this ISIN">{info.value}</span>
-    ), sortType: 'text' as const, width: 140, minWidth: 140 },
-    { id: 'name', header: 'Name', accessor: (r: TransactionDto) => r.name ?? '', cell: (info: { value: string }) => (
-      <span style={cellStyle} onDoubleClick={() => setNameFilter(info.value)} title="Double-click to filter by this name">{info.value}</span>
-    ), sortType: 'text' as const, width: 240, minWidth: 120 },
-    { id: 'depot', header: 'Depot', accessor: 'depot', sortType: 'text' as const, width: 100, minWidth: 80 },
-    { id: 'count', header: 'Count', accessor: (r: TransactionDto) => r.count, cell: (info: { value: number }) => (
-      <span style={{ display: 'flex', alignItems: 'center', height: '100%', justifyContent: 'flex-end', color: info.value < 0 ? '#ff6b6b' : info.value > 0 ? '#51cf66' : undefined }}>{fmtCount(info.value)}</span>
-    ), sortType: 'number' as const, alignment: 'right' as const, minWidth: 80 },
-    { id: 'sharePrice', header: 'Share Price', accessor: (r: TransactionDto) => fmtPrice(r.sharePrice), sortType: 'number' as const, alignment: 'right' as const, minWidth: 100 },
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], []);
-
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await api.get<TransactionDto[]>('/transactions');
-      setAllTxns(r.data);
+      const params: Record<string, string | number> = { sortField, sortDir, page, pageSize };
+      if (isinFilter) params.isin = isinFilter;
+      if (nameFilter) params.name = nameFilter;
+      if (depotFilter) params.depot = depotFilter;
+      const r = await api.get<TransactionPaginatedResponse>('/transactions', { params });
+      setData(r.data.items);
+      setTotalItems(r.data.totalItems);
+      setTotalPages(r.data.totalPages);
+      setFilteredCount(r.data.filteredCount);
+      setSumCount(r.data.sumCount);
     } finally {
       setLoading(false);
     }
+  }, [sortField, sortDir, page, pageSize, isinFilter, nameFilter, depotFilter]);
+
+  useEffect(() => { loadFilters(); }, [loadFilters]);
+  useEffect(() => { load(); }, [load]);
+
+  const handleShowAll = () => {
+    if (pageSize === -1) { setPageSize(10); setPage(1); } else { setPageSize(-1); }
   };
 
-  useEffect(() => { load(); }, []);
+  const handleCellDoubleClick = (field: string, value: string) => {
+    if (field === 'isin') { setIsinFilter(value); setPage(1); }
+    else if (field === 'name') { setNameFilter(value); setPage(1); }
+    else if (field === 'depot') { setDepotFilter(value); setPage(1); }
+  };
 
-  const depots = useMemo(
-    () => [...new Set(allTxns.map(t => t.depot))].sort(),
-    [allTxns]
-  );
+  const exportParams: Record<string, string> = { sortField, sortDir };
+  if (isinFilter) exportParams.isin = isinFilter;
+  if (nameFilter) exportParams.name = nameFilter;
+  if (depotFilter) exportParams.depot = depotFilter;
 
-  const filteredTxns = useMemo(() => allTxns.filter(t => {
-    const matchesIsin = !isinFilter || t.isin.toLowerCase().includes(isinFilter.toLowerCase());
-    const matchesName = !nameFilter || (t.name ?? '').toLowerCase().includes(nameFilter.toLowerCase());
-    const matchesDepot = !depotFilter || t.depot === depotFilter;
-    return matchesIsin && matchesName && matchesDepot;
-  }), [allTxns, isinFilter, nameFilter, depotFilter]);
-
-  const sumCount = useMemo(
-    () => filteredTxns.reduce((sum, t) => sum + t.count, 0),
-    [filteredTxns]
-  );
-
-  const exportParams = useMemo(() => ({
-    isin: isinFilter || undefined,
-    name: nameFilter || undefined,
-    depot: depotFilter || undefined,
-    sortField,
-    sortDir,
-  }), [isinFilter, nameFilter, depotFilter, sortField, sortDir]);
+  const columns = [
+    { id: 'date', header: 'Date', accessor: 'date', sortType: 'text' as const, alignment: 'center' as const, width: 105, minWidth: 105 },
+    {
+      id: 'isin', header: 'ISIN', accessor: 'isin', sortType: 'text' as const, alignment: 'left' as const, width: 140, minWidth: 140,
+      cell: ({ rowData }: { rowData: TransactionDto }) => (
+        <span onDoubleClick={() => handleCellDoubleClick('isin', rowData.isin)} style={{ display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.isin}</span>
+      ),
+    },
+    {
+      id: 'name', header: 'Name', accessor: (row: TransactionDto) => row.name ?? '', sortType: 'text' as const, alignment: 'left' as const, width: 240, minWidth: 120,
+      cell: ({ rowData }: { rowData: TransactionDto }) => (
+        <span onDoubleClick={() => rowData.name && handleCellDoubleClick('name', rowData.name)} style={{ display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.name ?? ''}</span>
+      ),
+    },
+    {
+      id: 'depot', header: 'Depot', accessor: 'depot', sortType: 'text' as const, alignment: 'left' as const, width: 100, minWidth: 80,
+      cell: ({ rowData }: { rowData: TransactionDto }) => (
+        <span onDoubleClick={() => handleCellDoubleClick('depot', rowData.depot)} style={{ display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.depot}</span>
+      ),
+    },
+    {
+      id: 'count', header: 'Count', accessor: (row: TransactionDto) => fmtNum3(row.count), sortType: 'number' as const, alignment: 'right' as const, width: 100, minWidth: 80,
+      cell: ({ rowData }: { rowData: TransactionDto }) => (
+        <span style={{ color: rowData.count < 0 ? 'red' : rowData.count > 0 ? 'green' : undefined }}>{fmtNum3(rowData.count)}</span>
+      ),
+    },
+    { id: 'sharePrice', header: 'Share Price', accessor: (row: TransactionDto) => fmtNum2(row.sharePrice), sortType: 'number' as const, alignment: 'right' as const, width: 110, minWidth: 100 },
+  ];
 
   return (
     <Flex flexDirection="column" gap={16}>
       <Heading level={1}>Transactions</Heading>
 
-      <Flex gap={8} alignItems="center">
-        <TextInput
-          placeholder="Filter by ISIN"
-          value={isinFilter}
-          onChange={val => setIsinFilter(val ?? '')}
-        />
-        {isinFilter && (
-          <Button variant="default" onClick={() => setIsinFilter('')}>Clear</Button>
-        )}
-        <TextInput
-          placeholder="Filter by name"
-          value={nameFilter}
-          onChange={val => setNameFilter(val ?? '')}
-        />
-        {nameFilter && (
-          <Button variant="default" onClick={() => setNameFilter('')}>Clear</Button>
-        )}
-        <Select<string> value={depotFilter || null} onChange={val => setDepotFilter(val ?? '')}>
+      <Flex gap={16} alignItems="center" flexWrap="wrap">
+        <TextInput placeholder="Filter ISIN..." value={isinFilter}
+          onChange={(v: string) => { setIsinFilter(v); setPage(1); }} />
+        <TextInput placeholder="Filter Name..." value={nameFilter}
+          onChange={(v: string) => { setNameFilter(v); setPage(1); }} />
+        <Select value={depotFilter || '__all'} onChange={(v: string) => { setDepotFilter(v === '__all' ? '' : v); setPage(1); }}>
           <Select.Content>
-            <Select.Option value="">All depots</Select.Option>
-            {depots.map(d => (
-              <Select.Option key={d} value={d}>{d}</Select.Option>
-            ))}
+            <Select.Option value="__all">All depots</Select.Option>
+            {depotOptions.map(d => <Select.Option key={d} value={d}>{d}</Select.Option>)}
           </Select.Content>
         </Select>
-        <Button onClick={load} variant="default">Refresh</Button>
+        <Button variant="default" onClick={() => { setIsinFilter(''); setNameFilter(''); setDepotFilter(''); setPage(1); }}>Clear</Button>
+      </Flex>
+
+      <Flex alignItems="center" justifyContent="space-between">
+        <Flex gap={16} alignItems="center">
+          <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
+            {filteredCount} transactions
+          </Paragraph>
+          <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
+            Sum: <span style={{ color: sumCount < 0 ? 'red' : sumCount > 0 ? 'green' : undefined }}>
+              {fmtNum3(sumCount)}
+            </span>
+          </Paragraph>
+        </Flex>
+        <Flex gap={8} alignItems="center">
+          <ExportButtons endpoint="/transactions/export" params={exportParams} />
+          <Button variant="default" onClick={handleShowAll}>
+            {pageSize === -1 ? 'Paginate' : 'Show All'}
+          </Button>
+        </Flex>
       </Flex>
 
       {loading ? (
         <Flex alignItems="center" gap={12}>
           <ProgressCircle aria-label="Loading transactions" size="small" />
-          <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>Loading…</Paragraph>
+          <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>Loading...</Paragraph>
         </Flex>
       ) : (
         <>
-          <Flex alignItems="center" justifyContent="space-between">
-            <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>
-              {filteredTxns.length !== allTxns.length
-                ? `${filteredTxns.length} of ${allTxns.length} transactions`
-                : `${allTxns.length} transactions`}
-              {' · Sum count: '}{fmtCount(sumCount)}
-            </Paragraph>
-            <Flex gap={8} alignItems="center">
-              <ExportButtons endpoint="/transactions/export" params={exportParams} />
-              <Button variant="default" onClick={() => setShowAll(s => !s)}>
-                {showAll ? 'Paginate' : 'Show All'}
-              </Button>
-            </Flex>
-          </Flex>
-          <DataTable data={filteredTxns} columns={columns} sortable resizable fullWidth
-            defaultSortBy={[{ id: 'date', desc: true }]}
-            onSortByChange={(s: any) => { if (s?.[0]) { setSortField(s[0].id); setSortDir(s[0].desc ? 'desc' : 'asc'); } }}>
-            {!showAll && (
-              <DataTablePagination defaultPageSize={10} pageSizeOptions={[10, 20, 50, 100]} />
-            )}
+          <DataTable data={data} columns={columns} sortable={{ manualSort: true }} resizable fullWidth sortBy={[{ id: sortField, desc: sortDir === 'desc' }]}
+            onSortByChange={(s: any) => { if (s?.[0]) { setSortField(s[0].id); setSortDir(s[0].desc ? 'desc' : 'asc'); } else { setSortDir(d => d === 'asc' ? 'desc' : 'asc'); } setPage(1); }}>
           </DataTable>
+
+          {pageSize !== -1 && (
+            <PaginationControls page={page} totalPages={totalPages} pageSize={pageSize}
+              onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          )}
         </>
       )}
     </Flex>

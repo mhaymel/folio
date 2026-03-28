@@ -36,7 +36,12 @@
       "Bash(npm test:*)",
       "Bash(ls \"C:/daten/dev/folio/frontend/src/pages/\"*.test.* \"C:/daten/dev/folio/frontend/src/\"*.test.*)",
       "Bash(git -C \"C:/daten/dev/folio\" status --short -- 'frontend/src/**/*.test.*')",
-      "Bash(./gradlew :backend:build)"
+      "Bash(./gradlew :backend:build)",
+      "Bash(ls -la /c/daten/dev/folio/frontend/src/**/*.test.tsx)",
+      "Bash(ls -1 /c/daten/dev/folio/frontend/src/pages/*.tsx)",
+      "Bash(xargs basename:*)",
+      "Bash(./gradlew :backend:compileJava)",
+      "Bash(./gradlew :backend:compileTestJava)"
     ]
   }
 }

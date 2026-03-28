@@ -48,36 +48,70 @@ vi.mock('@dynatrace/strato-components/content', () => ({
   ProgressCircle: (props: any) => <div role="progressbar" aria-label={props['aria-label']} />,
 }));
 
-vi.mock('@dynatrace/strato-components/tables', () => ({
-  DataTable: ({ data, columns, children }: any) => (
-    <div data-testid="data-table">
-      <table>
-        <thead>
-          <tr>
-            {columns?.map((col: any) => (
-              <th key={col.id}>{col.header}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data?.map((row: any, i: number) => (
-            <tr key={i}>
-              {columns?.map((col: any) => (
-                <td key={col.id}>
-                  {typeof col.accessor === 'function'
-                    ? col.accessor(row)
-                    : row[col.accessor]}
-                </td>
+vi.mock('@dynatrace/strato-components/tables', () => {
+  // Track sort state per table instance to simulate TanStack three-state cycle
+  let sortState: { id: string; desc: boolean } | null = null;
+  return {
+    DataTable: ({ data, columns, children, onSortByChange, sortBy, defaultSortBy }: any) => {
+      const controlled = sortBy?.[0];
+      if (controlled) {
+        sortState = { id: controlled.id, desc: controlled.desc };
+      } else if (sortState === null && defaultSortBy?.[0]) {
+        sortState = { id: defaultSortBy[0].id, desc: defaultSortBy[0].desc };
+      }
+      const handleHeaderClick = (colId: string) => {
+        if (!onSortByChange) return;
+        if (sortState?.id === colId) {
+          if (!sortState.desc) {
+            // asc -> desc
+            sortState = { id: colId, desc: true };
+            onSortByChange([{ id: colId, desc: true }]);
+          } else {
+            // desc -> removal (empty array)
+            sortState = null;
+            onSortByChange([]);
+          }
+        } else {
+          // new column -> asc
+          sortState = { id: colId, desc: false };
+          onSortByChange([{ id: colId, desc: false }]);
+        }
+      };
+      return (
+        <div data-testid="data-table">
+          <table>
+            <thead>
+              <tr>
+                {columns?.map((col: any) => (
+                  <th key={col.id} data-alignment={col.alignment || 'left'}
+                    onClick={() => handleHeaderClick(col.id)} style={{ cursor: 'pointer' }}>{col.header}{sortState?.id === col.id && <span data-testid="sort-indicator">{sortState.desc ? ' ↓' : ' ↑'}</span>}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data?.map((row: any, i: number) => (
+                <tr key={i}>
+                  {columns?.map((col: any) => {
+                    const value = typeof col.accessor === 'function'
+                      ? col.accessor(row)
+                      : row[col.accessor];
+                    return (
+                      <td key={col.id}>
+                        {col.cell ? col.cell({ value, rowData: row }) : value}
+                      </td>
+                    );
+                  })}
+                </tr>
               ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {children}
-    </div>
-  ),
-  DataTablePagination: () => <div data-testid="pagination" />,
-}));
+            </tbody>
+          </table>
+          {children}
+        </div>
+      );
+    },
+    DataTablePagination: () => <div data-testid="pagination" />,
+  };
+});
 
 vi.mock('@dynatrace/strato-components/forms', () => ({
   TextInput: ({ value, onChange, ...props }: any) => (

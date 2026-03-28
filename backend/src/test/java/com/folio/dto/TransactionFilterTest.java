@@ -9,7 +9,7 @@ final class TransactionFilterTest {
     @Test
     void shouldCreateFilterWithAllFields() {
         // given / when
-        var filter = new TransactionFilter("IE00B1", "DeGiro", null, null);
+        var filter = new TransactionFilter("IE00B1", null, "DeGiro", null, null);
 
         // then
         assertThat(filter.isin()).isEqualTo("IE00B1");
@@ -25,6 +25,7 @@ final class TransactionFilterTest {
 
         // then
         assertThat(filter.isin()).isNull();
+        assertThat(filter.name()).isNull();
         assertThat(filter.depot()).isNull();
         assertThat(filter.fromDate()).isNull();
         assertThat(filter.toDate()).isNull();

@@ -2,7 +2,10 @@ package com.folio.controller;
 
 import com.folio.dto.ExportRequest;
 import com.folio.dto.IsinNameDto;
+import com.folio.dto.PaginatedResponseDto;
 import com.folio.service.ExportService;
+import com.folio.service.PaginationHelper;
+import com.folio.service.SortHelper;
 import com.folio.dto.ExportColumn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,11 +16,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/isin-names")
 @Tag(name = "ISIN Names", description = "ISIN to stock name mappings")
 public class IsinNameController {
+
+    private static final Map<String, Comparator<IsinNameDto>> SORT_FIELDS = Map.of(
+        "isin", SortHelper.text(IsinNameDto::getIsin),
+        "name", SortHelper.text(IsinNameDto::getName)
+    );
 
     private final EntityManager em;
     private final ExportService exportService;
@@ -30,9 +39,13 @@ public class IsinNameController {
     @GetMapping
     @Operation(summary = "Get all ISIN to name mappings")
     @Transactional(readOnly = true)
-    @SuppressWarnings("unchecked")
-    public ResponseEntity<List<IsinNameDto>> getIsinNames() {
-        return ResponseEntity.ok(loadAll());
+    public ResponseEntity<PaginatedResponseDto<IsinNameDto>> getIsinNames(
+            @RequestParam(required = false, defaultValue = "name") String sortField,
+            @RequestParam(required = false, defaultValue = "asc") String sortDir,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int pageSize) {
+        List<IsinNameDto> data = SortHelper.sort(loadAll(), sortField, sortDir, SORT_FIELDS);
+        return ResponseEntity.ok(PaginationHelper.paginate(data, page, pageSize));
     }
 
     @GetMapping("/export")
@@ -42,10 +55,9 @@ public class IsinNameController {
             @RequestParam(defaultValue = "csv") String format,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir) {
-
         List<IsinNameDto> data = loadAll();
         if (sortField != null && !sortField.isBlank()) {
-            data = sorted(data, sortField, sortDir);
+            data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
         }
         List<ExportColumn<IsinNameDto>> columns = List.of(
                 new ExportColumn<>("ISIN", IsinNameDto::getIsin),
@@ -69,16 +81,5 @@ public class IsinNameController {
                 .name((String) r[1])
                 .build())
             .toList();
-    }
-
-    private static List<IsinNameDto> sorted(List<IsinNameDto> data, String field, String dir) {
-        Comparator<IsinNameDto> cmp = switch (field) {
-            case "isin" -> Comparator.comparing(IsinNameDto::getIsin, Comparator.nullsLast(String::compareToIgnoreCase));
-            case "name" -> Comparator.comparing(IsinNameDto::getName, Comparator.nullsLast(String::compareToIgnoreCase));
-            default -> null;
-        };
-        if (cmp == null) return data;
-        if ("desc".equalsIgnoreCase(dir)) cmp = cmp.reversed();
-        return data.stream().sorted(cmp).toList();
     }
 }

@@ -59,12 +59,12 @@ Returns distinct depot names from all transactions:
 
 | Column | Format | Alignment | `width` | `minWidth` |
 |--------|--------|-----------|---------|------------|
-| Date | Pre-formatted by backend as `DD-MM-YYYY`; rendered as-is; default sort descending | left | 105 | 105 |
-| ISIN | plain; custom cell with `display:flex; align-items:center; height:100%`; double-click → `setIsinFilter` | left | 140 | 140 |
-| Name | plain; custom cell with `display:flex; align-items:center; height:100%`; double-click → `setNameFilter` | left | 240 | 120 |
-| Depot | plain | left | 100 | 80 |
-| Count | Number format per [ui.md](ui.md) with 3 decimal places; negative values red, positive values green | right | — | 80 |
-| Share Price | Number format per [ui.md](ui.md) | right | — | 100 |
+| Date | Pre-formatted by backend as `DD-MM-YYYY`; rendered as-is; default sort descending | centre | 105 | 105 |
+| ISIN | Double-click → `setIsinFilter` | left | 140 | 140 |
+| Name | Double-click → `setNameFilter` | left | 240 | 120 |
+| Depot | Plain text | left | 100 | 80 |
+| Count | 3 decimal places; negative red, positive green | right | 100 | 80 |
+| Share Price | Number format per [ui.md](ui.md) | right | 110 | 100 |
 
 ### Summary
 - Display sum of count of transactions reflecting current filters, e.g. "42 transactions" or "12 of 50 transactions" if a filter is active.
@@ -83,6 +83,11 @@ All filter values and sort state are sent as query params to `GET /api/transacti
 ### Loading and Refresh
 
 - A loading indicator (spinner) is displayed while data is being fetched from the backend.
+- **Filter inputs must remain mounted during loading.** The loading spinner replaces only the table/data area, not the filter bar. This ensures the user can continue typing in filter fields without losing focus.
 - A Refresh button reloads all transactions from the backend.
 - **Loading:** `ProgressCircle size="small"` + "Loading…".
+
+### Name Filter — All Transactions for Matching Stocks
+
+When filtering by name, the result must include **all** transactions (both buy and sell) for any stock whose name matches the filter. The backend must not exclude sell transactions (negative count) just because name resolution returns null for some transactions. Implementation: collect all ISIN codes whose resolved name matches the filter, then include all transactions with those ISIN codes.
 
