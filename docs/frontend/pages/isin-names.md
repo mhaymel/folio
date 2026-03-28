@@ -12,16 +12,27 @@ The UI should provide a view that displays all ISINs along with their associated
 
 ### `GET /api/isin-names`
 
-Returns all ISIN to name mappings, sorted alphabetically by ISIN.
+| Query Param | Description |
+|-------------|-------------|
+| `sortField` | Sort field: `isin`, `name` (default: `name`) |
+| `sortDir` | `asc` or `desc` (default: `asc`) |
+| `page` | Page number, 1-based (default: `1`) |
+| `pageSize` | Items per page; one of `[10, 20, 50, 100, -1]`; `-1` = all (default: `10`) |
 
-**Response:**
+Returns a paginated envelope per [ui.md](ui.md):
 ```json
-[
-  { "isin": "DE000BASF111", "name": "BASF SE" },
-  { "isin": "DE000BASF111", "name": "BASF" },
-  { "isin": "IE00B4L5Y983", "name": "iShares Core MSCI World ETF" },
-  { "isin": "US0378331005", "name": "Apple Inc." }
-]
+{
+  "items": [
+    { "isin": "DE000BASF111", "name": "BASF SE" },
+    { "isin": "DE000BASF111", "name": "BASF" },
+    { "isin": "IE00B4L5Y983", "name": "iShares Core MSCI World ETF" },
+    { "isin": "US0378331005", "name": "Apple Inc." }
+  ],
+  "page": 1,
+  "pageSize": 10,
+  "totalItems": 4,
+  "totalPages": 1
+}
 ```
 
 **Notes:**
@@ -42,7 +53,7 @@ Returns all ISIN to name mappings, sorted alphabetically by ISIN.
 ### Features
 
 - Table conventions per [ui.md](ui.md) apply (pagination, sortable, resizable, full width).
-- Default sort: name ascending.
+- Default sort: name ascending. Sort changes trigger a re-fetch with `sortField` and `sortDir` query params.
 - Loading indicator while fetching data.
 - Count display: `"N ISIN name mappings"`.
 

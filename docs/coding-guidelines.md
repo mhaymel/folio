@@ -6,6 +6,7 @@ Central coding conventions for the Folio project. All contributors (human and AI
 
 ## General
 
+- **Thin frontend / fat backend** — Keep the frontend as thin as possible. All data logic (filtering, sorting, aggregation, derived values) belongs in the backend. The frontend only renders data and forwards user interactions (filter criteria, sort parameters) to the backend via REST calls. The goal is to minimise the amount of frontend code.
 - Keep classes and functions small and focused (single responsibility).
 - Prefer composition over inheritance.
 - Do **not** use abstract classes; use interfaces (with default methods where appropriate) instead.

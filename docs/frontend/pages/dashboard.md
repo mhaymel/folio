@@ -37,7 +37,7 @@ The data should be fetched from the backend via a dedicated REST API endpoint.
   "totalDividendRatio": 3.14,
   "top5Holdings": [{ "isin": "IE00B4L5Y983", "name": "iShares Core MSCI World ETF", "investedAmount": 4500.00 }],
   "top5DividendSources": [{ "isin": "DE000BASF111", "name": "BASF SE", "estimatedAnnualIncome": 150.00 }],
-  "lastQuoteFetchAt": "2026-03-22T14:30:00"
+  "lastQuoteFetchAt": "22.03.2026 14:30"
 }
 ```
 
@@ -48,7 +48,7 @@ The data should be fetched from the backend via a dedicated REST API endpoint.
 - **KPI row:** Total Portfolio Value (EUR), Number of Stocks, Total Dividend Ratio (%).
 - **Top 5 Holdings:** table with ISIN, Stock Name, Invested Amount (EUR).
 - **Top 5 Dividend Sources:** table with ISIN, Stock Name, Est. Annual Income (EUR).
-- **Last Quote Fetch:** timestamp formatted per [ui.md](ui.md) (e.g., "Last updated: 22.03.2026 14:30"); `—` if not yet fetched.
+- **Last Quote Fetch:** pre-formatted by the backend as `DD.MM.YYYY HH:mm` (e.g., "Last updated: 22.03.2026 14:30"); rendered as-is. `—` if null (not yet fetched).
 - Data from `GET /api/dashboard`.
 - Table conventions per [ui.md](ui.md) apply (sortable, resizable, full width).
 

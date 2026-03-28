@@ -12,6 +12,24 @@ The UI should provide a view that displays all stocks (ISINs) currently held in 
 
 ### `GET /api/stocks` — Current positions aggregated from transactions
 
+| Query Param | Description |
+|-------------|-------------|
+| `country` | Filter by exact country name (optional) |
+| `branch` | Filter by exact branch name (optional) |
+| `sortField` | One of: `isin`, `name`, `country`, `branch`, `totalShares`, `avgEntryPrice`, `currentQuote`, `performancePercent`, `dividendPerShare`, `estimatedAnnualIncome` (default: `isin`) |
+| `sortDir` | `asc` or `desc` (default: `asc`) |
+| `page` | Page number, 1-based (default: `1`) |
+| `pageSize` | Items per page; one of `[10, 20, 50, 100, -1]`; `-1` = all (default: `10`) |
+
+Returns a paginated envelope per [ui.md](ui.md).
+
+### `GET /api/stocks/filters` — Available filter options
+
+Returns distinct countries and branches from current positions:
+```json
+{ "countries": ["Austria", "Germany", …], "branches": ["Technology", "Finance", …] }
+```
+
 **Calculation:**
 - `SUM(count)` per ISIN; keep positions where `SUM(count) > 0`.
 - **Avg entry price:** `SUM(count * share_price) / SUM(count)` across **all** transactions (buys positive, sells negative — reduces cost basis proportionally).
@@ -38,5 +56,6 @@ The UI should provide a view that displays all stocks (ISINs) currently held in 
 | Est. Annual Income | — | — |
 
 - Current Quote and Performance show `—` if no quote fetched yet.
-- Filter bar: country dropdown, branch dropdown.
+- Filter bar: country dropdown (values from `GET /api/stocks/filters`), branch dropdown (values from `GET /api/stocks/filters`).
+- All filter values and sort state are sent as query params to `GET /api/stocks`; the backend returns the filtered, sorted data.
 

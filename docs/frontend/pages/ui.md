@@ -6,6 +6,7 @@ This document defines the baseline UI conventions that apply across all pages. P
 
 ## Core Principles
 
+- **Thin frontend / fat backend** — The frontend shall contain as little logic as possible. All filtering, sorting, aggregation, and data derivation must happen on the backend. The frontend sends user criteria (filter values, sort field/direction) to the backend via REST query parameters and renders the response as-is. This minimises frontend code and keeps a single source of truth for business logic.
 - **User-centred design** — Prioritise ease of use and task efficiency.
 - **Consistency** — Follow the Strato design system for components, tokens, and layout patterns.
 - **Accessibility** — Ensure the interface is usable by all users, regardless of ability or device.
@@ -48,9 +49,8 @@ This document defines the baseline UI conventions that apply across all pages. P
 |---------|--------|---------|
 | Date only | `DD-MM-YYYY` | `22-03-2026` |
 | Date + time | `DD.MM.YYYY HH:mm` | `22.03.2026 14:30` |
-| Sort value | ISO `YYYY-MM-DD` via `sortAccessor` | `2026-03-22` |
 
-**Implementation note:** Extract dates with `isoString.substring(0, 10)` — avoids timezone shifts from `new Date()` parsing.
+**Backend-formatted:** All date values are formatted by the backend before being sent to the frontend. The backend returns date-only fields as `DD-MM-YYYY` strings and date-time fields as `DD.MM.YYYY HH:mm` strings. The frontend renders these strings as-is — no `sortAccessor`, no `isoDate`/`fmtDate` helpers, no `new Date()` parsing. Sorting is handled by the backend on the underlying `LocalDateTime` column before formatting.
 
 #### Numbers
 
@@ -79,17 +79,30 @@ All `DataTable` instances shall follow these conventions unless a page-specific 
 
 #### Sorting and Filtering
 
-- Enable the `sortable` prop on every table.
-- Define a sensible `defaultSortBy` (e.g. most recent date first).
-- When the display format differs from the sort value (e.g. formatted dates), provide a `sortAccessor` that returns the raw sortable value.
+- **Server-side sorting**: All sorting must be performed by the backend. The frontend captures the user's sort interaction (`sortField`, `sortDir`) and re-fetches data from the backend with those parameters as query params. The DataTable `sortable` prop is enabled for UI affordance, but the actual reordering is done by the backend — the frontend must **not** let the DataTable sort the data client-side.
+- Define a sensible default sort (e.g. most recent date first) and send it on the initial request.
+- Since dates are pre-formatted by the backend and sorting is server-side, no `sortAccessor` is needed on the frontend.
 
 #### Pagination
 
-- Large datasets shall be paginated by default.
-- Default page size: **10** rows.
-- Selectable page sizes: `[10, 20, 50, 100]`.
-- A **Show All / Paginate** toggle button (top-right of the table area) switches between paginated and unpaginated views.
-- Implementation: `<DataTablePagination defaultPageSize={10} pageSizeOptions={[10, 20, 50, 100]} />`
+Pagination is **server-side**. The backend slices the sorted/filtered result set and returns a paginated envelope. The frontend does **not** use Strato's `<DataTablePagination>` component.
+
+- **Default page size:** 10 rows.
+- **Selectable page sizes:** `[10, 20, 50, 100]`.
+- **Query params:** `page` (1-based, default `1`) and `pageSize` (default `10`; `-1` = all items).
+- A **Show All / Paginate** toggle button (top-right of the table area) switches between paginated (`pageSize=10`) and unpaginated (`pageSize=-1`) views.
+- **Paginated response envelope** (all list endpoints):
+  ```json
+  {
+    "items": [ … ],
+    "page": 1,
+    "pageSize": 10,
+    "totalItems": 142,
+    "totalPages": 15
+  }
+  ```
+- The frontend renders a pagination bar below the table: page navigation (first/previous/next/last), current page indicator (`"Page 1 of 15"`), and a page-size selector.
+- When filters or sort change, `page` resets to `1`.
 
 #### Export
 

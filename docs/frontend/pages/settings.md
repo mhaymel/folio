@@ -79,7 +79,7 @@ If an ISIN has no entry in the relevant config file, that source is skipped for 
 | PUT | `/api/quotes/settings/interval` | Update `quote.fetch.interval.minutes` |
 | POST | `/api/quotes/fetch` | Trigger immediate fetch for all held ISINs |
 
-`GET /api/quotes/settings` response: `{ "enabled": false, "intervalMinutes": 60, "lastFetchAt": "2026-03-22T14:30:00" }` (`lastFetchAt` null if no fetch yet).
+`GET /api/quotes/settings` response: `{ "enabled": false, "intervalMinutes": 60, "lastFetchAt": "22.03.2026 14:30" }` (`lastFetchAt` null if no fetch yet; pre-formatted by backend as `DD.MM.YYYY HH:mm`).
 
 ---
 

@@ -12,15 +12,26 @@ The UI should provide a view that displays the branches, sorted alphabetically. 
 
 ### `GET /api/branches`
 
-Returns all branches, sorted alphabetically.
+| Query Param | Description |
+|-------------|-------------|
+| `sortField` | Sort field (default: `name`) |
+| `sortDir` | `asc` or `desc` (default: `asc`) |
+| `page` | Page number, 1-based (default: `1`) |
+| `pageSize` | Items per page; one of `[10, 20, 50, 100, -1]`; `-1` = all (default: `10`) |
 
-**Response:**
+Returns a paginated envelope per [ui.md](ui.md):
 ```json
-[
-  { "id": 1, "name": "Energy" },
-  { "id": 2, "name": "Technology" },
-  { "id": 3, "name": "Healthcare" }
-]
+{
+  "items": [
+    { "id": 1, "name": "Energy" },
+    { "id": 2, "name": "Technology" },
+    { "id": 3, "name": "Healthcare" }
+  ],
+  "page": 1,
+  "pageSize": 10,
+  "totalItems": 3,
+  "totalPages": 1
+}
 ```
 
 ---
@@ -29,5 +40,5 @@ Returns all branches, sorted alphabetically.
 
 - Single-column table displaying branch names.
 - Table conventions per [ui.md](ui.md) apply (sortable, resizable, full width).
-- Data sorted alphabetically by name.
+- Default sort: name ascending. Sort changes trigger a re-fetch with `sortField` and `sortDir` query params.
 
