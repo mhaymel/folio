@@ -46,8 +46,9 @@ Returns paginated list with ISIN, stock name (JOIN `isin_name`), depot, date, co
 | Count | Number format per [ui.md](ui.md) with 3 decimal places; negative values red, positive values green | right | — | 80 |
 | Share Price | Number format per [ui.md](ui.md) | right | — | 100 |
 
-### Summary 
+### Summary
 - Display sum of count of transactions reflecting current filters, e.g. "42 transactions" or "12 of 50 transactions" if a filter is active.
+- Display the sum of the Count column reflecting current filters, formatted with 3 decimal places in German locale (e.g. `"Sum count: 1.234,500"`).
 
 ### Filtering
 

@@ -28,7 +28,14 @@
       "Bash(mkdir -p /c/daten/dev/folio/docs)",
       "Bash(mv /c/daten/dev/folio/plan.md /c/daten/dev/folio/docs/)",
       "Bash(mv /c/daten/dev/folio/PROJECT.md /c/daten/dev/folio/docs/)",
-      "Bash(mv /c/daten/dev/folio/gaps.and.issues.md /c/daten/dev/folio/docs/)"
+      "Bash(mv /c/daten/dev/folio/gaps.and.issues.md /c/daten/dev/folio/docs/)",
+      "Bash(./gradlew test:*)",
+      "Bash(./gradlew :backend:test)",
+      "Bash(npx playwright:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npm test:*)",
+      "Bash(ls \"C:/daten/dev/folio/frontend/src/pages/\"*.test.* \"C:/daten/dev/folio/frontend/src/\"*.test.*)",
+      "Bash(git -C \"C:/daten/dev/folio\" status --short -- 'frontend/src/**/*.test.*')"
     ]
   }
 }

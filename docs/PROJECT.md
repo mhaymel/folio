@@ -36,6 +36,10 @@ It is a personal tool, just for me. Only one portfolio is managed. There can be 
 The backend fetches periodically quote data via webscrapping. The interval can be changed dynamically via the UI and is stored database in table settings. The quotes are stored in the database and used for performance calculation and display in the UI.
 - The backend shall log the URLs it navigates to when fetching quotes from each provider.
 
+#### German Decimal Parsing
+
+`ImportService.parseDouble`: if `,` or `~` is present in the value, remove all `.` first (thousands separator), then replace `,`/`~` with `.`. This handles German locale numbers like `1.234,56` → `1234.56`.
+
 #### Broker Transaction Import
 - The system shall import transaction data from **DeGiro** broker CSV exports (see sample: [`docs/samples/Transactions.csv`](docs/samples/Transactions.csv)). The share price stored per transaction shall be derived from the `Wert EUR` column (index 11, total trade value in EUR) divided by the absolute share count, not from the `Kurs` column (index 7), which is denominated in the stock's local trading currency and may not be EUR. Rows where `Anzahl` (count) is zero shall be skipped entirely — they represent non-trade entries such as fees or dividends and would cause division by zero in the price formula.
 - The system shall import transaction data from **ZERO** broker CSV exports (see sample: [`docs/samples/ZERO-orders-22.03.2026.csv`](docs/samples/ZERO-orders-22.03.2026.csv)).
@@ -117,7 +121,7 @@ clerk (https://clerk.com/) should be used for user management and authentication
   - Design tokens are injected via JS in `main.tsx` (CSS import not available)
   - `AppRoot` from `@dynatrace/strato-components/core` wraps the app
   - Navigation lives in `Page.Sidebar`; the `Page` component handles responsive collapse to a drawer
-  - Components imported from subpackage paths: `/layouts`, `/buttons`, `/forms`, `/tables`, `/typography`
+  - Components imported from subpackage paths: `/layouts`, `/buttons`, `/forms`, `/tables`, `/typography`, `/content`
 - Dark mode and light mode with the ability to switch between them (planned; tokens support it via `@media prefers-color-scheme`)
 - Clerk authentication planned (`@clerk/clerk-react`) — not yet integrated
 
@@ -335,6 +339,18 @@ settings         (id, key VARCHAR(100) UNIQUE NOT NULL, value VARCHAR(500) NOT N
 
 ---
 
+## Running Locally
+
+```bash
+# Backend (dev profile, H2 in-memory)
+cd backend && ./gradlew bootRun
+
+# Frontend
+cd frontend && npm run dev   # http://localhost:5173
+```
+
+---
+
 ## Testing
 
 **Backend (JUnit 5 + Spring Boot Test):**
@@ -351,9 +367,20 @@ settings         (id, key VARCHAR(100) UNIQUE NOT NULL, value VARCHAR(500) NOT N
   - `ImportToQueryIntegrationTest` — end-to-end pipeline: import reference data → verify via query endpoints
 - Test profile uses `application-test.yml` (in-memory H2).
 
-**Frontend (Vitest + React Testing Library):**
-- Unit tests for utility functions (formatters, filters) — planned.
-- Component tests for pages with mocked API responses — planned.
+**Frontend (Vitest + React Testing Library + Playwright):**
+- **Component tests** (Vitest + React Testing Library + jsdom):
+  - `App.test.tsx` — route-to-component mapping for all 13 routes
+  - `Layout.test.tsx` — sidebar navigation rendering, active item highlighting, click and keyboard navigation
+  - `ExportButtons.test.tsx` — CSV/Excel download URL construction, parameter forwarding, empty param omission
+  - `Dashboard.test.tsx` — KPI card rendering, top-5 tables, last-updated timestamp formatting, null timestamp handling
+  - `Countries.test.tsx` — loading indicator, data rendering, pagination toggle, export buttons
+  - `Stocks.test.tsx` — loading indicator, column headers, data rows, filter dropdowns, API call verification
+  - `Settings.test.tsx` — loading state, enabled/disabled text, timestamp formatting, Fetch Now trigger
+- **E2E tests** (Playwright + Chromium):
+  - `navigation.spec.ts` — page loads, sidebar items, inter-page navigation, active item highlighting, app header
+  - `pages.spec.ts` — Dashboard KPIs and sections, Countries/Stocks/Settings/Import/Analytics page rendering
+- Strato components are mocked in `src/test/setup.tsx` with simple HTML equivalents for unit tests.
+- Test runner: `npm test` (Vitest), `npm run test:e2e` (Playwright — requires running frontend + backend).
 
 ---
 

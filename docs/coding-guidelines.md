@@ -17,6 +17,10 @@ Central coding conventions for the Folio project. All contributors (human and AI
 
 ## Backend (Java 21 / Spring Boot)
 
+### No Lombok
+
+Do **not** use Lombok. Write explicit Java: getters, setters, constructors, manual `Builder` classes (extracted to top-level `<Type>Builder`), `LoggerFactory.getLogger(ClassName.class)`.
+
 ### Design
 
 - Do **not** use abstract classes. Define contracts as interfaces; share reusable logic via helper/utility classes or default interface methods.
@@ -50,6 +54,7 @@ Central coding conventions for the Folio project. All contributors (human and AI
 
 - One migration file per schema change, prefixed with `V<number>__` (e.g. `V1__create_schema.sql`).
 - Never alter existing, already-applied migration files — add a new migration instead.
+- Never use `ddl-auto: create` — all schema changes must go through Flyway migrations.
 - Use `snake_case` for all table and column names.
 
 ### Error Handling
@@ -87,6 +92,13 @@ Central coding conventions for the Folio project. All contributors (human and AI
 ---
 
 ## Frontend (React / TypeScript / Vite)
+
+### Strato Component API Quirks
+
+- `Paragraph` has no `color` prop — use `style={{ color: 'var(--dt-color-...)' }}`.
+- `TextInput` onChange signature: `(value: string, event) => void`.
+- `Select` uses `Select.Content` + `Select.Option` children pattern.
+- Install packages with `--legacy-peer-deps` (required by `@dynatrace-sdk/*` peer deps).
 
 ### Design
 

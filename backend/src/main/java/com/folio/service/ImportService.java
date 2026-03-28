@@ -1,15 +1,10 @@
 package com.folio.service;
 
-import static java.lang.Double.parseDouble;
-
-import static java.lang.Math.abs;
-
 import com.folio.dto.ImportResult;
 import com.folio.model.*;
-import com.folio.repository.*;
+import com.folio.repository.ImportRepositories;
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
-import static org.slf4j.LoggerFactory.getLogger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +19,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static java.lang.Double.parseDouble;
+import static java.lang.Math.abs;
+import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
 public class ImportService {
@@ -130,7 +129,8 @@ public class ImportService {
 
         repos.transaction().saveAll(transactions);
         log.info("Imported {} DeGiro transactions", transactions.size());
-        return ImportResult.builder().success(errors.isEmpty()).imported(transactions.size()).errors(errors).build();
+            ImportResult importResult = ImportResult.builder().success(errors.isEmpty()).imported(transactions.size()).errors(errors).build();
+            return importResult;
         } finally {
             importLock.unlock();
         }
@@ -250,7 +250,9 @@ public class ImportService {
 
         repos.dividendPayment().saveAll(payments);
         log.info("Imported {} DeGiro dividend payments", payments.size());
-        return ImportResult.builder().success(errors.isEmpty()).imported(payments.size()).errors(errors).build();
+
+            ImportResult importResult = ImportResult.builder().success(errors.isEmpty()).imported(payments.size()).errors(errors).build();
+            return importResult;
         } finally {
             importLock.unlock();
         }

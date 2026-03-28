@@ -50,6 +50,8 @@ This document defines the baseline UI conventions that apply across all pages. P
 | Date + time | `DD.MM.YYYY HH:mm` | `22.03.2026 14:30` |
 | Sort value | ISO `YYYY-MM-DD` via `sortAccessor` | `2026-03-22` |
 
+**Implementation note:** Extract dates with `isoString.substring(0, 10)` — avoids timezone shifts from `new Date()` parsing.
+
 #### Numbers
 
 - Use German locale: `toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })`
@@ -108,6 +110,32 @@ All `DataTable` instances shall follow these conventions unless a page-specific 
 ---
 
 ### Testing
+
+#### UI Unit / Component Tests (Vitest + React Testing Library)
+
+- **Runner:** Vitest with jsdom environment, configured in `vitest.config.ts`.
+- **Setup:** `src/test/setup.tsx` mocks all Strato design system components (`@dynatrace/strato-components/*`) with lightweight HTML equivalents so tests run without the full Strato runtime.
+- **Utilities:** `src/test/test-utils.tsx` provides `renderWithRouter()` for components that need React Router context.
+- **Scope:** Each page and shared component shall have a corresponding `.test.tsx` file covering:
+  - Rendering of headings, data tables, KPI cards, and other structural elements.
+  - Loading states (progress indicators shown while API calls are pending).
+  - Data display with mocked API responses.
+  - User interactions: navigation clicks, filter toggles, button actions.
+  - API call verification (correct endpoints and parameters).
+- **Scripts:** `npm test` (single run), `npm run test:watch` (watch mode).
+
+#### UI End-to-End Tests (Playwright)
+
+- **Runner:** Playwright with Chromium, configured in `playwright.config.ts`.
+- **Test directory:** `e2e/`.
+- **Scope:**
+  - Navigation: page loads, sidebar link navigation, active item highlighting.
+  - Page structure: verify key headings, sections, buttons, and controls are visible on each page.
+  - Cross-page flows: navigate between pages and verify content changes.
+- **Prerequisites:** Frontend dev server (`npm run dev`) and backend must be running; Playwright `webServer` config auto-starts the frontend.
+- **Scripts:** `npm run test:e2e` (headless), `npm run test:e2e:ui` (interactive UI mode).
+
+#### General Principles
 
 - Verify a seamless experience across major browsers and device types.
 - Validate that the interface is intuitive through usability testing.

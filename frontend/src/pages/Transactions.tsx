@@ -75,6 +75,11 @@ export default function Transactions() {
     return matchesIsin && matchesName && matchesDepot;
   }), [allTxns, isinFilter, nameFilter, depotFilter]);
 
+  const sumCount = useMemo(
+    () => filteredTxns.reduce((sum, t) => sum + t.count, 0),
+    [filteredTxns]
+  );
+
   const exportParams = useMemo(() => ({
     isin: isinFilter || undefined,
     name: nameFilter || undefined,
@@ -127,6 +132,7 @@ export default function Transactions() {
               {filteredTxns.length !== allTxns.length
                 ? `${filteredTxns.length} of ${allTxns.length} transactions`
                 : `${allTxns.length} transactions`}
+              {' · Sum count: '}{fmtCount(sumCount)}
             </Paragraph>
             <Flex gap={8} alignItems="center">
               <ExportButtons endpoint="/transactions/export" params={exportParams} />
