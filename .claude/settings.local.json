@@ -46,7 +46,8 @@
       "Bash(xargs wc:*)",
       "Bash(xargs -0 wc -l)",
       "Bash(find /c/daten/dev/folio/frontend/src -type f \\\\\\(-name *context* -o -name *provider* -o -name *store* -o -name *reducer* \\\\\\))",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(grep -r Footer C:/daten/dev/folio/frontend/node_modules/@dynatrace/strato-components/overlays/modal/ --include=*.d.ts)"
     ]
   }
 }

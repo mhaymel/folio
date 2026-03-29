@@ -127,7 +127,7 @@ public class PortfolioService {
             .mapToDouble(s -> s.getCount() * s.getAvgEntryPrice())
             .sum();
 
-        int stockCount = stocks.size();
+        int stockCount = (int) stocks.stream().map(StockDto::getIsin).distinct().count();
 
         double totalDividendIncome = stocks.stream()
             .filter(s -> s.getEstimatedAnnualIncome() != null)

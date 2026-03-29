@@ -64,7 +64,7 @@ function ImportCard({ section }: { section: ImportSection }) {
         />
         <div>
           <Button
-            variant="default"
+            variant="emphasized"
             disabled={status === 'loading'}
             onClick={() => fileInputRef.current?.click()}
           >

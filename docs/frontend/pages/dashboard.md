@@ -23,7 +23,7 @@ The data should be fetched from the backend via a dedicated REST API endpoint.
 
 **Calculation:**
 - **Total portfolio value:** `SUM(avg_entry_price * total_shares)` across open positions.
-- **Stock count:** distinct ISINs with `SUM(count) > 0`.
+- **Stock count:** number of distinct ISINs with `SUM(count) > 0` across all depots (a product held in two depots counts as one).
 - **Total dividend ratio:** `SUM(shares * dividend_per_share) / total_portfolio_value * 100`.
 - **Top 5 holdings:** highest `avg_entry_price * total_shares`; fields: ISIN, name, invested amount.
 - **Top 5 dividend sources:** highest `shares * dividend_per_share`; fields: ISIN, name, estimated annual income.

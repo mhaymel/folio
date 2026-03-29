@@ -78,7 +78,7 @@ Column order places Country and Branch after Current Quote:
 
 | Column | Alignment | `width` | `minWidth` |
 |--------|-----------|---------|------------|
-| ISIN | left | 140 | 140 |
+| ISIN | left | 140 | 140 | `IsinCell` with copy + filter icons (see [ui.md](ui.md)) |
 | Name | left | 240 | 240 |
 | Count | right | 100 | 80 |
 | Avg Entry Price | right | 120 | 100 |
@@ -91,6 +91,7 @@ Column order places Country and Branch after Current Quote:
 
 Note: There is no Depot column on this page since stocks are aggregated across all depots.
 
+- **ISIN cell:** Uses the shared `IsinCell` component with copy-to-clipboard and filter-by-ISIN icons (see [ui.md](ui.md) § ISIN Column Conventions).
 - Current Quote and Performance show `—` if no quote has been fetched yet.
 - **Sum of Count:** The sum of the Count column (reflecting current filters) shall be displayed at the top of the table, next to the row count, formatted with 2 decimal places in German locale. The `GET /api/stocks` response includes `sumCount` for this purpose.
 - **Debounce:** ISIN and Name text inputs shall be debounced (300 ms) per [ui.md](ui.md) to avoid excessive requests on every keystroke.

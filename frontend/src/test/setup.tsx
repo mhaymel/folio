@@ -113,6 +113,17 @@ vi.mock('@dynatrace/strato-components/tables', () => {
   };
 });
 
+vi.mock('@dynatrace/strato-components/overlays', () => ({
+  Modal: ({ children, show, title, onDismiss, footer }: any) =>
+    show ? (
+      <div data-testid="modal" role="dialog">
+        <div data-testid="modal-title">{title}</div>
+        <div>{children}</div>
+        {footer && <div data-testid="modal-footer">{footer}</div>}
+      </div>
+    ) : null,
+}));
+
 vi.mock('@dynatrace/strato-components/forms', () => ({
   TextInput: ({ value, onChange, ...props }: any) => (
     <input

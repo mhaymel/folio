@@ -11,6 +11,7 @@ import useServerTable from '../hooks/useServerTable';
 import ExportButtons from '../components/ExportButtons';
 import PaginationControls from '../components/PaginationControls';
 import MultiSelect from '../components/MultiSelect';
+import IsinCell from '../components/IsinCell';
 
 const STORAGE_KEY = 'transactions_filters';
 
@@ -81,7 +82,7 @@ export default function Transactions() {
     {
       id: 'isin', header: 'ISIN', accessor: 'isin', sortType: 'text' as const, alignment: 'left' as const, width: 140, minWidth: 140,
       cell: ({ rowData }: { rowData: TransactionDto }) => (
-        <span onDoubleClick={() => handleCellDoubleClick('isin', rowData.isin)} style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.isin}</span>
+        <IsinCell isin={rowData.isin} onFilter={(v) => { setIsinFilter(v); table.setPage(1); }} onDoubleClick={() => handleCellDoubleClick('isin', rowData.isin)} />
       ),
     },
     {

@@ -88,6 +88,16 @@ Every column shall specify both `width` (initial) and `minWidth` (minimum). Choo
 - Colour usage shall follow the Strato design-system tokens for text, backgrounds, and accents.
 - Tables must be responsive: content shall remain readable and accessible on different screen sizes and devices without horizontal overflow or layout breakage.
 
+#### ISIN Column Conventions
+
+All tables that contain an ISIN column shall follow these conventions:
+
+- **Monospace font:** ISIN values shall be rendered in a monospace (`fontFamily: monospace`) font for readability and alignment.
+- **Copy to clipboard icon:** A small copy icon (`CopyIcon` from `@dynatrace/strato-icons`, 14 px) is displayed to the right of the ISIN text. Clicking it copies the ISIN to the system clipboard via `navigator.clipboard.writeText()` and shows a Strato toast notification (`showToast` from `@dynatrace/strato-components/notifications`, type `success`) with the text "ISIN &lt;value&gt; copied to clipboard" (e.g. "ISIN DE000BASF111 copied to clipboard"). The toast auto-dismisses after 2 seconds. The icon has a tooltip "Copy ISIN to clipboard".
+- **Filter icon (optional):** On pages that have an ISIN filter input, a small filter icon (`FilterIcon` from `@dynatrace/strato-icons`, 14 px) is displayed next to the copy icon. Clicking it copies the ISIN into the filter input and triggers a table refetch. The icon has a tooltip "Filter by ISIN". Pages without an ISIN filter input (e.g. Dashboard, ISIN Names, Ticker Symbols) show only the copy icon.
+- **Icon visibility:** Both icons are shown at 50 % opacity by default and full opacity on hover.
+- The shared `IsinCell` component (`src/components/IsinCell.tsx`) implements all of the above and is used across all pages with ISIN columns.
+
 #### Sorting and Filtering
 
 - **Server-side sorting**: All sorting must be performed by the backend. When the user clicks a column header, the frontend must:

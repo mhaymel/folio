@@ -4,6 +4,7 @@ import variables from '@dynatrace/strato-design-tokens/variables'
 import variablesDark from '@dynatrace/strato-design-tokens/variables-dark'
 import './index.css'
 import { AppRoot } from '@dynatrace/strato-components/core'
+import { ToastContainer } from '@dynatrace/strato-components/notifications'
 import App from './App.tsx'
 
 // Inject Strato design tokens as CSS custom properties
@@ -19,6 +20,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AppRoot>
       <App />
+      <ToastContainer />
     </AppRoot>
   </StrictMode>,
 )

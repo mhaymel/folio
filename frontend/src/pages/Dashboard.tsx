@@ -5,18 +5,21 @@ import { DataTable } from '@dynatrace/strato-components/tables';
 import api from '../api/client';
 import type { DashboardDto } from '../types';
 import ExportButtons from '../components/ExportButtons';
+import IsinCell from '../components/IsinCell';
 
 const fmtEur = (v: number) => v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' EUR';
 const fmtPct = (v: number) => v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
 
 const holdingColumns = [
-  { id: 'isin', header: 'ISIN', accessor: 'isin' },
+  { id: 'isin', header: 'ISIN', accessor: 'isin',
+    cell: ({ rowData }: { rowData: any }) => <IsinCell isin={rowData.isin} /> },
   { id: 'name', header: 'Name', accessor: 'name' },
   { id: 'investedAmount', header: 'Invested Amount', accessor: (r: any) => fmtEur(r.investedAmount) },
 ];
 
 const dividendColumns = [
-  { id: 'isin', header: 'ISIN', accessor: 'isin' },
+  { id: 'isin', header: 'ISIN', accessor: 'isin',
+    cell: ({ rowData }: { rowData: any }) => <IsinCell isin={rowData.isin} /> },
   { id: 'name', header: 'Name', accessor: 'name' },
   { id: 'estimatedAnnualIncome', header: 'Annual Income', accessor: (r: any) => fmtEur(r.estimatedAnnualIncome) },
 ];
