@@ -5,7 +5,8 @@ public final class StockDto {
     private String name;
     private String country;
     private String branch;
-    private Double totalShares;
+    private String depot;
+    private Double count;
     private Double avgEntryPrice;
     private Double currentQuote;
     private Double performancePercent;
@@ -22,8 +23,10 @@ public final class StockDto {
     public void setCountry(String country) { this.country = country; }
     public String getBranch() { return branch; }
     public void setBranch(String branch) { this.branch = branch; }
-    public Double getTotalShares() { return totalShares; }
-    public void setTotalShares(Double totalShares) { this.totalShares = totalShares; }
+    public String getDepot() { return depot; }
+    public void setDepot(String depot) { this.depot = depot; }
+    public Double getCount() { return count; }
+    public void setCount(Double count) { this.count = count; }
     public Double getAvgEntryPrice() { return avgEntryPrice; }
     public void setAvgEntryPrice(Double avgEntryPrice) { this.avgEntryPrice = avgEntryPrice; }
     public Double getCurrentQuote() { return currentQuote; }

@@ -25,13 +25,14 @@ public class PortfolioService {
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<StockDto> getStocks() {
-        // Get open positions: ISIN with SUM(count) > 0
+        // Get open positions: ISIN + depot with SUM(count) > 0
         List<Tuple> positions = em.createQuery("""
             SELECT t.isin.id as isinId, t.isin.isin as isinCode,
-                   SUM(t.count) as totalShares,
+                   t.depot.name as depotName,
+                   SUM(t.count) as totalCount,
                    SUM(t.count * t.sharePrice) as totalCost
             FROM Transaction t
-            GROUP BY t.isin.id, t.isin.isin
+            GROUP BY t.isin.id, t.isin.isin, t.depot.name
             HAVING SUM(t.count) > 0
             """, Tuple.class).getResultList();
 
@@ -39,10 +40,11 @@ public class PortfolioService {
         for (Tuple pos : positions) {
             Integer isinId = pos.get("isinId", Integer.class);
             String isinCode = pos.get("isinCode", String.class);
-            Double totalShares = pos.get("totalShares", Double.class);
+            String depotName = pos.get("depotName", String.class);
+            Double totalCount = pos.get("totalCount", Double.class);
             Double totalCost = pos.get("totalCost", Double.class);
 
-            double avgEntryPrice = totalShares > 0 ? totalCost / totalShares : 0;
+            double avgEntryPrice = totalCount > 0 ? totalCost / totalCount : 0;
 
             // Get name
             String name = getFirstName(isinId);
@@ -60,11 +62,11 @@ public class PortfolioService {
                 performancePercent = (currentQuote - avgEntryPrice) / avgEntryPrice * 100;
             }
 
-            Double estimatedAnnualIncome = (dps != null && dps > 0) ? dps * totalShares : null;
+            Double estimatedAnnualIncome = (dps != null && dps > 0) ? dps * totalCount : null;
 
             result.add(StockDto.builder()
                 .isin(isinCode).name(name).country(country).branch(branch)
-                .totalShares(totalShares).avgEntryPrice(avgEntryPrice)
+                .depot(depotName).count(totalCount).avgEntryPrice(avgEntryPrice)
                 .currentQuote(currentQuote).performancePercent(performancePercent)
                 .dividendPerShare(dps).estimatedAnnualIncome(estimatedAnnualIncome)
                 .build());
@@ -77,7 +79,7 @@ public class PortfolioService {
         List<StockDto> stocks = getStocks();
 
         double totalValue = stocks.stream()
-            .mapToDouble(s -> s.getTotalShares() * s.getAvgEntryPrice())
+            .mapToDouble(s -> s.getCount() * s.getAvgEntryPrice())
             .sum();
 
         int stockCount = stocks.size();
@@ -90,11 +92,11 @@ public class PortfolioService {
         double dividendRatio = totalValue > 0 ? (totalDividendIncome / totalValue) * 100 : 0;
 
         List<HoldingDto> top5Holdings = stocks.stream()
-            .sorted(Comparator.comparingDouble((StockDto s) -> s.getTotalShares() * s.getAvgEntryPrice()).reversed())
+            .sorted(Comparator.comparingDouble((StockDto s) -> s.getCount() * s.getAvgEntryPrice()).reversed())
             .limit(5)
             .map(s -> HoldingDto.builder()
                 .isin(s.getIsin()).name(s.getName())
-                .investedAmount(s.getTotalShares() * s.getAvgEntryPrice())
+                .investedAmount(s.getCount() * s.getAvgEntryPrice())
                 .build())
             .toList();
 
@@ -174,8 +176,15 @@ public class PortfolioService {
             params.put("isin", "%" + filter.isin().toLowerCase() + "%");
         }
         if (filter.depot() != null && !filter.depot().isBlank()) {
-            jpql.append(" AND t.depot.name = :depot");
-            params.put("depot", filter.depot());
+            List<String> depotValues = java.util.Arrays.stream(filter.depot().split(","))
+                .map(String::trim).filter(s -> !s.isEmpty()).toList();
+            if (depotValues.size() == 1) {
+                jpql.append(" AND t.depot.name = :depot");
+                params.put("depot", depotValues.get(0));
+            } else if (!depotValues.isEmpty()) {
+                jpql.append(" AND t.depot.name IN :depots");
+                params.put("depots", depotValues);
+            }
         }
         if (filter.fromDate() != null) {
             jpql.append(" AND t.date >= :fromDate");

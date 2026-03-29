@@ -45,7 +45,8 @@ The UI should provide a file upload interface for the user to upload the `ticker
 | POST | `/api/import/countries` | Upload countries.csv |
 | POST | `/api/import/ticker-symbols` | Upload ticker_symbol.csv |
 
-All return `{ success: boolean, imported: int, errors: string[] }`.
+All return `{ success: boolean, imported: int, durationMs: long, errors: string[] }`.
+- `durationMs` is the total elapsed time of the import (read + parse + save) in milliseconds.
 
 ---
 
@@ -167,5 +168,8 @@ All return `{ success: boolean, imported: int, errors: string[] }`.
 ## UI Specification
 
 - One card/section per import type, grouped by broker.
-- Each card: description, `<input type="file" />`, upload button, status indicator (idle / loading / success with row count / error with messages).
+- Each card: description, a Strato **Button** labelled "Choose file" (triggers a hidden file input), status indicator. The button must be visually distinguishable from the card background (visible border and contrasting background colour) per [ui.md](ui.md).
+- States: idle, loading ("Uploading..."), success, error.
+- On success: display `Imported {count} rows in {duration}` where duration is formatted as `Xs Yms` when >= 1 second, otherwise `Yms`.
+- On error: display error messages; if some rows were imported, show the count.
 

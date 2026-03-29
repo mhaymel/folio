@@ -82,3 +82,20 @@ body {
 .chart-container {
   margin-bottom: 24px;
 }
+
+
+/* ── Table cell vertical alignment and padding ── */
+table td,
+table th {
+  vertical-align: middle;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* Strato DataTable overrides */
+[data-testid="data-table"] td,
+[data-testid="data-table"] th {
+  vertical-align: middle;
+  padding-left: 8px;
+  padding-right: 8px;
+}

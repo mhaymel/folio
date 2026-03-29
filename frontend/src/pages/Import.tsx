@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Flex, Surface } from '@dynatrace/strato-components/layouts';
 import { Heading, Paragraph } from '@dynatrace/strato-components/typography';
+import { Button } from '@dynatrace/strato-components/buttons';
 import api from '../api/client';
 import type { ImportResult } from '../types';
 
@@ -24,6 +25,7 @@ const sections: ImportSection[] = [
 function ImportCard({ section }: { section: ImportSection }) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [result, setResult] = useState<ImportResult | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -40,7 +42,7 @@ function ImportCard({ section }: { section: ImportSection }) {
       setResult(res.data);
       setStatus(res.data.success ? 'success' : 'error');
     } catch (err: any) {
-      setResult({ success: false, imported: 0, errors: [err.message] });
+      setResult({ success: false, imported: 0, durationMs: 0, errors: [err.message] });
       setStatus('error');
     }
     e.target.value = '';
@@ -53,10 +55,28 @@ function ImportCard({ section }: { section: ImportSection }) {
       <Flex flexDirection="column" gap={8}>
         <Heading level={3}>{section.title}</Heading>
         <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>{section.description}</Paragraph>
-        <input type="file" accept=".csv" onChange={handleUpload} disabled={status === 'loading'} />
-        {status === 'loading' && <Paragraph>Uploading...</Paragraph>}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv"
+          onChange={handleUpload}
+          style={{ display: 'none' }}
+        />
+        <div>
+          <Button
+            variant="default"
+            disabled={status === 'loading'}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {status === 'loading' ? 'Uploading...' : 'Choose file'}
+          </Button>
+        </div>
         {status === 'success' && result && (
-          <Paragraph style={{ color: 'var(--dt-color-text-positive)' }}>Imported {result.imported} rows</Paragraph>
+          <Paragraph style={{ color: 'var(--dt-color-text-positive)' }}>
+            Imported {result.imported} rows in {result.durationMs >= 1000
+              ? `${Math.floor(result.durationMs / 1000)}s ${result.durationMs % 1000}ms`
+              : `${result.durationMs}ms`}
+          </Paragraph>
         )}
         {status === 'error' && result && (
           <Paragraph style={{ color: 'var(--dt-color-text-critical)' }}>

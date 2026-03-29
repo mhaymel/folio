@@ -11,14 +11,14 @@ final class StockDtoTest {
         // given / when
         var dto = StockDto.builder()
                 .isin("IE00B1").name("ETF").country("Ireland").branch("Tech")
-                .totalShares(100.0).avgEntryPrice(50.0)
+                .count(100.0).avgEntryPrice(50.0)
                 .currentQuote(55.0).performancePercent(10.0)
                 .dividendPerShare(1.5).estimatedAnnualIncome(150.0)
                 .build();
 
         // then
         assertThat(dto.getIsin()).isEqualTo("IE00B1");
-        assertThat(dto.getTotalShares()).isEqualTo(100.0);
+        assertThat(dto.getCount()).isEqualTo(100.0);
         assertThat(dto.getPerformancePercent()).isEqualTo(10.0);
         assertThat(dto.getEstimatedAnnualIncome()).isEqualTo(150.0);
     }
@@ -30,7 +30,7 @@ final class StockDtoTest {
 
         // then
         assertThat(dto.getIsin()).isNull();
-        assertThat(dto.getTotalShares()).isNull();
+        assertThat(dto.getCount()).isNull();
     }
 }
 

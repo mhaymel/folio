@@ -28,10 +28,10 @@ export default function PaginationControls({ page, totalPages, pageSize, onPageC
         </Select>
       </Flex>
       <Flex gap={8} alignItems="center">
-        <Button variant="default" disabled={page <= 1} onClick={() => onPageChange(1)}>First</Button>
-        <Button variant="default" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>Previous</Button>
-        <Button variant="default" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}>Next</Button>
-        <Button variant="default" disabled={page >= totalPages} onClick={() => onPageChange(totalPages)}>Last</Button>
+        <Button variant="emphasized" disabled={page <= 1} onClick={() => onPageChange(1)}>First</Button>
+        <Button variant="emphasized" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>Previous</Button>
+        <Button variant="emphasized" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}>Next</Button>
+        <Button variant="emphasized" disabled={page >= totalPages} onClick={() => onPageChange(totalPages)}>Last</Button>
       </Flex>
     </Flex>
   );

@@ -3,7 +3,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithRouter } from '../test/test-utils';
 import Stocks from './Stocks';
-import type { StockDto, StockFiltersDto, PaginatedResponse } from '../types';
+import type { StockDto, StockFiltersDto, StockPaginatedResponse } from '../types';
 
 vi.mock('../api/client', () => ({
   default: {
@@ -17,24 +17,27 @@ vi.mock('../components/ExportButtons', () => ({
 
 import api from '../api/client';
 
-const mockStocks: PaginatedResponse<StockDto> = {
+const mockStocks: StockPaginatedResponse = {
   items: [
-    { isin: 'DE000BASF111', name: 'BASF SE', country: 'Germany', branch: 'Chemicals', totalShares: 10, avgEntryPrice: 50.0, currentQuote: 55.0, performancePercent: 10.0, dividendPerShare: 3.4, estimatedAnnualIncome: 34.0 },
-    { isin: 'US0378331005', name: 'Apple Inc.', country: 'USA', branch: 'Technology', totalShares: 5, avgEntryPrice: 150.0, currentQuote: 180.0, performancePercent: 20.0, dividendPerShare: 0.96, estimatedAnnualIncome: 4.8 },
-    { isin: 'JP3633400001', name: 'Toyota Motor', country: 'Japan', branch: 'Automotive', totalShares: 20, avgEntryPrice: 15.0, currentQuote: null, performancePercent: null, dividendPerShare: null, estimatedAnnualIncome: null },
+    { isin: 'DE000BASF111', name: 'BASF SE', country: 'Germany', branch: 'Chemicals', depot: 'DeGiro', count: 10, avgEntryPrice: 50.0, currentQuote: 55.0, performancePercent: 10.0, dividendPerShare: 3.4, estimatedAnnualIncome: 34.0 },
+    { isin: 'US0378331005', name: 'Apple Inc.', country: 'USA', branch: 'Technology', depot: 'ZERO', count: 5, avgEntryPrice: 150.0, currentQuote: 180.0, performancePercent: 20.0, dividendPerShare: 0.96, estimatedAnnualIncome: 4.8 },
+    { isin: 'JP3633400001', name: 'Toyota Motor', country: 'Japan', branch: 'Automotive', depot: 'DeGiro', count: 20, avgEntryPrice: 15.0, currentQuote: null, performancePercent: null, dividendPerShare: null, estimatedAnnualIncome: null },
   ],
   page: 1,
   pageSize: 10,
   totalItems: 3,
   totalPages: 1,
+  sumCount: 35.0,
 };
 
 const mockFilters: StockFiltersDto = {
   countries: ['Germany', 'Japan', 'USA'],
   branches: ['Automotive', 'Chemicals', 'Technology'],
+  depots: ['DeGiro', 'ZERO'],
 };
 
 beforeEach(() => {
+  sessionStorage.clear();
   vi.mocked(api.get).mockImplementation((url: string) => {
     if (url === '/stocks/filters') return Promise.resolve({ data: mockFilters });
     return Promise.resolve({ data: mockStocks });
@@ -56,12 +59,32 @@ describe('Stocks', () => {
     expect(screen.getByText('Name')).toBeInTheDocument();
     expect(screen.getByText('Country')).toBeInTheDocument();
     expect(screen.getByText('Branch')).toBeInTheDocument();
-    expect(screen.getByText('Total Shares')).toBeInTheDocument();
+    expect(screen.getByText('Depot')).toBeInTheDocument();
+    expect(screen.getByText('Count')).toBeInTheDocument();
     expect(screen.getByText('Avg Entry Price')).toBeInTheDocument();
     expect(screen.getByText('Current Quote')).toBeInTheDocument();
     expect(screen.getByText('Performance (%)')).toBeInTheDocument();
     expect(screen.getByText('Expected Dividend/Share')).toBeInTheDocument();
     expect(screen.getByText('Est. Annual Income')).toBeInTheDocument();
+  });
+
+  it('renders columns in correct order (country/branch after currentQuote)', async () => {
+    renderWithRouter(<Stocks />);
+    await waitFor(() => {
+      expect(screen.getByText('ISIN')).toBeInTheDocument();
+    });
+    const headers = screen.getAllByRole('columnheader');
+    const headerTexts = headers.map(h => h.textContent?.replace(/ [↑↓]/, ''));
+    const depotIdx = headerTexts.indexOf('Depot');
+    const countIdx = headerTexts.indexOf('Count');
+    const quoteIdx = headerTexts.indexOf('Current Quote');
+    const countryIdx = headerTexts.indexOf('Country');
+    const branchIdx = headerTexts.indexOf('Branch');
+    // Country and Branch should come after Current Quote
+    expect(countryIdx).toBeGreaterThan(quoteIdx);
+    expect(branchIdx).toBeGreaterThan(quoteIdx);
+    // Depot should come before Count
+    expect(depotIdx).toBeLessThan(countIdx);
   });
 
   it('renders stock data', async () => {
@@ -80,12 +103,21 @@ describe('Stocks', () => {
     });
   });
 
-  it('renders filter dropdowns', async () => {
+  it('shows sum of count', async () => {
+    renderWithRouter(<Stocks />);
+    await waitFor(() => {
+      expect(screen.getByText(/Sum:/)).toBeInTheDocument();
+    });
+    expect(screen.getByText(/35,00/)).toBeInTheDocument();
+  });
+
+  it('renders multi-select filter dropdowns', async () => {
     renderWithRouter(<Stocks />);
     await waitFor(() => {
       expect(screen.getByText('All countries')).toBeInTheDocument();
     });
     expect(screen.getByText('All branches')).toBeInTheDocument();
+    expect(screen.getByText('All depots')).toBeInTheDocument();
   });
 
   it('renders Refresh button', async () => {
@@ -108,6 +140,50 @@ describe('Stocks', () => {
     renderWithRouter(<Stocks />);
     await waitFor(() => {
       expect(api.get).toHaveBeenCalledWith('/stocks/filters');
+    });
+  });
+
+  it('filters by country when selecting from multi-select', async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<Stocks />);
+    await waitFor(() => {
+      expect(screen.getByText('All countries')).toBeInTheDocument();
+    });
+
+    // Click the "All countries" button to open dropdown
+    const buttons = screen.getAllByRole('button');
+    const countriesBtn = buttons.find(b => b.textContent?.includes('All countries'));
+    await user.click(countriesBtn!);
+
+    // Click Germany checkbox
+    const checkboxes = screen.getAllByRole('checkbox');
+    // Find the Germany checkbox (index after "All countries" checkbox)
+    const germanyCheckbox = checkboxes.find((_, idx) => {
+      const label = checkboxes[idx].parentElement?.textContent;
+      return label === 'Germany';
+    });
+    if (germanyCheckbox) {
+      await user.click(germanyCheckbox);
+    }
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith('/stocks', {
+        params: expect.objectContaining({ country: 'Germany' }),
+      });
+    });
+  });
+
+  it('sends comma-separated values for multi-select filters', async () => {
+    // Pre-set filter state via sessionStorage
+    sessionStorage.setItem('stocks_filters', JSON.stringify({
+      isin: '', name: '', depots: ['DeGiro', 'ZERO'], countries: [], branches: [],
+    }));
+
+    renderWithRouter(<Stocks />);
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith('/stocks', {
+        params: expect.objectContaining({ depot: 'DeGiro,ZERO' }),
+      });
     });
   });
 
@@ -147,12 +223,39 @@ describe('Stocks', () => {
     expect(screen.getByText('Name').getAttribute('data-alignment')).toBe('left');
     expect(screen.getByText('Country').getAttribute('data-alignment')).toBe('left');
     expect(screen.getByText('Branch').getAttribute('data-alignment')).toBe('left');
+    expect(screen.getByText('Depot').getAttribute('data-alignment')).toBe('left');
     // Numeric columns: right
-    expect(screen.getByText('Total Shares').getAttribute('data-alignment')).toBe('right');
+    expect(screen.getByText('Count').getAttribute('data-alignment')).toBe('right');
     expect(screen.getByText('Avg Entry Price').getAttribute('data-alignment')).toBe('right');
     expect(screen.getByText('Current Quote').getAttribute('data-alignment')).toBe('right');
     expect(screen.getByText('Performance (%)').getAttribute('data-alignment')).toBe('right');
     expect(screen.getByText('Expected Dividend/Share').getAttribute('data-alignment')).toBe('right');
     expect(screen.getByText('Est. Annual Income').getAttribute('data-alignment')).toBe('right');
+  });
+
+  it('preserves filters in sessionStorage', async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<Stocks />);
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Filter ISIN...')).toBeInTheDocument();
+    });
+
+    await user.type(screen.getByPlaceholderText('Filter ISIN...'), 'DE');
+
+    const stored = JSON.parse(sessionStorage.getItem('stocks_filters') || '{}');
+    expect(stored.isin).toContain('D');
+  });
+
+  it('restores filters from sessionStorage on mount', async () => {
+    sessionStorage.setItem('stocks_filters', JSON.stringify({
+      isin: 'DE000', name: '', depots: [], countries: [], branches: [],
+    }));
+
+    renderWithRouter(<Stocks />);
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith('/stocks', {
+        params: expect.objectContaining({ isin: 'DE000' }),
+      });
+    });
   });
 });

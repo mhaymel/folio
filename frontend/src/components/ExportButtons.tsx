@@ -36,8 +36,8 @@ export default function ExportButtons({ endpoint, params }: ExportButtonsProps) 
 
   return (
     <Flex gap={4}>
-      <Button variant="default" onClick={() => download('csv')}>Export CSV</Button>
-      <Button variant="default" onClick={() => download('xlsx')}>Export Excel</Button>
+      <Button variant="emphasized" onClick={() => download('csv')}>Export CSV</Button>
+      <Button variant="emphasized" onClick={() => download('xlsx')}>Export Excel</Button>
     </Flex>
   );
 }

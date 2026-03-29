@@ -140,6 +140,32 @@ Pagination is **server-side**. The backend slices the sorted/filtered result set
 - **Filtered:** `"N of M items"` (e.g. `"12 of 50 stocks"`).
 - **Unfiltered:** `"M items"` (e.g. `"50 stocks"`).
 - The count shall update in real time as filters change.
+- To support the "N of M" format, paginated response envelopes on endpoints that support filtering must include both `filteredCount` (count after filtering) and `totalCount` (count of all items regardless of filters).
+
+#### Debounce on Text Filter Inputs
+
+- All free-text filter inputs (e.g. ISIN, Name) shall be **debounced with a 300 ms delay** before triggering an API refetch. This avoids excessive requests on every keystroke.
+
+#### Refresh Button
+
+- Every page with a data table shall include a **Refresh** button that reloads all data from the backend.
+
+#### Button Visibility
+
+- All buttons must be visually distinguishable from the background. Buttons shall have a visible border and background colour that contrasts with the page background, ensuring they are discoverable without hovering. Button text must be readable at all times.
+
+#### Table Cell Vertical Alignment and Padding
+
+- All table cells (`<td>` and `<th>`) shall be vertically aligned to **center** (`vertical-align: middle`).
+- All table cells shall have horizontal padding (at least 8 px left and right) to ensure text does not touch the cell border.
+
+#### State Preservation Across Navigation
+
+- Filter values, sort field/direction, current page, and page size shall be preserved when the user navigates away from a page and returns. The state is stored in `sessionStorage` keyed by endpoint. This ensures the user sees the same view they left, without resetting to defaults on every navigation.
+
+#### Multi-Select Dropdown Filters
+
+- Dropdown filters for categorical values (e.g. Depot, Country, Branch) shall be **multi-select**: the user can select zero or more options. When no options are selected, all items are shown (equivalent to "All"). The backend accepts comma-separated values for these filter parameters and filters using an `IN` clause (or set membership check).
 
 ---
 

@@ -48,7 +48,7 @@ export default function ServerTable<T>({
         </Paragraph>
         <Flex gap={8} alignItems="center">
           <ExportButtons endpoint={exportEndpoint} params={table.exportParams} />
-          <Button variant="default" onClick={table.handleShowAll}>
+          <Button variant="emphasized" onClick={table.handleShowAll}>
             {table.pageSize === -1 ? 'Paginate' : 'Show All'}
           </Button>
         </Flex>

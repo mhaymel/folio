@@ -169,7 +169,7 @@ com.folio
   ├── model/          # JPA entities (explicit Java, no Lombok)
   ├── dto/            # Request/Response DTOs
   ├── exception/      # Global exception handler
-  ├── parser/         # CSV parsers per broker (planned, not yet extracted)
+  ├── parser/         # Intermediate parsed CSV types (ParsedTransaction, ParsedDividendPayment, etc.)
   └── quote/          # IsinsQuoteLoader + per-source fetchers (planned, not yet implemented)
 ```
 

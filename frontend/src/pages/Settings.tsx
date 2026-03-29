@@ -86,7 +86,7 @@ export default function Settings() {
               <TextInput placeholder="Minutes" value={customInterval}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomInterval(e.target.value)} />
             )}
-            <Button variant="default" onClick={handleSaveInterval}>Save</Button>
+            <Button variant="emphasized" onClick={handleSaveInterval}>Save</Button>
           </Flex>
 
           <Flex alignItems="center" gap={12}>

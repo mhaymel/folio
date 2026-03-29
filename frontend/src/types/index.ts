@@ -1,6 +1,7 @@
 export interface ImportResult {
   success: boolean;
   imported: number;
+  durationMs: number;
   errors: string[];
 }
 
@@ -14,6 +15,10 @@ export interface PaginatedResponse<T> {
 
 export interface TransactionPaginatedResponse extends PaginatedResponse<TransactionDto> {
   filteredCount: number;
+  sumCount: number;
+}
+
+export interface StockPaginatedResponse extends PaginatedResponse<StockDto> {
   sumCount: number;
 }
 
@@ -32,7 +37,8 @@ export interface StockDto {
   name: string | null;
   country: string | null;
   branch: string | null;
-  totalShares: number;
+  depot: string | null;
+  count: number;
   avgEntryPrice: number;
   currentQuote: number | null;
   performancePercent: number | null;
@@ -43,6 +49,7 @@ export interface StockDto {
 export interface StockFiltersDto {
   countries: string[];
   branches: string[];
+  depots: string[];
 }
 
 export interface TransactionFiltersDto {

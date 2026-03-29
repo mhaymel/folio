@@ -86,7 +86,7 @@ export default function Analytics() {
             </Paragraph>
             <Flex gap={8} alignItems="center">
               <ExportButtons endpoint={`/analytics/${type}/export`} params={table.exportParams} />
-              <Button variant="default" onClick={table.handleShowAll}>
+              <Button variant="emphasized" onClick={table.handleShowAll}>
                 {table.pageSize === -1 ? 'Paginate' : 'Show All'}
               </Button>
             </Flex>

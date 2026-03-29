@@ -30,6 +30,20 @@ export interface UseServerTableReturn<T> {
   exportParams: Record<string, string>;
 }
 
+function loadPersistedState(key: string) {
+  try {
+    const raw = sessionStorage.getItem(`table_state_${key}`);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return null;
+}
+
+function persistState(key: string, state: Record<string, unknown>) {
+  try {
+    sessionStorage.setItem(`table_state_${key}`, JSON.stringify(state));
+  } catch { /* ignore */ }
+}
+
 export default function useServerTable<T, R extends PaginatedResponse<T> = PaginatedResponse<T>>(
   options: UseServerTableOptions<T, R>,
 ): UseServerTableReturn<T> {
@@ -42,19 +56,26 @@ export default function useServerTable<T, R extends PaginatedResponse<T> = Pagin
     responseMapper,
   } = options;
 
+  const persisted = useRef(loadPersistedState(endpoint));
+
   const [data, setData] = useState<T[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(defaultPageSize);
-  const [sortField, setSortField] = useState(defaultSortField);
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>(defaultSortDir);
+  const [page, setPage] = useState(persisted.current?.page ?? 1);
+  const [pageSize, setPageSize] = useState(persisted.current?.pageSize ?? defaultPageSize);
+  const [sortField, setSortField] = useState(persisted.current?.sortField ?? defaultSortField);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>(persisted.current?.sortDir ?? defaultSortDir);
 
   // Stable reference for extraParams to avoid infinite re-render loops
   const extraParamsKey = JSON.stringify(extraParams ?? {});
   const extraParamsRef = useRef(extraParams);
   extraParamsRef.current = extraParams;
+
+  // Persist state on changes
+  useEffect(() => {
+    persistState(endpoint, { page, pageSize, sortField, sortDir });
+  }, [endpoint, page, pageSize, sortField, sortDir]);
 
   const load = useCallback(async () => {
     setLoading(true);

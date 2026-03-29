@@ -28,7 +28,8 @@ Do **not** use Lombok. Write explicit Java: getters, setters, constructors, manu
 - Do **not** use abstract classes. Define contracts as interfaces; share reusable logic via helper/utility classes or default interface methods.
 - **All classes must be `final`** — prevents unintended subclassing and makes the design explicit. (JPA entities included; switch `FetchType.LAZY` to `EAGER` where needed so Hibernate does not require proxy subclasses.) **Exception:** classes that Spring needs to CGLIB-proxy must **not** be `final`. This includes classes annotated with `@Configuration`, `@SpringBootApplication`, and any Spring bean (service, controller, etc.) whose methods are annotated with `@Transactional` (or other AOP-proxied annotations such as `@Cacheable`, `@Async`, etc.).
 - Do **not** inherit from concrete classes. Only extend interfaces (or implement them).
-- Do **not** create inner classes (including static nested classes). Extract every nested type to its own top-level file. For the Builder pattern, use `<Type>Builder` as the class name (e.g. `IsinBuilder`).
+- Do **not** create inner classes (including static nested classes and inner records). Extract every nested type to its own top-level file. For the Builder pattern, use `<Type>Builder` as the class name (e.g. `IsinBuilder`).
+- **Java records** are encouraged for simple, immutable value objects (e.g. parsed CSV rows). Each record must be in its own top-level file — never defined inside another class. Records do not need builders; use the canonical constructor directly. The constructor parameter limit (max 3) does not apply to records.
 - **Use static imports** for static method calls where unambiguous (e.g. `getLogger(…)` instead of `LoggerFactory.getLogger(…)`, `requireNonNull(…)` instead of `Objects.requireNonNull(…)`). When two static-imported names collide (e.g. `List.of` vs `Map.of`), keep one qualified to avoid ambiguity.
 - Prefer constructor injection; never use field injection (`@Autowired` on fields).
 - Keep controllers thin — business logic belongs in service classes.
@@ -43,6 +44,7 @@ Do **not** use Lombok. Write explicit Java: getters, setters, constructors, manu
 - Services: `*Service` (e.g. `StockService`).
 - Repositories: `*Repository` (e.g. `StockRepository`).
 - DTOs: `*Dto` (e.g. `StockDto`).
+- Parsed CSV types: `Parsed*` records in the `parser` package (e.g. `ParsedTransaction`). These are immutable value objects produced by CSV parsing, before DB entities are created.
 - Use `lowerCamelCase` for methods and variables, `UpperCamelCase` for classes.
 
 ### Logging

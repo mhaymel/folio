@@ -3,30 +3,50 @@ import { Flex } from '@dynatrace/strato-components/layouts';
 import { Heading, Paragraph } from '@dynatrace/strato-components/typography';
 import { DataTable } from '@dynatrace/strato-components/tables';
 import { Button } from '@dynatrace/strato-components/buttons';
-import { TextInput, Select } from '@dynatrace/strato-components/forms';
+import { TextInput } from '@dynatrace/strato-components/forms';
 import { ProgressCircle } from '@dynatrace/strato-components/content';
 import api from '../api/client';
 import type { TransactionDto, TransactionPaginatedResponse, TransactionFiltersDto } from '../types';
 import useServerTable from '../hooks/useServerTable';
 import ExportButtons from '../components/ExportButtons';
 import PaginationControls from '../components/PaginationControls';
+import MultiSelect from '../components/MultiSelect';
+
+const STORAGE_KEY = 'transactions_filters';
+
+function loadFiltersFromStorage(): { isin: string; name: string; depots: string[] } {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return { isin: '', name: '', depots: [] };
+}
+
+function saveFiltersToStorage(state: { isin: string; name: string; depots: string[] }) {
+  try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* ignore */ }
+}
 
 const fmtNum2 = (v: number) => v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtNum3 = (v: number) => v.toLocaleString('de-DE', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 
 export default function Transactions() {
+  const saved = loadFiltersFromStorage();
   const [filteredCount, setFilteredCount] = useState(0);
   const [sumCount, setSumCount] = useState(0);
-  const [isinFilter, setIsinFilter] = useState('');
-  const [nameFilter, setNameFilter] = useState('');
-  const [depotFilter, setDepotFilter] = useState('');
+  const [isinFilter, setIsinFilter] = useState(saved.isin);
+  const [nameFilter, setNameFilter] = useState(saved.name);
+  const [depotFilter, setDepotFilter] = useState<string[]>(saved.depots);
   const [depotOptions, setDepotOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    saveFiltersToStorage({ isin: isinFilter, name: nameFilter, depots: depotFilter });
+  }, [isinFilter, nameFilter, depotFilter]);
 
   const extraParams = useMemo(() => {
     const p: Record<string, string> = {};
     if (isinFilter) p.isin = isinFilter;
     if (nameFilter) p.name = nameFilter;
-    if (depotFilter) p.depot = depotFilter;
+    if (depotFilter.length > 0) p.depot = depotFilter.join(',');
     return p;
   }, [isinFilter, nameFilter, depotFilter]);
 
@@ -53,7 +73,7 @@ export default function Transactions() {
   const handleCellDoubleClick = (field: string, value: string) => {
     if (field === 'isin') { setIsinFilter(value); table.setPage(1); }
     else if (field === 'name') { setNameFilter(value); table.setPage(1); }
-    else if (field === 'depot') { setDepotFilter(value); table.setPage(1); }
+    else if (field === 'depot') { setDepotFilter([value]); table.setPage(1); }
   };
 
   const columns = [
@@ -79,7 +99,7 @@ export default function Transactions() {
     {
       id: 'count', header: 'Count', accessor: (row: TransactionDto) => fmtNum3(row.count), sortType: 'number' as const, alignment: 'right' as const, width: 100, minWidth: 80,
       cell: ({ rowData }: { rowData: TransactionDto }) => (
-        <span style={{ color: rowData.count < 0 ? 'red' : rowData.count > 0 ? 'green' : undefined }}>{fmtNum3(rowData.count)}</span>
+        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', height: '100%', color: rowData.count < 0 ? 'red' : rowData.count > 0 ? 'green' : undefined }}>{fmtNum3(rowData.count)}</span>
       ),
     },
     { id: 'sharePrice', header: 'Share Price', accessor: (row: TransactionDto) => fmtNum2(row.sharePrice), sortType: 'number' as const, alignment: 'right' as const, width: 110, minWidth: 100 },
@@ -94,13 +114,9 @@ export default function Transactions() {
           onChange={(v: string) => { setIsinFilter(v); table.setPage(1); }} />
         <TextInput placeholder="Filter Name..." value={nameFilter}
           onChange={(v: string) => { setNameFilter(v); table.setPage(1); }} />
-        <Select value={depotFilter || '__all'} onChange={(v: string) => { setDepotFilter(v === '__all' ? '' : v); table.setPage(1); }}>
-          <Select.Content>
-            <Select.Option value="__all">All depots</Select.Option>
-            {depotOptions.map(d => <Select.Option key={d} value={d}>{d}</Select.Option>)}
-          </Select.Content>
-        </Select>
-        <Button variant="default" onClick={() => { setIsinFilter(''); setNameFilter(''); setDepotFilter(''); table.setPage(1); }}>Clear</Button>
+        <MultiSelect options={depotOptions} selected={depotFilter}
+          onChange={(v) => { setDepotFilter(v); table.setPage(1); }} placeholder="All depots" />
+        <Button variant="emphasized" onClick={() => { setIsinFilter(''); setNameFilter(''); setDepotFilter([]); table.setPage(1); }}>Clear</Button>
       </Flex>
 
       <Flex alignItems="center" justifyContent="space-between">
@@ -116,7 +132,7 @@ export default function Transactions() {
         </Flex>
         <Flex gap={8} alignItems="center">
           <ExportButtons endpoint="/transactions/export" params={table.exportParams} />
-          <Button variant="default" onClick={table.handleShowAll}>
+          <Button variant="emphasized" onClick={table.handleShowAll}>
             {table.pageSize === -1 ? 'Paginate' : 'Show All'}
           </Button>
         </Flex>

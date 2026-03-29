@@ -40,9 +40,12 @@ Returns a paginated envelope with the filtered/sorted list, counts, and aggregat
   "totalItems": 50,
   "totalPages": 5,
   "filteredCount": 50,
+  "totalCount": 120,
   "sumCount": 1234.500
 }
 ```
+- `filteredCount`: number of transactions matching the current filters (before pagination).
+- `totalCount`: total number of transactions regardless of any filters. Required for the "N of M" row count display (see [ui.md](ui.md)).
 
 ### `GET /api/transactions/filters` — Available filter options
 
@@ -67,16 +70,21 @@ Returns distinct depot names from all transactions:
 | Share Price | Number format per [ui.md](ui.md) | right | 110 | 100 |
 
 ### Summary
-- Display sum of count of transactions reflecting current filters, e.g. "42 transactions" or "12 of 50 transactions" if a filter is active.
+- **Row count:** When filters are active, display `"N of M transactions"` (e.g. `"12 of 50 transactions"`) where N = `filteredCount` and M = `totalCount`. When no filters are active, display `"M transactions"` (e.g. `"50 transactions"`).
 - Display the sum of the Count column reflecting current filters, formatted with 3 decimal places in German locale (e.g. `"Sum count: 1.234,500"`).
 
 ### Filtering
 
 - **ISIN filter**: free-text input; case-insensitive partial match updated in real time as the user types (e.g. typing `DE000` shows all transactions whose ISIN contains that substring). A Clear button appears next to the field and resets the filter. Double-clicking an ISIN value in the table copies it to this filter, immediately showing only that ISIN's transactions.
 - **Name filter**: free-text input; case-insensitive partial match updated in real time as the user types. A Clear button appears next to the field and resets the filter. Double-clicking a Name value in the table copies it to this filter, immediately showing only transactions with that stock name.
-- **Depot filter**: dropdown populated from `GET /api/transactions/filters`. Selecting a depot restricts the view to that depot's transactions; selecting "All depots" shows all transactions.
+- **Depot filter**: multi-select dropdown populated from `GET /api/transactions/filters`. The user can select one or more depots; when none are selected all depots are shown. Multiple values are sent as a comma-separated string (e.g. `depot=DeGiro,ZERO`). The backend splits on comma and filters using set membership.
+- **Date range filter**: `fromDate` and `toDate` date inputs allow the user to filter transactions to a specific date range. Both are optional. When set, they are sent as query params to the backend.
 
-**Filter bar:** ISIN `TextInput` (real-time partial, case-insensitive; Clear button; double-click cell fills); Name `TextInput` (same); Depot `Select<string>` (`""` = "All depots" + values from `/api/transactions/filters`); Refresh `Button`.
+**Filter bar:** ISIN `TextInput` (real-time partial, case-insensitive, 300 ms debounce; Clear button; double-click cell fills); Name `TextInput` (same); Depot `MultiSelect` (multi-select dropdown; options from `/api/transactions/filters`); From Date `DateInput`; To Date `DateInput`; Refresh `Button`.
+
+**State preservation:** Filter values, sort state, and pagination are preserved in `sessionStorage` when navigating away and back (see [ui.md](ui.md)).
+
+**Debounce:** ISIN and Name text inputs shall be debounced (300 ms) per [ui.md](ui.md) to avoid excessive requests on every keystroke.
 
 All filter values and sort state are sent as query params to `GET /api/transactions`; the backend returns the filtered, sorted data and the sum of count.
 

@@ -42,7 +42,10 @@
       "Bash(xargs basename:*)",
       "Bash(./gradlew :backend:compileJava)",
       "Bash(./gradlew :backend:compileTestJava)",
-      "Bash(find /c/daten/dev/folio/frontend -type f -path */src/main/react/pages/*.tsx -o -path */src/pages/*.tsx)"
+      "Bash(find /c/daten/dev/folio/frontend -type f -path */src/main/react/pages/*.tsx -o -path */src/pages/*.tsx)",
+      "Bash(xargs wc:*)",
+      "Bash(xargs -0 wc -l)",
+      "Bash(find /c/daten/dev/folio/frontend/src -type f \\\\\\(-name *context* -o -name *provider* -o -name *store* -o -name *reducer* \\\\\\))"
     ]
   }
 }

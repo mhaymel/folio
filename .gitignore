@@ -158,3 +158,4 @@ data/
 /backend/out/production/resources/db/migration/V1__create_schema.sql
 /backend/out/production/resources/wallstreetonline.csv
 /backend/out/production/classes/com/folio/quote/sources/WallstreetOnlineSource.class
+/backend/out/
