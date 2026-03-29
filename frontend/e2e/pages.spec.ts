@@ -44,7 +44,7 @@ test.describe('Stocks page', () => {
     await expect(page.locator('h1')).toContainText('Stocks');
   });
 
-  test('shows filter dropdowns', async ({ page }) => {
+  test('shows filter dropdowns without depot', async ({ page }) => {
     await page.goto('/stocks');
     await expect(page.getByText('All countries')).toBeVisible();
     await expect(page.getByText('All branches')).toBeVisible();
@@ -52,6 +52,25 @@ test.describe('Stocks page', () => {
 
   test('shows Refresh button', async ({ page }) => {
     await page.goto('/stocks');
+    await expect(page.getByText('Refresh')).toBeVisible();
+  });
+});
+
+test.describe('Stocks per Depot page', () => {
+  test('loads and shows heading', async ({ page }) => {
+    await page.goto('/stocks-per-depot');
+    await expect(page.locator('h1')).toContainText('Stocks per Depot');
+  });
+
+  test('shows filter dropdowns including depot', async ({ page }) => {
+    await page.goto('/stocks-per-depot');
+    await expect(page.getByText('All countries')).toBeVisible();
+    await expect(page.getByText('All branches')).toBeVisible();
+    await expect(page.getByText('All depots')).toBeVisible();
+  });
+
+  test('shows Refresh button', async ({ page }) => {
+    await page.goto('/stocks-per-depot');
     await expect(page.getByText('Refresh')).toBeVisible();
   });
 });

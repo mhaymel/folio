@@ -80,6 +80,7 @@ Detailed use cases, API contracts, CSV parsing specs, and UI specifications for 
 | Dashboard | [frontend/pages/dashboard.md](frontend/pages/dashboard.md) | `/` |
 | Transactions | [frontend/pages/transactions.md](frontend/pages/transactions.md) | `/transactions` |
 | Stocks | [frontend/pages/stocks.md](frontend/pages/stocks.md) | `/stocks` |
+| Stocks per Depot | [frontend/pages/stocks-per-depot.md](frontend/pages/stocks-per-depot.md) | `/stocks-per-depot` |
 | Import | [frontend/pages/import.md](frontend/pages/import.md) | `/import` |
 | Analytics | [frontend/pages/analytics.md](frontend/pages/analytics.md) | `/analytics/countries`, `/analytics/branches` |
 | Settings & Quotes | [frontend/pages/settings.md](frontend/pages/settings.md) | `/settings` |
@@ -318,7 +319,8 @@ settings         (id, key VARCHAR(100) UNIQUE NOT NULL, value VARCHAR(500) NOT N
 |-------|------|-------------|
 | `/` | Dashboard | KPI cards + top-5 holdings/dividend sources + last quote fetch |
 | `/transactions` | Transactions | Sortable/filterable table |
-| `/stocks` | Stocks | Portfolio positions with live quotes and performance |
+| `/stocks` | Stocks | Portfolio positions aggregated across all depots |
+| `/stocks-per-depot` | Stocks per Depot | Portfolio positions grouped by depot |
 | `/countries` | Countries | Alphabetical list |
 | `/branches` | Branches | Alphabetical list |
 | `/depots` | Depots | Alphabetical list |
@@ -359,7 +361,8 @@ cd frontend && npm run dev   # http://localhost:5173
   - `ReferenceDataControllerTest` — depots, currencies, countries, branches (GET + CSV/Excel export)
   - `DashboardControllerTest` — dashboard structure, empty portfolio, holdings/dividends export
   - `TransactionControllerTest` — transaction list, optional filters, date filters, export with sort
-  - `StockControllerTest` — positions list, export with country/branch filters and sorting
+  - `StocksControllerTest` — aggregated positions list, export with country/branch filters and sorting
+  - `StocksPerDepotControllerTest` — positions per depot, export with country/branch/depot filters and sorting
   - `AnalyticsControllerTest` — country/branch diversification structure, export with sort
   - `QuoteControllerTest` — settings GET/PUT, enable/disable toggle, interval validation, trigger fetch
   - `ImportControllerTest` — branches/countries/dividends/ticker-symbols CSV import, empty/invalid input handling
@@ -374,7 +377,8 @@ cd frontend && npm run dev   # http://localhost:5173
   - `ExportButtons.test.tsx` — CSV/Excel download URL construction, parameter forwarding, empty param omission
   - `Dashboard.test.tsx` — KPI card rendering, top-5 tables, last-updated timestamp formatting, null timestamp handling
   - `Countries.test.tsx` — loading indicator, data rendering, pagination toggle, export buttons
-  - `Stocks.test.tsx` — loading indicator, column headers, data rows, filter dropdowns, API call verification
+  - `Stocks.test.tsx` — loading indicator, column headers (no depot), data rows, filter dropdowns (no depot), API call verification
+  - `StocksPerDepot.test.tsx` — loading indicator, column headers (with depot), data rows, filter dropdowns (with depot), API call verification
   - `Settings.test.tsx` — loading state, enabled/disabled text, timestamp formatting, Fetch Now trigger
 - **E2E tests** (Playwright + Chromium):
   - `navigation.spec.ts` — page loads, sidebar items, inter-page navigation, active item highlighting, app header

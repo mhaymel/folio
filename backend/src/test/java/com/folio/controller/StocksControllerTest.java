@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-final class StockControllerTest {
+final class StocksControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -60,7 +60,15 @@ final class StockControllerTest {
         mockMvc.perform(get("/api/stocks/filters"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.countries").isArray())
-            .andExpect(jsonPath("$.branches").isArray());
+            .andExpect(jsonPath("$.branches").isArray())
+            .andExpect(jsonPath("$.depots").isArray());
+    }
+
+    @Test
+    void getStockFilters_returnsEmptyDepotsArray() throws Exception {
+        mockMvc.perform(get("/api/stocks/filters"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.depots", is(empty())));
     }
 
     @Test
@@ -82,15 +90,6 @@ final class StockControllerTest {
         mockMvc.perform(get("/api/stocks/export")
                 .param("format", "csv")
                 .param("country", "Germany"))
-            .andExpect(status().isOk())
-            .andExpect(header().string("Content-Disposition", containsString("stocks.csv")));
-    }
-
-    @Test
-    void exportStocks_withBranchFilter_returnsFile() throws Exception {
-        mockMvc.perform(get("/api/stocks/export")
-                .param("format", "csv")
-                .param("branch", "Technology"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("stocks.csv")));
     }

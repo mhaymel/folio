@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/stocks")
-@Tag(name = "Stocks", description = "Portfolio positions")
-public class StockController {
+@Tag(name = "Stocks", description = "Portfolio positions aggregated across all depots")
+public class StocksController {
 
     private static final Map<String, Comparator<StockDto>> SORT_FIELDS = Map.ofEntries(
         Map.entry("isin", SortHelper.text(StockDto::getIsin)),
@@ -28,7 +28,6 @@ public class StockController {
         Map.entry("country", SortHelper.text(StockDto::getCountry)),
         Map.entry("branch", SortHelper.text(StockDto::getBranch)),
         Map.entry("count", SortHelper.number(StockDto::getCount)),
-        Map.entry("depot", SortHelper.text(StockDto::getDepot)),
         Map.entry("avgEntryPrice", SortHelper.number(StockDto::getAvgEntryPrice)),
         Map.entry("currentQuote", SortHelper.number(StockDto::getCurrentQuote)),
         Map.entry("performancePercent", SortHelper.number(StockDto::getPerformancePercent)),
@@ -39,24 +38,23 @@ public class StockController {
     private final PortfolioService portfolioService;
     private final ExportService exportService;
 
-    public StockController(PortfolioService portfolioService, ExportService exportService) {
+    public StocksController(PortfolioService portfolioService, ExportService exportService) {
         this.portfolioService = portfolioService;
         this.exportService = exportService;
     }
 
     @GetMapping
-    @Operation(summary = "Get current portfolio positions")
+    @Operation(summary = "Get current portfolio positions aggregated across all depots")
     public ResponseEntity<StockPaginatedResponseDto> getStocks(
             @RequestParam(required = false) String isin,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String depot,
             @RequestParam(required = false) String country,
             @RequestParam(required = false) String branch,
             @RequestParam(required = false, defaultValue = "isin") String sortField,
             @RequestParam(required = false, defaultValue = "asc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
-        List<StockDto> data = filterAndSort(portfolioService.getStocks(), isin, name, depot, country, branch, sortField, sortDir);
+        List<StockDto> data = filterAndSort(portfolioService.getAggregatedStocks(), isin, name, country, branch, sortField, sortDir);
         double sumCount = data.stream().mapToDouble(StockDto::getCount).sum();
         PaginatedResponseDto<StockDto> paginated = PaginationHelper.paginate(data, page, pageSize);
         return ResponseEntity.ok(new StockPaginatedResponseDto(
@@ -65,40 +63,35 @@ public class StockController {
     }
 
     @GetMapping("/filters")
-    @Operation(summary = "Get distinct filter options for stocks")
+    @Operation(summary = "Get distinct filter options for aggregated stocks")
     public ResponseEntity<StockFiltersDto> getStockFilters() {
-        List<StockDto> stocks = portfolioService.getStocks();
+        List<StockDto> stocks = portfolioService.getAggregatedStocks();
         List<String> countries = stocks.stream()
             .map(StockDto::getCountry).filter(c -> c != null && !c.isBlank())
             .distinct().sorted().toList();
         List<String> branches = stocks.stream()
             .map(StockDto::getBranch).filter(b -> b != null && !b.isBlank())
             .distinct().sorted().toList();
-        List<String> depots = stocks.stream()
-            .map(StockDto::getDepot).filter(d -> d != null && !d.isBlank())
-            .distinct().sorted().toList();
-        return ResponseEntity.ok(new StockFiltersDto(countries, branches, depots));
+        return ResponseEntity.ok(new StockFiltersDto(countries, branches, List.of()));
     }
 
     @GetMapping("/export")
-    @Operation(summary = "Export stocks as CSV or Excel")
+    @Operation(summary = "Export aggregated stocks as CSV or Excel")
     public ResponseEntity<byte[]> exportStocks(
             @RequestParam(defaultValue = "csv") String format,
             @RequestParam(required = false) String isin,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String depot,
             @RequestParam(required = false) String country,
             @RequestParam(required = false) String branch,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        List<StockDto> data = filterAndSort(portfolioService.getStocks(), isin, name, depot, country, branch, sortField, sortDir);
+        List<StockDto> data = filterAndSort(portfolioService.getAggregatedStocks(), isin, name, country, branch, sortField, sortDir);
 
         List<ExportColumn<StockDto>> columns = List.of(
                 new ExportColumn<>("ISIN", StockDto::getIsin),
                 new ExportColumn<>("Name", StockDto::getName),
                 new ExportColumn<>("Country", StockDto::getCountry),
                 new ExportColumn<>("Branch", StockDto::getBranch),
-                new ExportColumn<>("Depot", StockDto::getDepot),
                 new ExportColumn<>("Count", StockDto::getCount),
                 new ExportColumn<>("Avg Price", StockDto::getAvgEntryPrice),
                 new ExportColumn<>("Quote", StockDto::getCurrentQuote),
@@ -119,7 +112,7 @@ public class StockController {
     }
 
     private static List<StockDto> filterAndSort(List<StockDto> data, String isin, String name,
-                                                 String depot, String country, String branch,
+                                                 String country, String branch,
                                                  String sortField, String sortDir) {
         if (isin != null && !isin.isBlank()) {
             String lower = isin.toLowerCase();
@@ -128,10 +121,6 @@ public class StockController {
         if (name != null && !name.isBlank()) {
             String lower = name.toLowerCase();
             data = data.stream().filter(s -> s.getName() != null && s.getName().toLowerCase().contains(lower)).toList();
-        }
-        Set<String> depots = splitMultiValue(depot);
-        if (!depots.isEmpty()) {
-            data = data.stream().filter(s -> depots.contains(s.getDepot())).toList();
         }
         Set<String> countries = splitMultiValue(country);
         if (!countries.isEmpty()) {

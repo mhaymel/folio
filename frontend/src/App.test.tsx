@@ -9,6 +9,7 @@ import Layout from './components/Layout';
 vi.mock('./pages/Dashboard', () => ({ default: () => <div>Dashboard Stub</div> }));
 vi.mock('./pages/Transactions', () => ({ default: () => <div>Transactions Stub</div> }));
 vi.mock('./pages/Stocks', () => ({ default: () => <div>Stocks Stub</div> }));
+vi.mock('./pages/StocksPerDepot', () => ({ default: () => <div>StocksPerDepot Stub</div> }));
 vi.mock('./pages/Countries', () => ({ default: () => <div>Countries Stub</div> }));
 vi.mock('./pages/Branches', () => ({ default: () => <div>Branches Stub</div> }));
 vi.mock('./pages/Depots', () => ({ default: () => <div>Depots Stub</div> }));
@@ -23,6 +24,7 @@ vi.mock('./pages/Settings', () => ({ default: () => <div>Settings Stub</div> }))
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Stocks from './pages/Stocks';
+import StocksPerDepot from './pages/StocksPerDepot';
 import Countries from './pages/Countries';
 import Branches from './pages/Branches';
 import Depots from './pages/Depots';
@@ -41,6 +43,7 @@ function renderApp(route: string) {
           <Route path="/" element={<Dashboard />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/stocks" element={<Stocks />} />
+          <Route path="/stocks-per-depot" element={<StocksPerDepot />} />
           <Route path="/countries" element={<Countries />} />
           <Route path="/branches" element={<Branches />} />
           <Route path="/depots" element={<Depots />} />
@@ -61,6 +64,7 @@ describe('App routing', () => {
     ['/', 'Dashboard Stub'],
     ['/transactions', 'Transactions Stub'],
     ['/stocks', 'Stocks Stub'],
+    ['/stocks-per-depot', 'StocksPerDepot Stub'],
     ['/countries', 'Countries Stub'],
     ['/branches', 'Branches Stub'],
     ['/depots', 'Depots Stub'],

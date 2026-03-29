@@ -5,6 +5,7 @@ const NAV_ITEMS = [
   { label: 'Dashboard', to: '/', end: true },
   { label: 'Transactions', to: '/transactions' },
   { label: 'Stocks', to: '/stocks' },
+  { label: 'Stocks per Depot', to: '/stocks-per-depot' },
   { label: 'Countries', to: '/countries' },
   { label: 'Branches', to: '/branches' },
   { label: 'Depots', to: '/depots' },

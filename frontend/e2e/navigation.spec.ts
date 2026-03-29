@@ -10,7 +10,7 @@ test.describe('Navigation', () => {
     await page.goto('/');
     const sidebar = page.locator('[class*="sidebar-nav"]');
     const navItems = [
-      'Dashboard', 'Transactions', 'Stocks', 'Countries', 'Branches',
+      'Dashboard', 'Transactions', 'Stocks', 'Stocks per Depot', 'Countries', 'Branches',
       'Depots', 'Currencies', 'Ticker Symbols', 'ISIN Names',
       'Country Analysis', 'Branch Analysis', 'Import', 'Settings',
     ];
@@ -31,6 +31,13 @@ test.describe('Navigation', () => {
     await page.getByText('Stocks', { exact: true }).click();
     await expect(page).toHaveURL('/stocks');
     await expect(page.locator('h1')).toContainText('Stocks');
+  });
+
+  test('navigates to Stocks per Depot page via sidebar', async ({ page }) => {
+    await page.goto('/');
+    await page.getByText('Stocks per Depot', { exact: true }).click();
+    await expect(page).toHaveURL('/stocks-per-depot');
+    await expect(page.locator('h1')).toContainText('Stocks per Depot');
   });
 
   test('navigates to Countries page via sidebar', async ({ page }) => {

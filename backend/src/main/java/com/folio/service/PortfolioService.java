@@ -75,6 +75,51 @@ public class PortfolioService {
     }
 
     @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
+    public List<StockDto> getAggregatedStocks() {
+        // Get open positions: ISIN aggregated across all depots
+        List<Tuple> positions = em.createQuery("""
+            SELECT t.isin.id as isinId, t.isin.isin as isinCode,
+                   SUM(t.count) as totalCount,
+                   SUM(t.count * t.sharePrice) as totalCost
+            FROM Transaction t
+            GROUP BY t.isin.id, t.isin.isin
+            HAVING SUM(t.count) > 0
+            """, Tuple.class).getResultList();
+
+        List<StockDto> result = new ArrayList<>();
+        for (Tuple pos : positions) {
+            Integer isinId = pos.get("isinId", Integer.class);
+            String isinCode = pos.get("isinCode", String.class);
+            Double totalCount = pos.get("totalCount", Double.class);
+            Double totalCost = pos.get("totalCost", Double.class);
+
+            double avgEntryPrice = totalCount > 0 ? totalCost / totalCount : 0;
+
+            String name = getFirstName(isinId);
+            String country = getCountry(isinId);
+            String branch = getBranch(isinId);
+            Double currentQuote = getQuote(isinId);
+            Double dps = getDividendPerShare(isinId);
+
+            Double performancePercent = null;
+            if (currentQuote != null && avgEntryPrice > 0) {
+                performancePercent = (currentQuote - avgEntryPrice) / avgEntryPrice * 100;
+            }
+
+            Double estimatedAnnualIncome = (dps != null && dps > 0) ? dps * totalCount : null;
+
+            result.add(StockDto.builder()
+                .isin(isinCode).name(name).country(country).branch(branch)
+                .count(totalCount).avgEntryPrice(avgEntryPrice)
+                .currentQuote(currentQuote).performancePercent(performancePercent)
+                .dividendPerShare(dps).estimatedAnnualIncome(estimatedAnnualIncome)
+                .build());
+        }
+        return result;
+    }
+
+    @Transactional(readOnly = true)
     public DashboardDto getDashboard() {
         List<StockDto> stocks = getStocks();
 

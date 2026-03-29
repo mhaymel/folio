@@ -3,6 +3,7 @@ import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Stocks from './pages/Stocks';
+import StocksPerDepot from './pages/StocksPerDepot';
 import Countries from './pages/Countries';
 import Branches from './pages/Branches';
 import Depots from './pages/Depots';
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/stocks" element={<Stocks />} />
+          <Route path="/stocks-per-depot" element={<StocksPerDepot />} />
           <Route path="/countries" element={<Countries />} />
           <Route path="/branches" element={<Branches />} />
           <Route path="/depots" element={<Depots />} />
