@@ -81,25 +81,25 @@ export default function Transactions() {
     {
       id: 'isin', header: 'ISIN', accessor: 'isin', sortType: 'text' as const, alignment: 'left' as const, width: 140, minWidth: 140,
       cell: ({ rowData }: { rowData: TransactionDto }) => (
-        <span onDoubleClick={() => handleCellDoubleClick('isin', rowData.isin)} style={{ display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.isin}</span>
+        <span onDoubleClick={() => handleCellDoubleClick('isin', rowData.isin)} style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.isin}</span>
       ),
     },
     {
       id: 'name', header: 'Name', accessor: (row: TransactionDto) => row.name ?? '', sortType: 'text' as const, alignment: 'left' as const, width: 240, minWidth: 120,
       cell: ({ rowData }: { rowData: TransactionDto }) => (
-        <span onDoubleClick={() => rowData.name && handleCellDoubleClick('name', rowData.name)} style={{ display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.name ?? ''}</span>
+        <span onDoubleClick={() => rowData.name && handleCellDoubleClick('name', rowData.name)} style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.name ?? ''}</span>
       ),
     },
     {
       id: 'depot', header: 'Depot', accessor: 'depot', sortType: 'text' as const, alignment: 'left' as const, width: 100, minWidth: 80,
       cell: ({ rowData }: { rowData: TransactionDto }) => (
-        <span onDoubleClick={() => handleCellDoubleClick('depot', rowData.depot)} style={{ display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.depot}</span>
+        <span onDoubleClick={() => handleCellDoubleClick('depot', rowData.depot)} style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.depot}</span>
       ),
     },
     {
       id: 'count', header: 'Count', accessor: (row: TransactionDto) => fmtNum3(row.count), sortType: 'number' as const, alignment: 'right' as const, width: 100, minWidth: 80,
       cell: ({ rowData }: { rowData: TransactionDto }) => (
-        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', height: '100%', color: rowData.count < 0 ? 'red' : rowData.count > 0 ? 'green' : undefined }}>{fmtNum3(rowData.count)}</span>
+        <span style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', height: '100%', color: rowData.count < 0 ? 'red' : rowData.count > 0 ? 'green' : undefined }}>{fmtNum3(rowData.count)}</span>
       ),
     },
     { id: 'sharePrice', header: 'Share Price', accessor: (row: TransactionDto) => fmtNum2(row.sharePrice), sortType: 'number' as const, alignment: 'right' as const, width: 110, minWidth: 100 },

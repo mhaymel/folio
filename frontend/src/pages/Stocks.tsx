@@ -83,19 +83,19 @@ export default function Stocks() {
     {
       id: 'isin', header: 'ISIN', accessor: 'isin', sortType: 'text' as const, alignment: 'left' as const, width: 140, minWidth: 140,
       cell: ({ rowData }: { rowData: StockDto }) => (
-        <span onDoubleClick={() => handleCellDoubleClick('isin', rowData.isin)} style={{ display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.isin}</span>
+        <span onDoubleClick={() => handleCellDoubleClick('isin', rowData.isin)} style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.isin}</span>
       ),
     },
     {
       id: 'name', header: 'Name', accessor: (r: StockDto) => r.name ?? '', sortType: 'text' as const, alignment: 'left' as const, width: 240, minWidth: 240,
       cell: ({ rowData }: { rowData: StockDto }) => (
-        <span onDoubleClick={() => rowData.name && handleCellDoubleClick('name', rowData.name)} style={{ display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.name ?? ''}</span>
+        <span onDoubleClick={() => rowData.name && handleCellDoubleClick('name', rowData.name)} style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.name ?? ''}</span>
       ),
     },
     {
       id: 'depot', header: 'Depot', accessor: 'depot', sortType: 'text' as const, alignment: 'left' as const, width: 100, minWidth: 80,
       cell: ({ rowData }: { rowData: StockDto }) => (
-        <span onDoubleClick={() => rowData.depot && handleCellDoubleClick('depot', rowData.depot)} style={{ display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.depot ?? ''}</span>
+        <span onDoubleClick={() => rowData.depot && handleCellDoubleClick('depot', rowData.depot)} style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.depot ?? ''}</span>
       ),
     },
     { id: 'count', header: 'Count', accessor: (r: StockDto) => fmtNum(r.count), sortType: 'number' as const, alignment: 'right' as const, width: 100, minWidth: 80 },
