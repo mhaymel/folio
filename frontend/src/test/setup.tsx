@@ -124,6 +124,28 @@ vi.mock('@dynatrace/strato-components/overlays', () => ({
     ) : null,
 }));
 
+vi.mock('@dynatrace/strato-components/filters', () => {
+  const Presets = ({ children }: any) => <div data-testid="timeframe-presets">{children}</div>;
+  Presets.displayName = 'TimeframeSelector.Presets';
+  const PresetItem = ({ children, value }: any) => (
+    <button data-testid="timeframe-preset" data-from={value?.from} data-to={value?.to}>{children}</button>
+  );
+  PresetItem.displayName = 'TimeframeSelector.PresetItem';
+  const TimeframeSelector = Object.assign(
+    ({ children, value, onChange, clearable }: any) => (
+      <div data-testid="timeframe-selector">
+        {value ? <span data-testid="timeframe-value">{value.from || ''} – {value.to || ''}</span> : <span>Select timeframe</span>}
+        {clearable && value && (
+          <button data-testid="timeframe-clear" onClick={() => onChange?.(null)}>Clear</button>
+        )}
+        {children}
+      </div>
+    ),
+    { Presets, PresetItem },
+  );
+  return { TimeframeSelector };
+});
+
 vi.mock('@dynatrace/strato-components/forms', () => ({
   TextInput: ({ value, onChange, ...props }: any) => (
     <input

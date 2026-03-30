@@ -75,6 +75,37 @@ test.describe('Stocks per Depot page', () => {
   });
 });
 
+test.describe('Dividend Payments page', () => {
+  test('loads and shows heading', async ({ page }) => {
+    await page.goto('/dividend-payments');
+    await expect(page.locator('h1')).toContainText('Dividend Payments');
+  });
+
+  test('shows filter inputs, depot dropdown, and timeframe selector', async ({ page }) => {
+    await page.goto('/dividend-payments');
+    await expect(page.getByPlaceholder('Filter ISIN...')).toBeVisible();
+    await expect(page.getByPlaceholder('Filter Name...')).toBeVisible();
+    await expect(page.getByText('All depots')).toBeVisible();
+    await expect(page.getByText('Select timeframe')).toBeVisible();
+  });
+
+  test('shows export buttons', async ({ page }) => {
+    await page.goto('/dividend-payments');
+    await expect(page.getByText('Export CSV')).toBeVisible();
+    await expect(page.getByText('Export Excel')).toBeVisible();
+  });
+
+  test('shows Show All toggle', async ({ page }) => {
+    await page.goto('/dividend-payments');
+    await expect(page.getByText('Show All')).toBeVisible();
+  });
+
+  test('shows Refresh button', async ({ page }) => {
+    await page.goto('/dividend-payments');
+    await expect(page.getByText('Refresh')).toBeVisible();
+  });
+});
+
 test.describe('Settings page', () => {
   test('loads and shows heading', async ({ page }) => {
     await page.goto('/settings');

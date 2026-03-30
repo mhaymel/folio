@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { label: 'Currencies', to: '/currencies' },
   { label: 'Ticker Symbols', to: '/ticker-symbols' },
   { label: 'ISIN Names', to: '/isin-names' },
+  { label: 'Dividend Payments', to: '/dividend-payments' },
   { label: 'Country Analysis', to: '/analytics/countries' },
   { label: 'Branch Analysis', to: '/analytics/branches' },
   { label: 'Import', to: '/import' },

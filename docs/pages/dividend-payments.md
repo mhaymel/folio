@@ -8,7 +8,7 @@ Follow UI conventions in [ui.md](../ui.md).
 
 ## Use Case
 
-Display all dividend payments received in the portfolio, including the date, amount, currency, stock details (ISIN, name), and depot where the payment was received. This page provides users with a complete history of dividend income across all depots. Users can filter by stock name, ISIN, or depot, sort by any column, and view aggregated totals. Table conventions per [ui.md](../ui.md) apply (sortable, resizable, full width).
+Display all dividend payments received in the portfolio, including the date, amount (in EUR), stock details (ISIN, name), and depot where the payment was received. All monetary values are converted to EUR by the backend; no currency column is needed. This page provides users with a complete history of dividend income across all depots. Users can filter by stock name, ISIN, or depot, sort by any column, and view aggregated totals. Table conventions per [ui.md](../ui.md) apply (sortable, resizable, full width).
 
 The page can be accessed from the main menu under the "Dividend Payments" item in the sidebar navigation.
 
@@ -25,7 +25,7 @@ The page can be accessed from the main menu under the "Dividend Payments" item i
 | `depot` | Exact depot name match (optional) |
 | `fromDate` | Filter start date (optional, ISO format `YYYY-MM-DD`) |
 | `toDate` | Filter end date (optional, ISO format `YYYY-MM-DD`) |
-| `sortField` | One of: `timestamp`, `isin`, `name`, `depot`, `value`, `currency` (default: `timestamp`) |
+| `sortField` | One of: `timestamp`, `isin`, `name`, `depot`, `value` (default: `timestamp`) |
 | `sortDir` | `asc` or `desc` (default: `desc`) |
 | `page` | Page number, 1-based (default: `1`) |
 | `pageSize` | Items per page; one of `[10, 20, 50, 100, -1]`; `-1` = all (default: `10`) |
@@ -40,7 +40,6 @@ Returns a paginated envelope with filtered/sorted dividend payments and aggregat
       "isin": "DE000BASF111",
       "name": "BASF SE",
       "depot": "DeGiro",
-      "currency": "EUR",
       "value": 34.00
     }
   ],
@@ -52,7 +51,7 @@ Returns a paginated envelope with filtered/sorted dividend payments and aggregat
 }
 ```
 
-- **`timestamp`**: Pre-formatted by backend as `DD.MM.YYYY HH:mm`.
+- **`timestamp`**: Pre-formatted by backend as `DD.MM.YYYY` (date only, no time).
 - **`name`**: Stock name resolved via `isin_name`; null if not available.
 - **`sumValue`**: Sum of `value` field across all filtered results (before pagination).
 
@@ -81,26 +80,40 @@ Returns a CSV or Excel file with all filtered dividend payments (ignores paginat
 
 | Column | Format | Alignment | `width` | `minWidth` |
 |--------|--------|-----------|---------|------------|
-| Date | Pre-formatted by backend as `DD.MM.YYYY HH:mm`; default sort descending | center | 140 | 140 |
+| Date | Pre-formatted by backend as `DD.MM.YYYY` (date only, no time); default sort descending | center | 110 | 110 |
 | ISIN | Double-click → `setIsinFilter` | left | 140 | 140 |
 | Name | Double-click → `setNameFilter`; display `—` if null | left | 240 | 120 |
 | Depot | Double-click → `setDepotFilter` | left | 100 | 80 |
-| Currency | Plain text | center | 80 | 60 |
-| Amount | Number format per [ui.md](../ui.md); 2 decimal places | right | 110 | 100 |
+| Amount (EUR) | Number format per [ui.md](../ui.md); 2 decimal places | right | 110 | 100 |
 
 ### Summary
 
 - **Row count:** Display `"N dividend payments"` (e.g., `"42 dividend payments"`).
-- **Sum of amounts:** Display the sum of the Amount column reflecting current filters, formatted with 2 decimal places in German locale (e.g., `"Total: 1.250,50 EUR"`). Note: If multiple currencies are present in filtered results, display separate sums per currency (e.g., `"Total: 1.000,00 EUR | 250,00 USD"`).
+- **Sum of amounts:** Display the sum of the Amount column reflecting current filters, formatted with 2 decimal places in German locale (e.g., `"Total: 1.250,50 EUR"`).
 
 ### Filtering
 
 - **ISIN filter**: Free-text input; case-insensitive partial match updated in real time with 300 ms debounce. Clear button resets the filter. Double-clicking an ISIN value in the table copies it to this filter.
 - **Name filter**: Free-text input; case-insensitive partial match updated in real time with 300 ms debounce. Clear button resets the filter. Double-clicking a Name value in the table copies it to this filter.
 - **Depot filter**: Multi-select dropdown populated from `GET /api/dividend-payments/filters`. Multiple selections sent as comma-separated string (e.g., `depot=DeGiro,ZERO`).
-- **Date range filter**: `fromDate` and `toDate` date inputs allow filtering to a specific date range. Both are optional.
+- **Date range filter**: Use the Strato `TimeframeSelector` component (`@dynatrace/strato-components/filters`) to select a from/to date interval. **Default: 2026.** The selector includes year presets:
+  - **All** — 01.01.2000 to now
+  - **2026** — 01.01.2026 to 31.12.2026
+  - **2025** — 01.01.2025 to 31.12.2025
+  - **2024** — 01.01.2024 to 31.12.2024
+  - **2023** — 01.01.2023 to 31.12.2023
+  - **2022** — 01.01.2022 to 31.12.2022
+  - **2021** — 01.01.2021 to 31.12.2021
+  - **2020** — 01.01.2020 to 31.12.2020
+  - **2019** — 01.01.2019 to 31.12.2019
+  - **2018** — 01.01.2018 to 31.12.2018
+  - **2017** — 01.01.2017 to 31.12.2017
+  - **2016** — 01.01.2016 to 31.12.2016
+  - **2015** — 01.01.2015 to 31.12.2015
 
-**Filter bar:** ISIN `TextInput` (real-time partial, case-insensitive, 300 ms debounce; Clear button; double-click cell fills); Name `TextInput` (same); Depot `MultiSelect`; From Date `DateInput`; To Date `DateInput`; Refresh `Button`.
+  The selector is clearable. Custom from/to ranges are also supported. When no timeframe is stored in `sessionStorage`, the **2026** preset is applied by default on page load.
+
+**Filter bar:** ISIN `TextInput` (real-time partial, case-insensitive, 300 ms debounce; Clear button; double-click cell fills); Name `TextInput` (same); Depot `MultiSelect`; Date range `TimeframeSelector` (with year presets); Refresh `Button`.
 
 **State preservation:** Filter values, sort state, and pagination are preserved in `sessionStorage` when navigating away and back (see [ui.md](../ui.md)).
 
@@ -135,7 +148,7 @@ Returns a CSV or Excel file with all filtered dividend payments (ignores paginat
 ### Backend
 
 - **Entity:** `DividendPayment` (already exists: `id`, `timestamp`, `isin_id`, `depot_id`, `currency_id`, `value`).
-- **DTO:** Create `DividendPaymentDto` with fields: `id`, `timestamp` (formatted string), `isin`, `name`, `depot`, `currency`, `value`.
+- **DTO:** Create `DividendPaymentDto` with fields: `id`, `timestamp` (formatted string), `isin`, `name`, `depot`, `value` (EUR).
 - **Controller:** `DividendPaymentController` with endpoints:
   - `GET /api/dividend-payments` (paginated, filtered, sorted)
   - `GET /api/dividend-payments/filters`
@@ -152,8 +165,4 @@ Returns a CSV or Excel file with all filtered dividend payments (ignores paginat
 
 ### Currency Handling
 
-- If all filtered dividend payments use the same currency, display single total (e.g., `"Total: 1.250,50 EUR"`).
-- If multiple currencies are present, group by currency and display separate totals (e.g., `"Total: 1.000,00 EUR | 250,00 USD"`).
-- The backend should return `sumValue` as a single number for simplicity; frontend can fetch currency distribution if needed, or backend can return a map of `sumValueByCurrency`.
-
-**Recommendation for MVP:** Display a single total assuming all dividends are in the same currency (EUR). Add multi-currency support in a future iteration if needed.
+All dividend values are converted to EUR by the backend before being sent to the frontend. The API returns only euro amounts — there is no currency field in the response. The frontend displays all values as EUR.

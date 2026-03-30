@@ -17,6 +17,7 @@ function renderLayout(initialRoute = '/') {
         <Route path="/currencies" element={<div>Currencies Page</div>} />
         <Route path="/ticker-symbols" element={<div>Ticker Symbols Page</div>} />
         <Route path="/isin-names" element={<div>ISIN Names Page</div>} />
+        <Route path="/dividend-payments" element={<div>Dividend Payments Page</div>} />
         <Route path="/analytics/:type" element={<div>Analytics Page</div>} />
         <Route path="/import" element={<div>Import Page</div>} />
         <Route path="/settings" element={<div>Settings Page</div>} />
@@ -32,12 +33,12 @@ describe('Layout', () => {
     expect(screen.getByText('Folio')).toBeInTheDocument();
   });
 
-  it('renders all 13 sidebar navigation items', () => {
+  it('renders all 14 sidebar navigation items', () => {
     renderLayout();
     const expectedItems = [
       'Dashboard', 'Transactions', 'Stocks', 'Countries', 'Branches',
       'Depots', 'Currencies', 'Ticker Symbols', 'ISIN Names',
-      'Country Analysis', 'Branch Analysis', 'Import', 'Settings',
+      'Dividend Payments', 'Country Analysis', 'Branch Analysis', 'Import', 'Settings',
     ];
     for (const item of expectedItems) {
       expect(screen.getByText(item)).toBeInTheDocument();

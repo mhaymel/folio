@@ -11,7 +11,7 @@ test.describe('Navigation', () => {
     const sidebar = page.locator('[class*="sidebar-nav"]');
     const navItems = [
       'Dashboard', 'Transactions', 'Stocks', 'Stocks per Depot', 'Countries', 'Branches',
-      'Depots', 'Currencies', 'Ticker Symbols', 'ISIN Names',
+      'Depots', 'Currencies', 'Ticker Symbols', 'ISIN Names', 'Dividend Payments',
       'Country Analysis', 'Branch Analysis', 'Import', 'Settings',
     ];
     for (const item of navItems) {
@@ -59,6 +59,13 @@ test.describe('Navigation', () => {
     await page.getByText('Settings', { exact: true }).click();
     await expect(page).toHaveURL('/settings');
     await expect(page.locator('h1')).toContainText('Settings');
+  });
+
+  test('navigates to Dividend Payments page via sidebar', async ({ page }) => {
+    await page.goto('/');
+    await page.getByText('Dividend Payments', { exact: true }).click();
+    await expect(page).toHaveURL('/dividend-payments');
+    await expect(page.locator('h1')).toContainText('Dividend Payments');
   });
 
   test('highlights active nav item', async ({ page }) => {

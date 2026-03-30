@@ -119,3 +119,20 @@ export interface IsinNameDto {
   isin: string;
   name: string;
 }
+
+export interface DividendPaymentDto {
+  id: number;
+  timestamp: string;
+  isin: string;
+  name: string | null;
+  depot: string;
+  value: number;
+}
+
+export interface DividendPaymentPaginatedResponse extends PaginatedResponse<DividendPaymentDto> {
+  sumValue: number;
+}
+
+export interface DividendPaymentFiltersDto {
+  depots: string[];
+}

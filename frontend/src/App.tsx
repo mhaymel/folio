@@ -12,6 +12,7 @@ import TickerSymbols from './pages/TickerSymbols';
 import IsinNames from './pages/IsinNames';
 import Analytics from './pages/Analytics';
 import Import from './pages/Import';
+import DividendPayments from './pages/DividendPayments';
 import Settings from './pages/Settings';
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/currencies" element={<Currencies />} />
           <Route path="/ticker-symbols" element={<TickerSymbols />} />
           <Route path="/isin-names" element={<IsinNames />} />
+          <Route path="/dividend-payments" element={<DividendPayments />} />
           <Route path="/analytics/:type" element={<Analytics />} />
           <Route path="/import" element={<Import />} />
           <Route path="/settings" element={<Settings />} />

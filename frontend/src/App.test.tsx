@@ -18,6 +18,7 @@ vi.mock('./pages/TickerSymbols', () => ({ default: () => <div>TickerSymbols Stub
 vi.mock('./pages/IsinNames', () => ({ default: () => <div>IsinNames Stub</div> }));
 vi.mock('./pages/Analytics', () => ({ default: () => <div>Analytics Stub</div> }));
 vi.mock('./pages/Import', () => ({ default: () => <div>Import Stub</div> }));
+vi.mock('./pages/DividendPayments', () => ({ default: () => <div>DividendPayments Stub</div> }));
 vi.mock('./pages/Settings', () => ({ default: () => <div>Settings Stub</div> }));
 
 // Import the actual page mocks after mocking
@@ -33,6 +34,7 @@ import TickerSymbols from './pages/TickerSymbols';
 import IsinNames from './pages/IsinNames';
 import Analytics from './pages/Analytics';
 import Import from './pages/Import';
+import DividendPayments from './pages/DividendPayments';
 import Settings from './pages/Settings';
 
 function renderApp(route: string) {
@@ -50,6 +52,7 @@ function renderApp(route: string) {
           <Route path="/currencies" element={<Currencies />} />
           <Route path="/ticker-symbols" element={<TickerSymbols />} />
           <Route path="/isin-names" element={<IsinNames />} />
+          <Route path="/dividend-payments" element={<DividendPayments />} />
           <Route path="/analytics/:type" element={<Analytics />} />
           <Route path="/import" element={<Import />} />
           <Route path="/settings" element={<Settings />} />
@@ -71,6 +74,7 @@ describe('App routing', () => {
     ['/currencies', 'Currencies Stub'],
     ['/ticker-symbols', 'TickerSymbols Stub'],
     ['/isin-names', 'IsinNames Stub'],
+    ['/dividend-payments', 'DividendPayments Stub'],
     ['/analytics/countries', 'Analytics Stub'],
     ['/analytics/branches', 'Analytics Stub'],
     ['/import', 'Import Stub'],
