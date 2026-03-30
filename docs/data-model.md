@@ -117,7 +117,7 @@ Reference table of all quote data sources used in the cascading fallback.
 | Column | Type         | Constraints      | Description                              |
 |--------|--------------|------------------|------------------------------------------|
 | id     | INTEGER      | PK               | Surrogate primary key                    |
-| name   | VARCHAR(100) | UNIQUE, NOT NULL | Provider name (e.g. `JustETF`, `Onvista`) |
+| name   | VARCHAR(100) | UNIQUE, NOT NULL | Provider name (e.g. `JustETF`, `Onvista`, `MarketBeat`) |
 
 ## `settings`
 Key-value store for application configuration (e.g. quote fetch interval).

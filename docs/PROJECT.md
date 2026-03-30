@@ -290,7 +290,7 @@ settings         (id, key VARCHAR(100) UNIQUE NOT NULL, value VARCHAR(500) NOT N
 **Seed data included in V1:**
 - Depots: `DeGiro`, `ZERO`
 - Currencies: AUD, CAD, EUR, GBP, USD, SGD, NOK, PLN, CNY, IDR, ZAR, MXN, HUF, ILS, DKK, CZK, THB, SEK, JPY, BRL, RON, CHF, ISK, TRY, HKD, INR, KRW, MYR, NZD, PHP
-- Quote providers: JustETF, Onvista, FinanzenNet, CNBC, FondsDiscount, ComDirect, WallstreetOnline
+- Quote providers: JustETF, Onvista, FinanzenNet, CNBC, FondsDiscount, ComDirect, WallstreetOnline, MarketBeat
 - Settings: `quote.fetch.interval.minutes` = `60`
 
 ---

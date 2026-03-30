@@ -12,7 +12,7 @@ The UI should also provide a way for the user to change the interval at which th
 
 ## Quote Data System
 
-The backend fetches live EUR-denominated prices for a set of ISINs using a **cascading fallback** approach across up to 10 sources. The central orchestrator is `IsinsQuoteLoader`. Each source is tried in order; ISINs successfully resolved are removed from the remaining set before the next source is attempted.
+The backend fetches live EUR-denominated prices for a set of ISINs using a **cascading fallback** approach across up to 11 sources. The central orchestrator is `IsinsQuoteLoader`. Each source is tried in order; ISINs successfully resolved are removed from the remaining set before the next source is attempted.
 
 ### Config Files (bundled as backend resources)
 
@@ -24,6 +24,7 @@ Three sources require a pre-configured URL path per ISIN, stored as semicolon-de
 | `onvista.csv` | `ISIN;relative-url-path` | Onvista source |
 | `wallstreetonline.csv` | `ISIN;relative-url-path` | WallstreetOnline source |
 | `isin.symbol.csv` | `ISIN;TICKER;Company Name` | CNBC source |
+| `marketbeat.csv` | `ISIN;EXCHANGE;TICKER` | MarketBeat source |
 
 If an ISIN has no entry in the relevant config file, that source is skipped for that ISIN.
 
@@ -41,6 +42,9 @@ If an ISIN has no entry in the relevant config file, that source is skipped for 
 | 8 | FondsDiscount.de USD | `https://www.fondsdiscount.de/fonds/etf/{ISIN}/` | USD→EUR |
 | 9 | ComDirect HTML | `https://www.comdirect.de/inf/zertifikate/{ISIN}` | EUR |
 | 10 | WallstreetOnline | `https://www.wallstreet-online.de/{path}` (from `wallstreetonline.csv`) | EUR or USD (auto-detect) |
+| 11 | MarketBeat HTML | `https://www.marketbeat.com/stocks/{EXCHANGE}/{TICKER}/` (e.g. `NYSE/T`) | USD→EUR |
+
+**Note:** MarketBeat requires exchange code (NYSE, NASDAQ, etc.) and ticker symbol, not ISIN. A mapping file similar to `isin.symbol.csv` would be needed: `ISIN;EXCHANGE;TICKER`.
 
 ### Currency Conversion
 

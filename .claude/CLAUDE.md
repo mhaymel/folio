@@ -6,12 +6,14 @@ Folio is a personal investment portfolio tracker: Spring Boot backend + React/Ty
 
 | File | Contents |
 |------|----------|
-| `docs/PROJECT.md` | Requirements, tech preferences, scaffolding, running locally, testing, auth, API docs |
+| `docs/README.md` | Documentation structure overview, link patterns, maintenance guidelines |
+| `docs/PROJECT.md` | Requirements, tech preferences, scaffolding, running locally, testing, auth, API docs, page index |
 | `docs/coding-guidelines.md` | Coding conventions: backend (no Lombok, naming, testing) + frontend (Strato quirks, design) |
 | `docs/data-model.md` | Database schema, entity relationships, tiny types |
+| `docs/ui.md` | General UI rules: formatting, DataTable conventions, export, testing, pagination, state management |
+| `docs/plan.md` | Thin frontend implementation plan: backend sorting, filtering, pagination |
 | `docs/gaps.and.issues.md` | Identified gaps and their resolution status |
-| `docs/frontend/pages/ui.md` | General UI rules: formatting, DataTable conventions, export, testing |
-| `docs/frontend/pages/*.md` | Per-page specs: routes, API contracts, CSV parsing, UI layout |
+| `docs/pages/*.md` | Per-page specs: routes, API contracts, CSV parsing, UI layout (13 pages) |
 
 Always read the relevant doc section before making changes that touch requirements or architecture.
 
