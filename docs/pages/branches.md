@@ -1,16 +1,16 @@
-# Countries
+# Branches
 
-> Route: `/countries` — Alphabetical list of countries.
+> Route: `/branches` — Alphabetical list of branches.
 
 ## Use Case
 
-The UI should provide a view that displays the countries, sorted alphabetically. The countries should be fetched from the backend via a REST API endpoint that retrieves country data from the database.
+The UI should provide a view that displays the branches, sorted alphabetically. The branches should be fetched from the backend via a REST API endpoint that retrieves branch data from the database.
 
 ---
 
 ## REST API
 
-### `GET /api/countries`
+### `GET /api/branches`
 
 | Query Param | Description |
 |-------------|-------------|
@@ -19,13 +19,13 @@ The UI should provide a view that displays the countries, sorted alphabetically.
 | `page` | Page number, 1-based (default: `1`) |
 | `pageSize` | Items per page; one of `[10, 20, 50, 100, -1]`; `-1` = all (default: `10`) |
 
-Returns a paginated envelope per [ui.md](ui.md):
+Returns a paginated envelope per [ui.md](../ui.md):
 ```json
 {
   "items": [
-    { "id": 1, "name": "BRD" },
-    { "id": 2, "name": "Irland" },
-    { "id": 3, "name": "USA" }
+    { "id": 1, "name": "Energy" },
+    { "id": 2, "name": "Technology" },
+    { "id": 3, "name": "Healthcare" }
   ],
   "page": 1,
   "pageSize": 10,
@@ -44,6 +44,6 @@ Returns a paginated envelope per [ui.md](ui.md):
 |--------|-----------|---------|------------|
 | Name | left | 300 | 200 |
 
-- Table conventions per [ui.md](ui.md) apply (sortable, resizable, full width).
+- Table conventions per [ui.md](../ui.md) apply (sortable, resizable, full width).
 - Default sort: name ascending. Sort changes trigger a re-fetch with `sortField` and `sortDir` query params.
 

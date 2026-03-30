@@ -77,19 +77,20 @@ Detailed use cases, API contracts, CSV parsing specs, and UI specifications for 
 
 | Page | Document | Route(s) |
 |------|----------|----------|
-| Dashboard | [frontend/pages/dashboard.md](frontend/pages/dashboard.md) | `/` |
-| Transactions | [frontend/pages/transactions.md](frontend/pages/transactions.md) | `/transactions` |
-| Stocks | [frontend/pages/stocks.md](frontend/pages/stocks.md) | `/stocks` |
-| Stocks per Depot | [frontend/pages/stocks-per-depot.md](frontend/pages/stocks-per-depot.md) | `/stocks-per-depot` |
-| Import | [frontend/pages/import.md](frontend/pages/import.md) | `/import` |
-| Analytics | [frontend/pages/analytics.md](frontend/pages/analytics.md) | `/analytics/countries`, `/analytics/branches` |
-| Settings & Quotes | [frontend/pages/settings.md](frontend/pages/settings.md) | `/settings` |
-| Countries | [frontend/pages/countries.md](frontend/pages/countries.md) | `/countries` |
-| Branches | [frontend/pages/branches.md](frontend/pages/branches.md) | `/branches` |
-| Ticker Symbols | [frontend/pages/ticker-symbols.md](frontend/pages/ticker-symbols.md) | `/ticker-symbols` |
-| ISIN Names | [frontend/pages/isin-names.md](frontend/pages/isin-names.md) | `/isin-names` |
-| Reference Data | [frontend/pages/reference-data.md](frontend/pages/reference-data.md) | `/depots`, `/currencies` |
-| **General UI Requirements** | [frontend/pages/ui.md](frontend/pages/ui.md) | — |
+| Dashboard | [pages/dashboard.md](pages/dashboard.md) | `/` |
+| Transactions | [pages/transactions.md](pages/transactions.md) | `/transactions` |
+| Stocks | [pages/stocks.md](pages/stocks.md) | `/stocks` |
+| Stocks per Depot | [pages/stocks-per-depot.md](pages/stocks-per-depot.md) | `/stocks-per-depot` |
+| Dividend Payments | [pages/dividend-payments.md](pages/dividend-payments.md) | `/dividend-payments` |
+| Import | [pages/import.md](pages/import.md) | `/import` |
+| Analytics | [pages/analytics.md](pages/analytics.md) | `/analytics/countries`, `/analytics/branches` |
+| Settings & Quotes | [pages/settings.md](pages/settings.md) | `/settings` |
+| Countries | [pages/countries.md](pages/countries.md) | `/countries` |
+| Branches | [pages/branches.md](pages/branches.md) | `/branches` |
+| Ticker Symbols | [pages/ticker-symbols.md](pages/ticker-symbols.md) | `/ticker-symbols` |
+| ISIN Names | [pages/isin-names.md](pages/isin-names.md) | `/isin-names` |
+| Reference Data | [pages/reference-data.md](pages/reference-data.md) | `/depots`, `/currencies` |
+| **General UI Requirements** | [ui.md](ui.md) | — |
 | Data Model | [data-model.md](data-model.md) | — |
 
 ---
@@ -218,7 +219,7 @@ spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
 src/
   ├── api/            # Axios client (client.ts — baseURL hardcoded for dev, no auth yet)
   ├── components/     # Layout.tsx (Page + Sidebar + Main)
-  ├── frontend/pages/          # Route-level pages
+  ├── pages/          # Route-level pages
   └── types/          # TypeScript interfaces (index.ts)
 ```
 

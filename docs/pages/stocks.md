@@ -4,7 +4,7 @@
 
 ## Use Case
 
-Display all stocks (ISINs) currently held in the portfolio, aggregated across all depots. Unlike the [Stocks per Depot](stocks-per-depot.md) page which shows one row per ISIN per depot, this page shows one row per ISIN with counts and costs summed across all depots. This provides an overview of total holdings regardless of which depot they are held in. Stocks are fetched from the backend via a REST API endpoint that aggregates transaction data per ISIN (across all depots), and calculates current quote and performance based on market prices. The user can filter by ISIN, name, country, and branch, sort by any column, and refresh the data. Table conventions per [ui.md](ui.md) apply (sortable, resizable, full width).
+Display all stocks (ISINs) currently held in the portfolio, aggregated across all depots. Unlike the [Stocks per Depot](stocks-per-depot.md) page which shows one row per ISIN per depot, this page shows one row per ISIN with counts and costs summed across all depots. This provides an overview of total holdings regardless of which depot they are held in. Stocks are fetched from the backend via a REST API endpoint that aggregates transaction data per ISIN (across all depots), and calculates current quote and performance based on market prices. The user can filter by ISIN, name, country, and branch, sort by any column, and refresh the data. Table conventions per [ui.md](../ui.md) apply (sortable, resizable, full width).
 
 The page can be accessed from the main menu under the "Stocks" item in the sidebar navigation.
 
@@ -25,7 +25,7 @@ The page can be accessed from the main menu under the "Stocks" item in the sideb
 | `page` | Page number, 1-based (default: `1`) |
 | `pageSize` | Items per page; one of `[10, 20, 50, 100, -1]`; `-1` = all (default: `10`) |
 
-Returns a paginated envelope per [ui.md](ui.md), extended with `sumCount` (sum of the count field across all filtered results):
+Returns a paginated envelope per [ui.md](../ui.md), extended with `sumCount` (sum of the count field across all filtered results):
 ```json
 {
   "items": [ … ],
@@ -78,7 +78,7 @@ Column order places Country and Branch after Current Quote:
 
 | Column | Alignment | `width` | `minWidth` |
 |--------|-----------|---------|------------|
-| ISIN | left | 140 | 140 | `IsinCell` with copy + filter icons (see [ui.md](ui.md)) |
+| ISIN | left | 140 | 140 | `IsinCell` with copy + filter icons (see [ui.md](../ui.md)) |
 | Name | left | 240 | 240 |
 | Count | right | 100 | 80 |
 | Avg Entry Price | right | 120 | 100 |
@@ -91,9 +91,9 @@ Column order places Country and Branch after Current Quote:
 
 Note: There is no Depot column on this page since stocks are aggregated across all depots.
 
-- **ISIN cell:** Uses the shared `IsinCell` component with copy-to-clipboard and filter-by-ISIN icons (see [ui.md](ui.md) § ISIN Column Conventions).
+- **ISIN cell:** Uses the shared `IsinCell` component with copy-to-clipboard and filter-by-ISIN icons (see [ui.md](../ui.md) § ISIN Column Conventions).
 - Current Quote and Performance show `—` if no quote has been fetched yet.
 - **Sum of Count:** The sum of the Count column (reflecting current filters) shall be displayed at the top of the table, next to the row count, formatted with 2 decimal places in German locale. The `GET /api/stocks` response includes `sumCount` for this purpose.
-- **Debounce:** ISIN and Name text inputs shall be debounced (300 ms) per [ui.md](ui.md) to avoid excessive requests on every keystroke.
+- **Debounce:** ISIN and Name text inputs shall be debounced (300 ms) per [ui.md](../ui.md) to avoid excessive requests on every keystroke.
 - All filter values and sort state are sent as query params to `GET /api/stocks`; the backend returns the filtered, sorted data.
-- **State preservation:** Filter values, sort state, and pagination are preserved in `sessionStorage` when navigating away and back (see [ui.md](ui.md)).
+- **State preservation:** Filter values, sort state, and pagination are preserved in `sessionStorage` when navigating away and back (see [ui.md](../ui.md)).

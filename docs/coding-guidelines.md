@@ -134,6 +134,6 @@ Do **not** use Lombok. Write explicit Java: getters, setters, constructors, manu
 
 ## Documentation
 
-- Feature requirements go into the appropriate `docs/frontend/pages/*.md` file or `docs/PROJECT.md`.
+- Feature requirements go into the appropriate `docs/pages/*.md` file or `docs/PROJECT.md`.
 - Data model changes must be reflected in `docs/data-model.md`.
 - Coding conventions go into this file (`docs/coding-guidelines.md`).

@@ -21,7 +21,7 @@ Similar to the country diversification breakdown, the UI should provide a view t
 | GET | `/api/analytics/countries?sortField=&sortDir=&page=&pageSize=` | Total invested per country + % of portfolio |
 | GET | `/api/analytics/branches?sortField=&sortDir=&page=&pageSize=` | Total invested per branch + % of portfolio |
 
-Both endpoints accept optional `sortField` (`name`, `investedAmount`, `percentage`; default: `investedAmount`), `sortDir` (default: `desc`), `page` (default: `1`), and `pageSize` (default: `10`; `-1` = all) query params. Returns a paginated envelope per [ui.md](ui.md).
+Both endpoints accept optional `sortField` (`name`, `investedAmount`, `percentage`; default: `investedAmount`), `sortDir` (default: `desc`), `page` (default: `1`), and `pageSize` (default: `10`; `-1` = all) query params. Returns a paginated envelope per [ui.md](../ui.md).
 
 **Calculation:** `invested = SUM(count * share_price)` per open position; group by country/branch via `isin_country`/`isin_branch`; compute % of total.
 
@@ -40,6 +40,6 @@ Both endpoints accept optional `sortField` (`name`, `investedAmount`, `percentag
 | Invested Amount (EUR) | right | 160 | 120 |
 | Percentage (%) | right | 120 | 80 |
 
-- Table conventions per [ui.md](ui.md) apply (sortable, resizable, full width).
+- Table conventions per [ui.md](../ui.md) apply (sortable, resizable, full width).
 - Default sort: invested amount descending. Sort changes trigger a re-fetch with `sortField` and `sortDir` query params.
 

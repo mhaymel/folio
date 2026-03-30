@@ -168,7 +168,7 @@ All return `{ success: boolean, imported: int, durationMs: long, errors: string[
 ## UI Specification
 
 - One card/section per import type, grouped by broker.
-- Each card: description, a Strato **Button** labelled "Choose file" (triggers a hidden file input), status indicator. The button must be visually distinguishable from the card background (visible border and contrasting background colour) per [ui.md](ui.md).
+- Each card: description, a Strato **Button** labelled "Choose file" (triggers a hidden file input), status indicator. The button must be visually distinguishable from the card background (visible border and contrasting background colour) per [ui.md](../ui.md).
 - States: idle, loading ("Uploading..."), success, error.
 - On success: display `Imported {count} rows in {duration}` where duration is formatted as `Xs Yms` when >= 1 second, otherwise `Yms`.
 - On error: display error messages; if some rows were imported, show the count.

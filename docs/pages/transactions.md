@@ -5,13 +5,13 @@
 
 ### UI Conventions
 
-follow ui conventions in [ui.md](ui.md)
+follow ui conventions in [ui.md](../ui.md)
 
 ## Use Case
 
 - The UI shall provide a view displaying transactions fetched from the backend.
 - Filtering, sorting, and aggregation are performed server-side; the frontend sends filter criteria and sort parameters as query params and renders the response.
-- Table conventions per [ui.md](ui.md) apply.
+- Table conventions per [ui.md](../ui.md) apply.
 
 ---
 
@@ -45,7 +45,7 @@ Returns a paginated envelope with the filtered/sorted list, counts, and aggregat
 }
 ```
 - `filteredCount`: number of transactions matching the current filters (before pagination).
-- `totalCount`: total number of transactions regardless of any filters. Required for the "N of M" row count display (see [ui.md](ui.md)).
+- `totalCount`: total number of transactions regardless of any filters. Required for the "N of M" row count display (see [ui.md](../ui.md)).
 
 ### `GET /api/transactions/filters` — Available filter options
 
@@ -67,7 +67,7 @@ Returns distinct depot names from all transactions:
 | Name | Double-click → `setNameFilter` | left | 240 | 120 |
 | Depot | Plain text | left | 100 | 80 |
 | Count | 3 decimal places; negative red, positive green | right | 100 | 80 |
-| Share Price | Number format per [ui.md](ui.md) | right | 110 | 100 |
+| Share Price | Number format per [ui.md](../ui.md) | right | 110 | 100 |
 
 ### Summary
 - **Row count:** When filters are active, display `"N of M transactions"` (e.g. `"12 of 50 transactions"`) where N = `filteredCount` and M = `totalCount`. When no filters are active, display `"M transactions"` (e.g. `"50 transactions"`).
@@ -82,9 +82,9 @@ Returns distinct depot names from all transactions:
 
 **Filter bar:** ISIN `TextInput` (real-time partial, case-insensitive, 300 ms debounce; Clear button; double-click cell fills); Name `TextInput` (same); Depot `MultiSelect` (multi-select dropdown; options from `/api/transactions/filters`); From Date `DateInput`; To Date `DateInput`; Refresh `Button`.
 
-**State preservation:** Filter values, sort state, and pagination are preserved in `sessionStorage` when navigating away and back (see [ui.md](ui.md)).
+**State preservation:** Filter values, sort state, and pagination are preserved in `sessionStorage` when navigating away and back (see [ui.md](../ui.md)).
 
-**Debounce:** ISIN and Name text inputs shall be debounced (300 ms) per [ui.md](ui.md) to avoid excessive requests on every keystroke.
+**Debounce:** ISIN and Name text inputs shall be debounced (300 ms) per [ui.md](../ui.md) to avoid excessive requests on every keystroke.
 
 All filter values and sort state are sent as query params to `GET /api/transactions`; the backend returns the filtered, sorted data and the sum of count.
 

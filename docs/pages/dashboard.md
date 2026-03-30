@@ -63,5 +63,5 @@ The data should be fetched from the backend via a dedicated REST API endpoint.
   | Est. Annual Income (EUR) | right | 160 | 120 |
 - **Last Quote Fetch:** pre-formatted by the backend as `DD.MM.YYYY HH:mm` (e.g., "Last updated: 22.03.2026 14:30"); rendered as-is. `—` if null (not yet fetched).
 - Data from `GET /api/dashboard`.
-- Table conventions per [ui.md](ui.md) apply (sortable, resizable, full width).
+- Table conventions per [ui.md](../ui.md) apply (sortable, resizable, full width).
 

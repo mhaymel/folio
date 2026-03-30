@@ -19,7 +19,7 @@ The UI should provide a view that displays all ISINs along with their associated
 | `page` | Page number, 1-based (default: `1`) |
 | `pageSize` | Items per page; one of `[10, 20, 50, 100, -1]`; `-1` = all (default: `10`) |
 
-Returns a paginated envelope per [ui.md](ui.md):
+Returns a paginated envelope per [ui.md](../ui.md):
 ```json
 {
   "items": [
@@ -55,7 +55,7 @@ Two-column table displaying ISIN, ticker symbol, and stock name.
 
 ### Features
 
-- Table conventions per [ui.md](ui.md) apply (sortable, resizable, full width).
+- Table conventions per [ui.md](../ui.md) apply (sortable, resizable, full width).
 - Default sort: ISIN ascending. Sort changes trigger a re-fetch with `sortField` and `sortDir` query params.
 - Loading indicator while fetching data.
 - Count display: `"N ticker symbol mappings"`.

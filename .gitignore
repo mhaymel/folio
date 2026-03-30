@@ -159,3 +159,6 @@ data/
 /backend/out/production/resources/wallstreetonline.csv
 /backend/out/production/classes/com/folio/quote/sources/WallstreetOnlineSource.class
 /backend/out/
+/.idea/dataSources/7d53bea1-8768-4614-b4e2-d04bc6b452a0.xml
+/.idea/dataSources/7d53bea1-8768-4614-b4e2-d04bc6b452a0/storage_v2/_src_/database/folio.KXXRBQ.meta
+/.idea/dataSources/7d53bea1-8768-4614-b4e2-d04bc6b452a0/storage_v2/_src_/database/folio.KXXRBQ/schema/public.abK9xQ.meta
