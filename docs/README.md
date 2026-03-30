@@ -15,15 +15,16 @@ docs/
 ├── UI_MD_MOVED.md                      # Historical: ui.md move summary
 ├── DIVIDEND_PAYMENTS_ADDED.md          # Historical: dividend payments spec added
 ├── PAGES_DIRECTORY_MOVED.md            # Historical: pages directory move summary
-├── pages/                              # Page specifications (13 files)
+├── pages/                              # Page specifications (14 files)
 │   ├── analytics.md
 │   ├── branches.md
 │   ├── countries.md
+│   ├── currencies.md
 │   ├── dashboard.md
+│   ├── depots.md
 │   ├── dividend-payments.md
 │   ├── import.md
 │   ├── isin-names.md
-│   ├── reference-data.md
 │   ├── settings.md
 │   ├── stocks.md
 │   ├── stocks-per-depot.md

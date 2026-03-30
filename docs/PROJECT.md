@@ -89,7 +89,8 @@ Detailed use cases, API contracts, CSV parsing specs, and UI specifications for 
 | Branches | [pages/branches.md](pages/branches.md) | `/branches` |
 | Ticker Symbols | [pages/ticker-symbols.md](pages/ticker-symbols.md) | `/ticker-symbols` |
 | ISIN Names | [pages/isin-names.md](pages/isin-names.md) | `/isin-names` |
-| Reference Data | [pages/reference-data.md](pages/reference-data.md) | `/depots`, `/currencies` |
+| Currencies | [pages/currencies.md](pages/currencies.md) | `/currencies` |
+| Depots | [pages/depots.md](pages/depots.md) | `/depots` |
 | **General UI Requirements** | [ui.md](ui.md) | — |
 | Data Model | [data-model.md](data-model.md) | — |
 
