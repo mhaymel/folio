@@ -68,30 +68,7 @@ Do **not** use Lombok. Write explicit Java: getters, setters, constructors, manu
 
 ### Testing
 
-- Use **JUnit 5** and **Mockito** for unit tests.
-- Every test method must follow the **Given / When / Then** structure, marked with line comments:
-  ```java
-  @Test
-  void shouldReturnEmptyWhenIsinNotFound() {
-      // given
-      var service = new StockService(mockRepo);
-      when(mockRepo.findByIsin("XX")).thenReturn(Optional.empty());
-
-      // when
-      var result = service.findByIsin("XX");
-
-      // then
-      assertThat(result).isEmpty();
-  }
-  ```
-- Test class naming: `<ClassUnderTest>Test` (e.g. `StockServiceTest`).
-- **Test classes must be package-private and `final`** — no `public` modifier, always `final`.
-- Test method naming: `should<ExpectedBehaviour>[When<Condition>]` — no `test` prefix.
-- One logical assertion per test (multiple `assertThat` calls are fine if they verify the same concept).
-- Use **AssertJ** (`assertThat`) for assertions — do not use JUnit's `assertEquals` / `assertTrue`.
-- Mock external dependencies (repositories, HTTP clients) — never hit a real database or network in unit tests.
-- Keep tests independent — no shared mutable state between test methods.
-- **Every Java class must have a corresponding test class** (e.g. `StockService` → `StockServiceTest`). The test class must cover **all public methods and constructors**.
+See [testing.md](testing.md) for all testing conventions, scope, and infrastructure.
 
 ---
 

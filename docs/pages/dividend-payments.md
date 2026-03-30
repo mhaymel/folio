@@ -2,9 +2,9 @@
 
 > Route: `/dividend-payments` — Sortable, filterable dividend payment history.
 
-### UI Conventions
+### Conventions
 
-Follow UI conventions in [ui.md](../ui.md).
+Follow UI conventions in [ui.md](../ui.md). Follow testing conventions in [testing.md](../testing.md).
 
 ## Use Case
 

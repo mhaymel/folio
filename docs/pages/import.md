@@ -2,6 +2,10 @@
 
 > Route: `/import` — File upload section per data type.
 
+### Conventions
+
+Follow UI conventions in [ui.md](../ui.md). Follow testing conventions in [testing.md](../testing.md).
+
 ## Use Cases
 
 ### Import DeGiro Transactions.csv

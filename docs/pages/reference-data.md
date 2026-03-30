@@ -2,6 +2,10 @@
 
 > Routes: `/depots`, `/currencies` — Simple alphabetical list views.
 
+### Conventions
+
+Follow UI conventions in [ui.md](../ui.md). Follow testing conventions in [testing.md](../testing.md).
+
 ## Use Cases
 
 

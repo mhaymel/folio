@@ -2,6 +2,10 @@
 
 > Route: `/isin-names` — ISIN to stock name mappings.
 
+### Conventions
+
+Follow UI conventions in [ui.md](../ui.md). Follow testing conventions in [testing.md](../testing.md).
+
 ## Use Case
 
 The UI should provide a view that displays all ISINs along with their associated stock names. An ISIN can have multiple names (e.g., different names used across brokers or import files). The data should be fetched from the backend via a REST API endpoint that retrieves ISIN and name data from the `isin` and `isin_name` tables.

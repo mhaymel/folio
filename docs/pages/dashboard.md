@@ -2,6 +2,10 @@
 
 > Route: `/` — Landing page with portfolio KPIs.
 
+### Conventions
+
+Follow UI conventions in [ui.md](../ui.md). Follow testing conventions in [testing.md](../testing.md).
+
 ## Use Case
 
 The UI should provide a dashboard as the landing page, giving a quick overview of the portfolio. It should display:

@@ -3,9 +3,9 @@
 > Route: `/transactions` — Sortable, filterable transaction table.
 
 
-### UI Conventions
+### Conventions
 
-follow ui conventions in [ui.md](../ui.md)
+Follow UI conventions in [ui.md](../ui.md). Follow testing conventions in [testing.md](../testing.md).
 
 ## Use Case
 

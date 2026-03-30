@@ -2,6 +2,10 @@
 
 > Route: `/ticker-symbols` — ISIN to ticker symbol mappings.
 
+### Conventions
+
+Follow UI conventions in [ui.md](../ui.md). Follow testing conventions in [testing.md](../testing.md).
+
 ## Use Case
 
 The UI should provide a view that displays all ISINs along with their associated ticker symbols and stock names. This allows users to see the ticker symbol mappings for stocks in their portfolio. The data should be fetched from the backend via a REST API endpoint that retrieves ISIN, ticker symbol, and name data from the database by joining the `isin`, `ticker_symbol`, `isin_ticker`, and `isin_name` tables.

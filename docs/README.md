@@ -8,6 +8,7 @@ docs/
 ├── plan.md                             # Implementation plan (thin frontend)
 ├── data-model.md                       # Database schema and entities
 ├── ui.md                               # General UI requirements and conventions
+├── testing.md                          # Testing requirements and conventions
 ├── coding-guidelines.md                # Java/React/TS coding standards
 ├── gaps.and.issues.md                  # Known issues and missing implementations
 ├── missing.md                          # Feature gaps
@@ -47,6 +48,7 @@ docs/
 - **plan.md** — Step-by-step backend refactoring plan (thin frontend)
 - **data-model.md** — Entity schemas, relationships, database design
 - **ui.md** — UI conventions (applies to all pages)
+- **testing.md** — Testing conventions (backend, frontend, E2E)
 - **coding-guidelines.md** — Java/React/TypeScript standards
 - **gaps.and.issues.md** — Tracked issues and implementation gaps
 - **missing.md** — Feature gaps
@@ -88,7 +90,8 @@ Same-directory references.
 1. Create `docs/pages/<page-name>.md` following the template from existing pages
 2. Add an entry to the "Page Specifications" table in `docs/PROJECT.md`
 3. Use `[ui.md](../ui.md)` to reference general UI requirements
-4. Add route, REST API, UI spec, and implementation notes sections
+4. Use `[testing.md](../testing.md)` to reference testing requirements
+5. Add route, REST API, UI spec, and implementation notes sections
 
 ## Maintenance
 

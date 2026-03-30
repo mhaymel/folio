@@ -51,7 +51,8 @@
       "Bash(find /c/daten/dev/folio -name *.test.tsx -o -name *.test.ts)",
       "Bash(ls -la /c/daten/dev/folio/frontend/src/test*)",
       "Bash(grep -v \"^$\")",
-      "Bash(find /c/daten/dev/folio/frontend/src -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.jsx -o -name *.js \\\\\\))"
+      "Bash(find /c/daten/dev/folio/frontend/src -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.jsx -o -name *.js \\\\\\))",
+      "Bash(ls:*)"
     ]
   }
 }

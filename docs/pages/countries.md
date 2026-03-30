@@ -2,6 +2,10 @@
 
 > Route: `/countries` — Alphabetical list of countries.
 
+### Conventions
+
+Follow UI conventions in [ui.md](../ui.md). Follow testing conventions in [testing.md](../testing.md).
+
 ## Use Case
 
 The UI should provide a view that displays the countries, sorted alphabetically. The countries should be fetched from the backend via a REST API endpoint that retrieves country data from the database.

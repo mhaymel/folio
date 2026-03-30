@@ -2,6 +2,10 @@
 
 > Routes: `/analytics/countries`, `/analytics/branches` — Donut charts + detail tables.
 
+### Conventions
+
+Follow UI conventions in [ui.md](../ui.md). Follow testing conventions in [testing.md](../testing.md).
+
 ## Use Cases
 
 ### Country Diversification Breakdown

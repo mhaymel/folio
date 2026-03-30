@@ -2,6 +2,10 @@
 
 > Route: `/stocks` — Portfolio positions aggregated across all depots, with live quotes and performance.
 
+### Conventions
+
+Follow UI conventions in [ui.md](../ui.md). Follow testing conventions in [testing.md](../testing.md).
+
 ## Use Case
 
 Display all stocks (ISINs) currently held in the portfolio, aggregated across all depots. Unlike the [Stocks per Depot](stocks-per-depot.md) page which shows one row per ISIN per depot, this page shows one row per ISIN with counts and costs summed across all depots. This provides an overview of total holdings regardless of which depot they are held in. Stocks are fetched from the backend via a REST API endpoint that aggregates transaction data per ISIN (across all depots), and calculates current quote and performance based on market prices. The user can filter by ISIN, name, country, and branch, sort by any column, and refresh the data. Table conventions per [ui.md](../ui.md) apply (sortable, resizable, full width).

@@ -2,6 +2,10 @@
 
 > Route: `/stocks-per-depot` — Portfolio positions grouped by depot, with live quotes and performance.
 
+### Conventions
+
+Follow UI conventions in [ui.md](../ui.md). Follow testing conventions in [testing.md](../testing.md).
+
 ## Use Case
 
 Display all stocks (ISINs) currently held in the portfolio, grouped by depot, along with relevant details such as name, country, branch, depot, count, current quote, entry price, and performance. This page shows one row per ISIN per depot, allowing users to see their holdings in each depot separately. Stocks are fetched from the backend via a REST API endpoint that aggregates transaction data per ISIN and depot, and calculates current quote and performance based on market prices. The user can filter by ISIN, name, depot, country, and branch, sort by any column, and refresh the data. Table conventions per [ui.md](../ui.md) apply (sortable, resizable, full width).

@@ -2,6 +2,10 @@
 
 > Route: `/settings` — Quote fetch interval selector + manual trigger.
 
+### Conventions
+
+Follow UI conventions in [ui.md](../ui.md). Follow testing conventions in [testing.md](../testing.md).
+
 ## Use Case
 
 The UI should provide a way for the user to turn automatic quote fetching on and off. On application startup, automatic quote fetching must be **off** by default. The user can enable it via a toggle switch on the settings page.

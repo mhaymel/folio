@@ -356,36 +356,7 @@ cd frontend && npm run dev   # http://localhost:5173
 
 ## Testing
 
-**Backend (JUnit 5 + Spring Boot Test):**
-- **Unit tests:** Tiny types (`IsinCodeTest`), DTOs (`DashboardDtoTest`, `StockDtoTest`, `TransactionDtoTest`, `TransactionFilterTest`), models (`IsinTest`, `TransactionTest`, `DividendTest`, `DividendPaymentTest`, `IsinQuoteTest`), services (`ExportServiceTest`), quote system (`IsinsQuoteLoaderTest`, `QuoteFetchHelperTest`).
-- **REST API integration tests:** All 12 controllers tested using `@SpringBootTest` + `@AutoConfigureMockMvc` against H2 in PostgreSQL mode:
-  - `ReferenceDataControllerTest` — depots, currencies, countries, branches (GET + CSV/Excel export)
-  - `DashboardControllerTest` — dashboard structure, empty portfolio, holdings/dividends export
-  - `TransactionControllerTest` — transaction list, optional filters, date filters, export with sort
-  - `StocksControllerTest` — aggregated positions list, export with country/branch filters and sorting
-  - `StocksPerDepotControllerTest` — positions per depot, export with country/branch/depot filters and sorting
-  - `AnalyticsControllerTest` — country/branch diversification structure, export with sort
-  - `QuoteControllerTest` — settings GET/PUT, enable/disable toggle, interval validation, trigger fetch
-  - `ImportControllerTest` — branches/countries/dividends/ticker-symbols CSV import, empty/invalid input handling
-  - `IsinNameControllerTest`, `TickerSymbolControllerTest` — GET + export
-  - `ImportToQueryIntegrationTest` — end-to-end pipeline: import reference data → verify via query endpoints
-- Test profile uses `application-test.yml` (in-memory H2).
-
-**Frontend (Vitest + React Testing Library + Playwright):**
-- **Component tests** (Vitest + React Testing Library + jsdom):
-  - `App.test.tsx` — route-to-component mapping for all 13 routes
-  - `Layout.test.tsx` — sidebar navigation rendering, active item highlighting, click and keyboard navigation
-  - `ExportButtons.test.tsx` — CSV/Excel download URL construction, parameter forwarding, empty param omission
-  - `Dashboard.test.tsx` — KPI card rendering, top-5 tables, last-updated timestamp formatting, null timestamp handling
-  - `Countries.test.tsx` — loading indicator, data rendering, pagination toggle, export buttons
-  - `Stocks.test.tsx` — loading indicator, column headers (no depot), data rows, filter dropdowns (no depot), API call verification
-  - `StocksPerDepot.test.tsx` — loading indicator, column headers (with depot), data rows, filter dropdowns (with depot), API call verification
-  - `Settings.test.tsx` — loading state, enabled/disabled text, timestamp formatting, Fetch Now trigger
-- **E2E tests** (Playwright + Chromium):
-  - `navigation.spec.ts` — page loads, sidebar items, inter-page navigation, active item highlighting, app header
-  - `pages.spec.ts` — Dashboard KPIs and sections, Countries/Stocks/Settings/Import/Analytics page rendering
-- Strato components are mocked in `src/test/setup.tsx` with simple HTML equivalents for unit tests.
-- Test runner: `npm test` (Vitest), `npm run test:e2e` (Playwright — requires running frontend + backend).
+See [testing.md](testing.md) for all testing conventions, test inventories, scope, and infrastructure.
 
 ---
 

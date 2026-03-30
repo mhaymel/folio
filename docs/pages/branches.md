@@ -2,6 +2,10 @@
 
 > Route: `/branches` — Alphabetical list of branches.
 
+### Conventions
+
+Follow UI conventions in [ui.md](../ui.md). Follow testing conventions in [testing.md](../testing.md).
+
 ## Use Case
 
 The UI should provide a view that displays the branches, sorted alphabetically. The branches should be fetched from the backend via a REST API endpoint that retrieves branch data from the database.
