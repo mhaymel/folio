@@ -94,7 +94,7 @@ All return `{ success: boolean, imported: int, durationMs: long, errors: string[
 | 16 | Ausführung Datum | Execution date `DD.MM.YYYY` |
 | 17 | Ausführung Zeit | Execution time |
 | 18 | Ausführung Kurs | Price per share |
-| 19 | Anzahl ausgeführt | Shares executed |
+| 19 | Anzahl ausgeführt | Shares executed (German number format: `.` = thousands separator, `,` = decimal point; e.g. `1.000` = 1000) |
 
 **Parsing logic:**
 1. Skip header. Filter: `Status` (index 5) = `"ausgeführt"`.

@@ -150,13 +150,9 @@ public class ImportService {
         return map;
     }
 
-    // -- Parsing helpers --
-
-    private double parseGermanDouble(String s) {
+    static double parseGermanDouble(String s) {
         String v = s.trim();
-        if (v.contains(",") || v.contains("~")) {
-            v = v.replace(".", "").replace(",", ".").replace("~", ".");
-        }
+        v = v.replace(".", "").replace(",", ".").replace("~", ".");
         return parseDouble(v);
     }
 
