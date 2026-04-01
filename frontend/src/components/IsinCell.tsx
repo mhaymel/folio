@@ -1,13 +1,15 @@
-import { CopyIcon, FilterIcon } from '@dynatrace/strato-icons';
+import { CopyIcon, FilterIcon, FilterOutIcon } from '@dynatrace/strato-icons';
 import { showToast } from '@dynatrace/strato-components/notifications';
 
 interface IsinCellProps {
   isin: string;
   onFilter?: (isin: string) => void;
+  activeFilter?: string;
   onDoubleClick?: () => void;
 }
 
-export default function IsinCell({ isin, onFilter, onDoubleClick }: IsinCellProps) {
+export default function IsinCell({ isin, onFilter, activeFilter, onDoubleClick }: IsinCellProps) {
+  const isActive = activeFilter === isin;
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
@@ -18,7 +20,7 @@ export default function IsinCell({ isin, onFilter, onDoubleClick }: IsinCellProp
 
   const handleFilter = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onFilter?.(isin);
+    onFilter?.(isActive ? '' : isin);
   };
 
   return (
@@ -41,12 +43,12 @@ export default function IsinCell({ isin, onFilter, onDoubleClick }: IsinCellProp
       {onFilter && (
         <span
           onClick={handleFilter}
-          title="Filter by ISIN"
-          style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', opacity: 0.5, flexShrink: 0 }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0.5'; }}
+          title={isActive ? 'Remove ISIN filter' : 'Filter by ISIN'}
+          style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', opacity: isActive ? 1 : 0.5, flexShrink: 0 }}
+          onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.opacity = '1'; }}
+          onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.opacity = '0.5'; }}
         >
-          <FilterIcon size={14} />
+          {isActive ? <FilterOutIcon size={14} /> : <FilterIcon size={14} />}
         </span>
       )}
     </span>

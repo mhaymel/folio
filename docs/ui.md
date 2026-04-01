@@ -94,7 +94,10 @@ All tables that contain an ISIN column shall follow these conventions:
 
 - **Monospace font:** ISIN values shall be rendered in a monospace (`fontFamily: monospace`) font for readability and alignment.
 - **Copy to clipboard icon:** A small copy icon (`CopyIcon` from `@dynatrace/strato-icons`, 14 px) is displayed to the right of the ISIN text. Clicking it copies the ISIN to the system clipboard via `navigator.clipboard.writeText()` and shows a Strato toast notification (`showToast` from `@dynatrace/strato-components/notifications`, type `success`) with the text "ISIN &lt;value&gt; copied to clipboard" (e.g. "ISIN DE000BASF111 copied to clipboard"). The toast auto-dismisses after 2 seconds. The icon has a tooltip "Copy ISIN to clipboard".
-- **Filter icon (optional):** On pages that have an ISIN filter input, a small filter icon (`FilterIcon` from `@dynatrace/strato-icons`, 14 px) is displayed next to the copy icon. Clicking it copies the ISIN into the filter input and triggers a table refetch. The icon has a tooltip "Filter by ISIN". Pages without an ISIN filter input (e.g. Dashboard, ISIN Names, Ticker Symbols) show only the copy icon.
+- **Filter icon (optional):** On pages that have an ISIN filter input, a small icon (14 px) is displayed next to the copy icon. The icon **toggles** the ISIN filter and **switches appearance** depending on state:
+  - **Inactive** (filter is not set to this ISIN): shows `FilterIcon` from `@dynatrace/strato-icons` at 50 % opacity (full opacity on hover), tooltip "Filter by ISIN". Clicking sets the filter to this ISIN and triggers a table refetch.
+  - **Active** (filter is already set to this ISIN): shows `FilterOutIcon` from `@dynatrace/strato-icons` at full opacity, tooltip "Remove ISIN filter". Clicking **clears** the filter and triggers a refetch.
+  - Pages without an ISIN filter input (e.g. Dashboard, ISIN Names, Ticker Symbols) show only the copy icon.
 - **Icon visibility:** Both icons are shown at 50 % opacity by default and full opacity on hover.
 - The shared `IsinCell` component (`src/components/IsinCell.tsx`) implements all of the above and is used across all pages with ISIN columns.
 
@@ -152,6 +155,10 @@ Pagination is **server-side**. The backend slices the sorted/filtered result set
 - The count shall update in real time as filters change.
 - To support the "N of M" format, paginated response envelopes on endpoints that support filtering must include both `filteredCount` (count after filtering) and `totalCount` (count of all items regardless of filters).
 
+#### Text Filter Input Labels
+
+- All free-text filter inputs (e.g. ISIN, Name) shall have a visible **title label** above the input — matching the same font, size, and placement as the labels on dropdown multi-select filters. For example, the ISIN text input shall have the label "ISIN" and the Name text input shall have the label "Name".
+
 #### Debounce on Text Filter Inputs
 
 - All free-text filter inputs (e.g. ISIN, Name) shall be **debounced with a 300 ms delay** before triggering an API refetch. This avoids excessive requests on every keystroke.
@@ -178,6 +185,14 @@ Pagination is **server-side**. The backend slices the sorted/filtered result set
 - Dropdown filters for categorical values (e.g. Depot, Country, Branch) shall be **multi-select**: the user can select zero or more options. When no options are selected, all items are shown (equivalent to "All"). The backend accepts comma-separated values for these filter parameters and filters using an `IN` clause (or set membership check).
 - **Strato Components:** All dropdown multi-select boxes shall use Strato components from the design system (see [Strato Select documentation](https://developer.dynatrace.com/design/components/forms/Select/)). Do not use native HTML `<select>` elements.
 - **Alphabetical Sorting:** Values in dropdown multi-select boxes shall be sorted alphabetically unless specified otherwise.
+- **Title:** Every dropdown multi-select box shall have a visible title (label) that identifies the filter category (e.g. "Depot", "Country", "Branch", "Language"). The title shall:
+  - Be placed **above** the dropdown, aligned to the left.
+  - Be **left-aligned with the text inside the field** — not with the left border of the control. Apply `padding-left` matching the field's internal padding (`var(--dt-spacings-size-12, 12px)`) so the label text lines up with the input/placeholder text.
+  - Use the **same font and size** as the labels of other filter items in the filter bar — ensuring visual consistency.
+  - Always be **fully visible** — it must never be truncated.
+  - Remain **visible when the dropdown is closed** — it is always shown, not only when the dropdown is expanded.
+- **Placeholder text:** When no option is selected the dropdown shall display `"Select <title>"` as its placeholder — e.g. `"Select Country"`, `"Select Depot"`, `"Select Branch"`. The placeholder is derived automatically from the title; it must not be hardcoded separately.
+- **Vertical alignment:** All filter-bar items (dropdown multi-selects, text inputs, buttons) shall be **bottom-aligned** — i.e. the bottoms of the interactive controls sit on the same baseline. Because dropdown multi-selects have a title label above the control while plain buttons do not, aligning by the top of the element would push the dropdown control lower than adjacent buttons. The filter bar shall use `align-items: flex-end` (or equivalent) so that the clickable parts of all controls line up horizontally.
 
 ---
 

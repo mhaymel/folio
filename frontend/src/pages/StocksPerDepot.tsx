@@ -3,7 +3,6 @@ import { Flex } from '@dynatrace/strato-components/layouts';
 import { Heading, Paragraph } from '@dynatrace/strato-components/typography';
 import { DataTable } from '@dynatrace/strato-components/tables';
 import { Button } from '@dynatrace/strato-components/buttons';
-import { TextInput } from '@dynatrace/strato-components/forms';
 import { ProgressCircle } from '@dynatrace/strato-components/content';
 import api from '../api/client';
 import type { StockDto, StockFiltersDto, StockPaginatedResponse } from '../types';
@@ -11,6 +10,7 @@ import useServerTable from '../hooks/useServerTable';
 import ExportButtons from '../components/ExportButtons';
 import PaginationControls from '../components/PaginationControls';
 import MultiSelect from '../components/MultiSelect';
+import LabeledInput from '../components/LabeledInput';
 import IsinCell from '../components/IsinCell';
 
 const STORAGE_KEY = 'stocks_per_depot_filters';
@@ -84,7 +84,7 @@ export default function StocksPerDepot() {
     {
       id: 'isin', header: 'ISIN', accessor: 'isin', sortType: 'text' as const, alignment: 'left' as const, width: 140, minWidth: 140,
       cell: ({ rowData }: { rowData: StockDto }) => (
-        <IsinCell isin={rowData.isin} onFilter={(v) => { setIsinFilter(v); table.setPage(1); }} onDoubleClick={() => handleCellDoubleClick('isin', rowData.isin)} />
+        <IsinCell isin={rowData.isin} onFilter={(v) => { setIsinFilter(v); table.setPage(1); }} activeFilter={isinFilter} onDoubleClick={() => handleCellDoubleClick('isin', rowData.isin)} />
       ),
     },
     {
@@ -113,17 +113,17 @@ export default function StocksPerDepot() {
     <Flex flexDirection="column" gap={16}>
       <Heading level={1}>Stocks per Depot</Heading>
 
-      <Flex gap={16} alignItems="center" flexWrap="wrap">
-        <TextInput placeholder="Filter ISIN..." value={isinFilter}
+      <Flex gap={16} alignItems="flex-end" flexWrap="wrap">
+        <LabeledInput label="ISIN" value={isinFilter}
           onChange={(v: string) => { setIsinFilter(v); table.setPage(1); }} />
-        <TextInput placeholder="Filter Name..." value={nameFilter}
+        <LabeledInput label="Name" value={nameFilter}
           onChange={(v: string) => { setNameFilter(v); table.setPage(1); }} />
         <MultiSelect options={filterOptions.depots} selected={depotFilter}
-          onChange={(v) => { setDepotFilter(v); table.setPage(1); }} placeholder="All depots" />
+          onChange={(v) => { setDepotFilter(v); table.setPage(1); }} label="Depot" />
         <MultiSelect options={filterOptions.countries} selected={countryFilter}
-          onChange={(v) => { setCountryFilter(v); table.setPage(1); }} placeholder="All countries" />
+          onChange={(v) => { setCountryFilter(v); table.setPage(1); }} label="Country" />
         <MultiSelect options={filterOptions.branches} selected={branchFilter}
-          onChange={(v) => { setBranchFilter(v); table.setPage(1); }} placeholder="All branches" />
+          onChange={(v) => { setBranchFilter(v); table.setPage(1); }} label="Branch" />
         <Button variant="emphasized" onClick={() => { setIsinFilter(''); setNameFilter(''); setDepotFilter([]); setCountryFilter([]); setBranchFilter([]); table.setPage(1); }}>Clear</Button>
         <Button variant="emphasized" onClick={() => { table.reload(); loadFilters(); }}>Refresh</Button>
       </Flex>
