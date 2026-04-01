@@ -156,11 +156,30 @@ vi.mock('@dynatrace/strato-components/forms', () => ({
     />
   ),
   Select: Object.assign(
-    ({ children, value, onChange, ...props }: any) => (
-      <select value={value} onChange={(e: any) => onChange?.(e.target.value)} {...props}>
-        {children}
-      </select>
-    ),
+    ({ children, value, onChange, multiple, placeholder, clearable, ...props }: any) => {
+      if (multiple) {
+        const selectedValues: string[] = Array.isArray(value) ? value : [];
+        const handleMultiChange = (e: any) => {
+          const selected = Array.from(e.target.selectedOptions).map((o: any) => o.value);
+          onChange?.(selected.length > 0 ? selected : null);
+        };
+        return (
+          <div>
+            {selectedValues.length === 0 && <span>{placeholder}</span>}
+            {selectedValues.length > 0 && selectedValues.length <= 2 && <span>{selectedValues.join(', ')}</span>}
+            {selectedValues.length > 2 && <span>{selectedValues.length} selected</span>}
+            <select multiple value={selectedValues} onChange={handleMultiChange} aria-label={placeholder}>
+              {children}
+            </select>
+          </div>
+        );
+      }
+      return (
+        <select value={value} onChange={(e: any) => onChange?.(e.target.value)} {...props}>
+          {children}
+        </select>
+      );
+    },
     {
       Content: ({ children }: any) => <>{children}</>,
       Option: ({ value, children }: any) => <option value={value}>{children}</option>,

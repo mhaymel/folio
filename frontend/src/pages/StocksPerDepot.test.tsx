@@ -157,18 +157,8 @@ describe('StocksPerDepot', () => {
       expect(screen.getByText('All countries')).toBeInTheDocument();
     });
 
-    const buttons = screen.getAllByRole('button');
-    const countriesBtn = buttons.find(b => b.textContent?.includes('All countries'));
-    await user.click(countriesBtn!);
-
-    const checkboxes = screen.getAllByRole('checkbox');
-    const germanyCheckbox = checkboxes.find((_, idx) => {
-      const label = checkboxes[idx].parentElement?.textContent;
-      return label === 'Germany';
-    });
-    if (germanyCheckbox) {
-      await user.click(germanyCheckbox);
-    }
+    const listbox = screen.getByRole('listbox', { name: 'All countries' });
+    await user.selectOptions(listbox, ['Germany']);
 
     await waitFor(() => {
       expect(api.get).toHaveBeenCalledWith('/stocks-per-depot', {

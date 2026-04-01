@@ -176,6 +176,8 @@ Pagination is **server-side**. The backend slices the sorted/filtered result set
 #### Multi-Select Dropdown Filters
 
 - Dropdown filters for categorical values (e.g. Depot, Country, Branch) shall be **multi-select**: the user can select zero or more options. When no options are selected, all items are shown (equivalent to "All"). The backend accepts comma-separated values for these filter parameters and filters using an `IN` clause (or set membership check).
+- **Strato Components:** All dropdown multi-select boxes shall use Strato components from the design system (see [Strato Select documentation](https://developer.dynatrace.com/design/components/forms/Select/)). Do not use native HTML `<select>` elements.
+- **Alphabetical Sorting:** Values in dropdown multi-select boxes shall be sorted alphabetically unless specified otherwise.
 
 ---
 

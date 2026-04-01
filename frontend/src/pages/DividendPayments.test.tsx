@@ -128,17 +128,8 @@ describe('DividendPayments', () => {
       expect(screen.getByText('All depots')).toBeInTheDocument();
     });
 
-    const buttons = screen.getAllByRole('button');
-    const depotsBtn = buttons.find(b => b.textContent?.includes('All depots'));
-    await user.click(depotsBtn!);
-
-    const checkboxes = screen.getAllByRole('checkbox');
-    const degiroCheckbox = checkboxes.find((_, idx) => {
-      return checkboxes[idx].parentElement?.textContent === 'DeGiro';
-    });
-    if (degiroCheckbox) {
-      await user.click(degiroCheckbox);
-    }
+    const listbox = screen.getByRole('listbox', { name: 'All depots' });
+    await user.selectOptions(listbox, ['DeGiro']);
 
     await waitFor(() => {
       expect(api.get).toHaveBeenCalledWith('/dividend-payments', {
