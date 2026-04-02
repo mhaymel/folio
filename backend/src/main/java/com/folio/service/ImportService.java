@@ -2,6 +2,7 @@ package com.folio.service;
 
 import com.folio.dto.ImportResult;
 import com.folio.model.*;
+import com.folio.model.Currency;
 import com.folio.parser.*;
 import com.folio.repository.ImportRepositories;
 import jakarta.persistence.EntityManager;
@@ -13,22 +14,17 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.lang.Double.parseDouble;
 import static java.lang.Math.abs;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -64,22 +60,25 @@ public class ImportService {
         return ms + "ms";
     }
 
-    // -- File reading --
-
     private static List<String> readLines(MultipartFile file) {
-        long start = System.currentTimeMillis();
+        long start = now();
         try (InputStream is = file.getInputStream()) {
-            List<String> lines = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
-                .lines().toList();
-            log.info("Read {} lines in {} ms", lines.size(), System.currentTimeMillis() - start);
+            List<String> lines = readLinesFrom(is);
+            log.info("Read {} lines in {} ms", lines.size(), now() - start);
             return lines;
         } catch (Exception e) {
             log.warn("Failed to read file: {}", e.getMessage());
-            return null;
         }
+        return emptyList();
     }
 
-    // -- Bulk DB helpers --
+    private static List<String> readLinesFrom(InputStream is) {
+        return bufferedReader(is).lines().toList();
+    }
+
+    private static BufferedReader bufferedReader(InputStream is) {
+        return new BufferedReader(new InputStreamReader(is, UTF_8));
+    }
 
     private Map<String, Isin> bulkUpsertIsins(Set<String> isinCodes) {
         if (isinCodes.isEmpty()) return Map.of();
@@ -180,13 +179,8 @@ public class ImportService {
 
     @Transactional
     public ImportResult importDegiroTransactions(MultipartFile file) {
-        long start = System.currentTimeMillis();
-
-        // 1. Read
+        long start = now();
         List<String> lines = readLines(file);
-        if (lines == null) return ImportResult.fail("Error reading file");
-
-        // 2. Parse
         List<String> errors = new ArrayList<>();
         List<ParsedTransaction> parsed = new ArrayList<>();
         for (int i = 1; i < lines.size(); i++) {
@@ -216,7 +210,7 @@ public class ImportService {
                 .toList();
 
             repos.transaction().saveAll(transactions);
-            long duration = System.currentTimeMillis() - start;
+            long duration = now() - start;
             log.info("Imported {} DeGiro transactions in {}", transactions.size(), formatDuration(duration));
             return ImportResult.builder().success(errors.isEmpty()).imported(transactions.size()).durationMs(duration).errors(errors).build();
         } finally {
@@ -254,13 +248,9 @@ public class ImportService {
 
     @Transactional
     public ImportResult importZeroOrders(MultipartFile file) {
-        long start = System.currentTimeMillis();
+        long start = now();
 
-        // 1. Read
         List<String> lines = readLines(file);
-        if (lines == null) return ImportResult.fail("Error reading file");
-
-        // 2. Parse
         List<String> errors = new ArrayList<>();
         List<ParsedTransaction> parsed = new ArrayList<>();
         for (int i = 1; i < lines.size(); i++) {
@@ -290,7 +280,7 @@ public class ImportService {
                 .toList();
 
             repos.transaction().saveAll(transactions);
-            long duration = System.currentTimeMillis() - start;
+            long duration = now() - start;
             log.info("Imported {} ZERO transactions in {}", transactions.size(), formatDuration(duration));
             return ImportResult.builder().success(errors.isEmpty()).imported(transactions.size()).durationMs(duration).errors(errors).build();
         } finally {
@@ -328,17 +318,11 @@ public class ImportService {
         return Optional.of(new ParsedTransaction(dateTime, isinCode, name, count, price));
     }
 
-    // ---- DeGiro Account.csv (dividends) ----
-
     @Transactional
     public ImportResult importDegiroAccount(MultipartFile file) {
-        long start = System.currentTimeMillis();
+        long start = now();
 
-        // 1. Read
         List<String> lines = readLines(file);
-        if (lines == null) return ImportResult.fail("Error reading file");
-
-        // 2. Parse
         List<String> errors = new ArrayList<>();
         List<ParsedDividendPayment> parsed = new ArrayList<>();
         for (int i = 1; i < lines.size(); i++) {
@@ -368,12 +352,16 @@ public class ImportService {
                 .toList();
 
             repos.dividendPayment().saveAll(payments);
-            long duration = System.currentTimeMillis() - start;
+            long duration = now() - start;
             log.info("Imported {} DeGiro dividend payments in {}", payments.size(), formatDuration(duration));
             return ImportResult.builder().success(errors.isEmpty()).imported(payments.size()).durationMs(duration).errors(errors).build();
         } finally {
             importLock.unlock();
         }
+    }
+
+    private static long now() {
+        return System.currentTimeMillis();
     }
 
     private Optional<ParsedDividendPayment> parseDegiroAccountRow(String line) {
@@ -400,13 +388,9 @@ public class ImportService {
 
     @Transactional
     public ImportResult importZeroAccount(MultipartFile file) {
-        long start = System.currentTimeMillis();
+        long start = now();
 
-        // 1. Read
         List<String> lines = readLines(file);
-        if (lines == null) return ImportResult.fail("Error reading file");
-
-        // 2. Parse
         List<String> errors = new ArrayList<>();
         List<ParsedDividendPayment> parsed = new ArrayList<>();
         for (int i = 1; i < lines.size(); i++) {
@@ -435,7 +419,7 @@ public class ImportService {
                 .toList();
 
             repos.dividendPayment().saveAll(payments);
-            long duration = System.currentTimeMillis() - start;
+            long duration = now() - start;
             log.info("Imported {} ZERO dividend payments in {}", payments.size(), formatDuration(duration));
             return ImportResult.builder().success(errors.isEmpty()).imported(payments.size()).durationMs(duration).errors(errors).build();
         } finally {
@@ -468,13 +452,8 @@ public class ImportService {
 
     @Transactional
     public ImportResult importDividends(MultipartFile file) {
-        long start = System.currentTimeMillis();
-
-        // 1. Read
+        long start = now();
         List<String> lines = readLines(file);
-        if (lines == null) return ImportResult.fail("Error reading file");
-
-        // 2. Parse
         List<String> errors = new ArrayList<>();
         List<ParsedDividend> parsed = new ArrayList<>();
         for (int i = 0; i < lines.size(); i++) {
@@ -486,7 +465,6 @@ public class ImportService {
             }
         }
 
-        // 3. Save
         importLock.lock();
         try {
             repos.dividend().deleteAll();
@@ -505,7 +483,7 @@ public class ImportService {
                 .toList();
 
             repos.dividend().saveAll(dividends);
-            long duration = System.currentTimeMillis() - start;
+            long duration = now() - start;
             log.info("Imported {} dividend entries in {}", dividends.size(), formatDuration(duration));
             return ImportResult.builder().success(errors.isEmpty()).imported(dividends.size()).durationMs(duration).errors(errors).build();
         } finally {
@@ -532,13 +510,8 @@ public class ImportService {
 
     @Transactional
     public ImportResult importBranches(MultipartFile file) {
-        long start = System.currentTimeMillis();
-
-        // 1. Read
+        long start = now();
         List<String> lines = readLines(file);
-        if (lines == null) return ImportResult.fail("Error reading file");
-
-        // 2. Parse
         List<String> errors = new ArrayList<>();
         List<ParsedBranch> parsed = new ArrayList<>();
         for (int i = 0; i < lines.size(); i++) {
@@ -579,7 +552,7 @@ public class ImportService {
                     .setParameter("branchId", branch.getId()).executeUpdate();
             }
 
-            long duration = System.currentTimeMillis() - start;
+            long duration = now() - start;
             log.info("Imported {} branch mappings in {}", parsed.size(), formatDuration(duration));
             return ImportResult.builder().success(errors.isEmpty()).imported(parsed.size()).durationMs(duration).errors(errors).build();
         } finally {
@@ -603,13 +576,8 @@ public class ImportService {
 
     @Transactional
     public ImportResult importCountries(MultipartFile file) {
-        long start = System.currentTimeMillis();
-
-        // 1. Read
+        long start = now();
         List<String> lines = readLines(file);
-        if (lines == null) return ImportResult.fail("Error reading file");
-
-        // 2. Parse
         List<String> errors = new ArrayList<>();
         List<ParsedCountry> parsed = new ArrayList<>();
         for (int i = 0; i < lines.size(); i++) {
@@ -650,7 +618,7 @@ public class ImportService {
                     .setParameter("countryId", country.getId()).executeUpdate();
             }
 
-            long duration = System.currentTimeMillis() - start;
+            long duration = now() - start;
             log.info("Imported {} country mappings in {}", parsed.size(), formatDuration(duration));
             return ImportResult.builder().success(errors.isEmpty()).imported(parsed.size()).durationMs(duration).errors(errors).build();
         } finally {
@@ -674,13 +642,8 @@ public class ImportService {
 
     @Transactional
     public ImportResult importTickerSymbols(MultipartFile file) {
-        long start = System.currentTimeMillis();
-
-        // 1. Read
+        long start = now();
         List<String> lines = readLines(file);
-        if (lines == null) return ImportResult.fail("Error reading file");
-
-        // 2. Parse
         List<String> errors = new ArrayList<>();
         List<ParsedTickerSymbol> parsed = new ArrayList<>();
         for (int i = 0; i < lines.size(); i++) {
@@ -729,7 +692,7 @@ public class ImportService {
                 imported++;
             }
 
-            long duration = System.currentTimeMillis() - start;
+            long duration = now() - start;
             log.info("Imported {} ticker symbol mappings in {}", imported, formatDuration(duration));
             return ImportResult.builder().success(errors.isEmpty()).imported(imported).durationMs(duration).errors(errors).build();
         } finally {
