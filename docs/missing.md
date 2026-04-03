@@ -171,10 +171,16 @@ Analysis of requirements from the project specification that are **not yet imple
 
 ## 6. Architecture & Code Quality
 
-### 6.1 Tiny Types — Mostly Not Implemented
+### 6.1 Tiny Types — Partially Implemented
 
 - **Spec (PROJECT.md):** "Use tiny types for domain entities (e.g. `Isin`, `Quote`, `Depot`) to encapsulate validation and domain logic, rather than using primitive types."
-- **Status:** Only `IsinCode` exists in the `domain/` package. No tiny types for `Quote`, `Depot`, `DepotName`, or other domain values. Services and controllers still use raw `String` and `double` for most domain values.
+- **Status:** The `com.folio.domain` package contains:
+  - `IsinCode` — wraps a validated ISIN string
+  - `TickerCode` — wraps a ticker symbol string
+  - `Quote` — record holding `Amount amount` (price + `Currency`) and `Instant timestamp`; produced by `QuoteFetcher`
+  - `Amount` — record holding `double value` and `Currency`
+
+  No tiny types yet for `Depot`, `DepotName`, or other domain values. Services and controllers still use raw `String` and `double` for most domain values.
 
 > **Ref:** `PROJECT.md` → Tech preferences → Architecture
 
@@ -209,6 +215,6 @@ Analysis of requirements from the project specification that are **not yet imple
 | 4.1 | DevOps | No Dockerfile for production build | High |
 | 5.1 | Testing | 7 frontend pages missing test files | Medium |
 | 5.2 | Testing | ServerTable component missing test file | Low |
-| 6.1 | Architecture | Tiny types mostly not implemented | Low |
+| 6.1 | Architecture | Tiny types partially implemented (`IsinCode`, `TickerCode`, `Quote`, `Amount` done; `Depot` etc. missing) | Low |
 | 6.2 | Architecture | CSV parsing logic not extracted from ImportService | Low |
 

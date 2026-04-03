@@ -63,7 +63,8 @@ This document defines the testing conventions that apply across the entire proje
 
 ### Existing Test Classes
 
-- **Unit tests:** Tiny types (`IsinCodeTest`), DTOs (`DashboardDtoTest`, `StockDtoTest`, `TransactionDtoTest`, `TransactionFilterTest`), models (`IsinTest`, `TransactionTest`, `DividendTest`, `DividendPaymentTest`, `IsinQuoteTest`), services (`ExportServiceTest`), quote system (`IsinsQuoteLoaderTest`, `QuoteFetchHelperTest`).
+- **Unit tests:** Tiny types (`IsinCodeTest`), DTOs (`DashboardDtoTest`, `StockDtoTest`, `TransactionDtoTest`, `TransactionFilterTest`), models (`IsinTest`, `TransactionTest`, `DividendTest`, `DividendPaymentTest`, `IsinQuoteTest`), services (`ExportServiceTest`), quote system (`IsinsQuoteLoaderTest`, `QuoteFetchHelperTest`), external-API clients (`IsinToTickerTest`, `QuoteFetcherTest`).
+- **External API integration tests:** See [External API Integration Tests](#external-api-integration-tests) section below.
 - **REST API integration tests:** All 12 controllers tested against H2 in PostgreSQL mode:
   - `ReferenceDataControllerTest` — depots, currencies, countries, branches (GET + CSV/Excel export)
   - `DashboardControllerTest` — dashboard structure, empty portfolio, holdings/dividends export
@@ -82,6 +83,29 @@ This document defines the testing conventions that apply across the entire proje
 ```bash
 cd backend && ./gradlew test
 ```
+
+---
+
+## External API Integration Tests
+
+These tests call **real external services** over the network — no mocking, no in-memory database. They verify that the full HTTP round-trip, JSON parsing, and domain mapping work against live endpoints.
+
+### Conventions
+
+- Class name: `<ClassUnderTest>IntegrationTest` (e.g. `QuoteFetcherIntegrationTest`).
+- Instantiate the class under test with its **public no-arg constructor** — no Spring context.
+- Print the result to stdout (e.g. `System.out.printf(...)`) so the actual live value is visible in the test output.
+- Assertions must be **value-agnostic** (e.g. `isGreaterThan(0)`, `isNotBlank()`, `isPresent()`) since live values change constantly. The only exceptions are structural invariants like currency code format or timestamp being non-null.
+- One test per meaningful live scenario; always include an "unknown / invalid input → empty" case.
+- These tests are **not** run in CI by default — they require a live network connection and may be rate-limited.
+
+### Existing Integration Test Classes
+
+| Class | Package | External Service | What it verifies |
+|-------|---------|-----------------|-----------------|
+| `WallStreetOnlineTest` | `com.test` | wallstreet-online.de | HTML quote scraping returns price `> 0` |
+| `IsinToTickerIntegrationTest` | `com.test` | api.openfigi.com | Single + batch ISIN → ticker lookup; invalid ISIN → empty |
+| `QuoteFetcherIntegrationTest` | `com.folio.quote.yahoo` | query1.finance.yahoo.com | `regularMarketPrice`, `currency`, `regularMarketTime` parsed into `Quote`; unknown ticker → empty |
 
 ---
 

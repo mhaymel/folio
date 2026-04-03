@@ -52,3 +52,7 @@ Clerk is planned for user management and authentication but zero code exists. `S
 ### X. `parser/` package — intermediate types extracted
 
 The `parser/` package contains intermediate value objects (`ParsedTransaction`, `ParsedDividendPayment`, `ParsedDividend`, `ParsedBranch`, `ParsedCountry`, `ParsedTickerSymbol`) used by `ImportService` to separate file reading from database writes. CSV line parsing logic (`parseGermanDouble`, `parseCsvLine`) still lives in `ImportService`.
+
+### XI. `QuoteFetcher` — implemented but not wired into cascade chain
+
+`QuoteFetcher` (`com.folio.quote.yahoo`) is fully implemented and fetches `regularMarketPrice`, `currency`, and `regularMarketTime` from the Yahoo Finance v8 API, returning `Optional<Quote>`. However, it operates on `TickerCode` (not `IsinCode`) and returns the price in the stock's native currency — it does not yet implement `QuoteSource` and is not part of the 11-step cascade fallback chain in `IsinsQuoteLoader`.

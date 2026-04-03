@@ -50,7 +50,27 @@ If an ISIN has no entry in the relevant config file, that source is skipped for 
 
 **Note:** MarketBeat requires exchange code (NYSE, NASDAQ, etc.) and ticker symbol, not ISIN. A mapping file similar to `isin.symbol.csv` would be needed: `ISIN;EXCHANGE;TICKER`.
 
-### Currency Conversion
+### Yahoo Finance Quote Fetcher
+
+`QuoteFetcher` (`com.folio.quote.yahoo`) fetches a quote for a single **ticker symbol** (not ISIN) from the Yahoo Finance v8 chart API:
+
+```
+GET https://query1.finance.yahoo.com/v8/finance/chart/{ticker}
+```
+
+Returns `Optional<Quote>` where `Quote` contains:
+
+| Field | Source in JSON | Type |
+|-------|---------------|------|
+| `amount.value` | `chart.result[0].meta.regularMarketPrice` | `double` |
+| `amount.currency` | `chart.result[0].meta.currency` (e.g. `"USD"`) | `Currency` |
+| `timestamp` | `chart.result[0].meta.regularMarketTime` (Unix epoch, UTC) | `Instant` |
+
+Returns `Optional.empty()` when any field is missing, price ≤ 0, HTTP ≠ 200, or a network error occurs. The URL is logged at `INFO` level before each request; errors are logged at `WARN`.
+
+**Note:** This fetcher operates on `TickerCode` (not `IsinCode`) and returns the price in the stock's **native currency** (not necessarily EUR). It is not yet wired into the 11-step cascade fallback chain described above.
+
+---
 
 - USD→EUR conversion uses the ECB online XML exchange rate feed (with static fallback) for steps 4 and 8.
 - WallstreetOnline (step 10) uses a hardcoded factor of `0.86` for USD instead of the dynamic rate.
