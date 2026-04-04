@@ -1,6 +1,6 @@
 package com.folio.quote.sources;
 
-import com.folio.domain.IsinCode;
+import com.folio.domain.Isin;
 import com.folio.quote.CsvConfigLoader;
 import com.folio.quote.QuoteFetchHelper;
 import com.folio.quote.QuoteSource;
@@ -51,7 +51,7 @@ public final class FinanzenNetSource implements QuoteSource {
     }
 
     @Override
-    public Optional<Double> fetchQuote(IsinCode isin) {
+    public Optional<Double> fetchQuote(Isin isin) {
         String path = config.get(isin.value());
         if (path == null) return empty();
 

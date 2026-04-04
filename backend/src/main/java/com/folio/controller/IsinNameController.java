@@ -9,6 +9,7 @@ import com.folio.service.SortHelper;
 import com.folio.dto.ExportColumn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.folio.domain.Isin;
 import jakarta.persistence.EntityManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,7 @@ import java.util.Map;
 public class IsinNameController {
 
     private static final Map<String, Comparator<IsinNameDto>> SORT_FIELDS = Map.of(
-        "isin", SortHelper.text(IsinNameDto::getIsin),
+        "isin", SortHelper.text(d -> d.getIsin() == null ? null : d.getIsin().value()),
         "name", SortHelper.text(IsinNameDto::getName)
     );
 
@@ -77,7 +78,7 @@ public class IsinNameController {
 
         return rows.stream()
             .map(r -> IsinNameDto.builder()
-                .isin((String) r[0])
+                .isin(new Isin((String) r[0]))
                 .name((String) r[1])
                 .build())
             .toList();

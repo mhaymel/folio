@@ -1,5 +1,6 @@
 package com.folio.service;
 
+import com.folio.domain.Isin;
 import com.folio.dto.DividendPaymentDto;
 import com.folio.dto.DividendPaymentFilter;
 import com.folio.model.DividendPaymentEntity;
@@ -58,7 +59,7 @@ public class DividendPaymentService {
         List<DividendPaymentDto> result = payments.stream().map(dp -> DividendPaymentDto.builder()
             .id(dp.getId())
             .timestamp(dp.getTimestamp())
-            .isin(dp.getIsin().getIsin())
+            .isin(new Isin(dp.getIsin().getIsin()))
             .name(getFirstName(dp.getIsin().getId()))
             .depot(dp.getDepot().getName())
             .value(dp.getValue())
@@ -67,7 +68,7 @@ public class DividendPaymentService {
 
         if (filter.name() != null && !filter.name().isBlank()) {
             String lower = filter.name().toLowerCase();
-            Set<String> matchingIsins = result.stream()
+            Set<Isin> matchingIsins = result.stream()
                 .filter(d -> d.getName() != null && d.getName().toLowerCase().contains(lower))
                 .map(DividendPaymentDto::getIsin)
                 .collect(Collectors.toSet());

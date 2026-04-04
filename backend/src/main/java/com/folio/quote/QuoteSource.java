@@ -1,6 +1,6 @@
 package com.folio.quote;
 
-import com.folio.domain.IsinCode;
+import com.folio.domain.Isin;
 
 import java.util.Optional;
 
@@ -21,6 +21,6 @@ public interface QuoteSource {
      * @param isin the validated ISIN code
      * @return the price in EUR, or empty if this source cannot resolve it
      */
-    Optional<Double> fetchQuote(IsinCode isin);
+    Optional<Double> fetchQuote(Isin isin);
 }
 

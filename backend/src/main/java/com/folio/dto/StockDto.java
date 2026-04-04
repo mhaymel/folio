@@ -1,7 +1,9 @@
 package com.folio.dto;
 
+import com.folio.domain.Isin;
+
 public final class StockDto {
-    private String isin;
+    private Isin isin;
     private String name;
     private String country;
     private String branch;
@@ -15,8 +17,8 @@ public final class StockDto {
 
     public StockDto() {}
 
-    public String getIsin() { return isin; }
-    public void setIsin(String isin) { this.isin = isin; }
+    public Isin getIsin() { return isin; }
+    public void setIsin(Isin isin) { this.isin = isin; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getCountry() { return country; }

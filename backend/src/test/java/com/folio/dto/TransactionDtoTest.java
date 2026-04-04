@@ -1,5 +1,6 @@
 package com.folio.dto;
 
+import com.folio.domain.Isin;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -10,16 +11,19 @@ final class TransactionDtoTest {
 
     @Test
     void shouldBuildViaBuilder() {
-        // given / when
+        // given
+        Isin isin = new Isin("IE00B4L5Y983");
+
+        // when
         var dto = TransactionDto.builder()
                 .id(1).date(LocalDateTime.of(2026, 1, 15, 10, 0))
-                .isin("IE00B1").name("ETF").depot("DeGiro")
+                .isin(isin).name("ETF").depot("DeGiro")
                 .count(10.0).sharePrice(50.0).build();
 
         // then
         assertThat(dto.getId()).isEqualTo(1);
         assertThat(dto.getDate()).isEqualTo("15-01-2026");
-        assertThat(dto.getIsin()).isEqualTo("IE00B1");
+        assertThat(dto.getIsin()).isEqualTo(isin);
         assertThat(dto.getCount()).isEqualTo(10.0);
         assertThat(dto.getSharePrice()).isEqualTo(50.0);
     }
@@ -38,14 +42,14 @@ final class TransactionDtoTest {
     void shouldSupportSetters() {
         // given
         var dto = new TransactionDto();
+        Isin isin = new Isin("US0378331005");
 
         // when
-        dto.setIsin("US0001");
+        dto.setIsin(isin);
         dto.setCount(5.0);
 
         // then
-        assertThat(dto.getIsin()).isEqualTo("US0001");
+        assertThat(dto.getIsin()).isEqualTo(isin);
         assertThat(dto.getCount()).isEqualTo(5.0);
     }
 }
-

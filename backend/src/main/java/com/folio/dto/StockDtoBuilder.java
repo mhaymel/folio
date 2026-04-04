@@ -1,7 +1,9 @@
 package com.folio.dto;
 
+import com.folio.domain.Isin;
+
 public final class StockDtoBuilder {
-    private String isin;
+    private Isin isin;
     private String name;
     private String country;
     private String branch;
@@ -13,7 +15,7 @@ public final class StockDtoBuilder {
     private Double dividendPerShare;
     private Double estimatedAnnualIncome;
 
-    public StockDtoBuilder isin(String isin) { this.isin = isin; return this; }
+    public StockDtoBuilder isin(Isin isin) { this.isin = isin; return this; }
     public StockDtoBuilder name(String name) { this.name = name; return this; }
     public StockDtoBuilder country(String country) { this.country = country; return this; }
     public StockDtoBuilder branch(String branch) { this.branch = branch; return this; }
@@ -34,4 +36,3 @@ public final class StockDtoBuilder {
         return s;
     }
 }
-

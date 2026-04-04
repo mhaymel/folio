@@ -1,6 +1,6 @@
 package com.folio.quote;
 
-import com.folio.domain.IsinCode;
+import com.folio.domain.Isin;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -10,7 +10,7 @@ import static org.mockito.Mockito.*;
 
 final class IsinsQuoteLoaderTest {
 
-    private static final IsinCode ISIN = new IsinCode("IE00B4L5Y983");
+    private static final Isin ISIN = new Isin("IE00B4L5Y983");
 
     @Test
     void shouldResolveIsinFromFirstSource() {
@@ -21,7 +21,7 @@ final class IsinsQuoteLoaderTest {
         var loader = new IsinsQuoteLoader(List.of(source));
 
         // when
-        Map<IsinCode, IsinsQuoteLoader.QuoteResult> results = loader.fetchQuotes(Set.of(ISIN));
+        Map<Isin, IsinsQuoteLoader.QuoteResult> results = loader.fetchQuotes(Set.of(ISIN));
 
         // then
         assertThat(results).containsKey(ISIN);
@@ -43,7 +43,7 @@ final class IsinsQuoteLoaderTest {
         var loader = new IsinsQuoteLoader(List.of(first, second));
 
         // when
-        Map<IsinCode, IsinsQuoteLoader.QuoteResult> results = loader.fetchQuotes(Set.of(ISIN));
+        Map<Isin, IsinsQuoteLoader.QuoteResult> results = loader.fetchQuotes(Set.of(ISIN));
 
         // then
         assertThat(results.get(ISIN).providerName()).isEqualTo("Second");
@@ -74,7 +74,7 @@ final class IsinsQuoteLoaderTest {
         var loader = new IsinsQuoteLoader(List.of());
 
         // when
-        Map<IsinCode, IsinsQuoteLoader.QuoteResult> results = loader.fetchQuotes(Set.of());
+        Map<Isin, IsinsQuoteLoader.QuoteResult> results = loader.fetchQuotes(Set.of());
 
         // then
         assertThat(results).isEmpty();
@@ -90,7 +90,7 @@ final class IsinsQuoteLoaderTest {
         var loader = new IsinsQuoteLoader(List.of(failing));
 
         // when
-        Map<IsinCode, IsinsQuoteLoader.QuoteResult> results = loader.fetchQuotes(Set.of(ISIN));
+        Map<Isin, IsinsQuoteLoader.QuoteResult> results = loader.fetchQuotes(Set.of(ISIN));
 
         // then
         assertThat(results).isEmpty();

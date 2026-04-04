@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class StocksController {
 
     private static final Map<String, Comparator<StockDto>> SORT_FIELDS = Map.ofEntries(
-        Map.entry("isin", SortHelper.text(StockDto::getIsin)),
+        Map.entry("isin", SortHelper.text(s -> s.getIsin() == null ? null : s.getIsin().value())),
         Map.entry("name", SortHelper.text(StockDto::getName)),
         Map.entry("country", SortHelper.text(StockDto::getCountry)),
         Map.entry("branch", SortHelper.text(StockDto::getBranch)),
@@ -116,7 +116,7 @@ public class StocksController {
                                                  String sortField, String sortDir) {
         if (isin != null && !isin.isBlank()) {
             String lower = isin.toLowerCase();
-            data = data.stream().filter(s -> s.getIsin() != null && s.getIsin().toLowerCase().contains(lower)).toList();
+            data = data.stream().filter(s -> s.getIsin() != null && s.getIsin().value().toLowerCase().contains(lower)).toList();
         }
         if (name != null && !name.isBlank()) {
             String lower = name.toLowerCase();

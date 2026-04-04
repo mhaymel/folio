@@ -4,7 +4,7 @@ import static java.lang.Math.min;
 
 import static java.lang.Math.max;
 
-import com.folio.domain.IsinCode;
+import com.folio.domain.Isin;
 import com.folio.quote.CsvConfigLoader;
 import com.folio.quote.EcbExchangeRateProvider;
 import com.folio.quote.QuoteFetchHelper;
@@ -66,7 +66,7 @@ public final class OnvistaSource implements QuoteSource {
     }
 
     @Override
-    public Optional<Double> fetchQuote(IsinCode isin) {
+    public Optional<Double> fetchQuote(Isin isin) {
         String path = config.get(isin.value());
         if (path == null) return empty();
 

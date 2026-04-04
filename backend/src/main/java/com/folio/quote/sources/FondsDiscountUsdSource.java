@@ -1,16 +1,14 @@
 package com.folio.quote.sources;
 
-import com.folio.domain.IsinCode;
+import com.folio.domain.Isin;
 import static java.lang.String.format;
 import com.folio.quote.EcbExchangeRateProvider;
 import com.folio.quote.QuoteFetchHelper;
-import static java.lang.String.format;
 import com.folio.quote.QuoteSource;
 import org.slf4j.Logger;
-import static java.lang.String.format;
+
 import static org.slf4j.LoggerFactory.getLogger;
 import org.springframework.core.annotation.Order;
-import static java.lang.String.format;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -48,7 +46,7 @@ public final class FondsDiscountUsdSource implements QuoteSource {
     }
 
     @Override
-    public Optional<Double> fetchQuote(IsinCode isin) {
+    public Optional<Double> fetchQuote(Isin isin) {
         String url = format(URL_TEMPLATE, isin.value());
         return QuoteFetchHelper.fetchHtml(url, log, providerName()).flatMap(html -> {
             Matcher m = USD_PRICE_PATTERN.matcher(html);

@@ -1,15 +1,17 @@
 package com.folio.domain;
 
-import static java.util.Objects.requireNonNull;
-import static java.util.Optional.empty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.Optional;
+
+import static java.util.Objects.requireNonNull;
+import static java.util.Optional.empty;
 
 /**
  * Immutable value object representing a validated ISIN (International Securities Identification Number).
  * An ISIN is exactly 12 uppercase alphanumeric characters with no whitespace.
  */
-public record IsinCode(String value) {
+public record Isin(String value) {
 
     public static final int ISIN_LENGTH = 12;
 
@@ -17,7 +19,7 @@ public record IsinCode(String value) {
      * Compact constructor — validates the ISIN string.
      * Only precondition checks are allowed here per coding guidelines.
      */
-    public IsinCode {
+    public Isin {
         requireNonNull(value, "ISIN value must not be null");
         if (value.isBlank()) {
             throw new IllegalArgumentException("ISIN must not be blank");
@@ -34,11 +36,11 @@ public record IsinCode(String value) {
     /**
      * Factory method that returns an {@link Optional} — empty if the value is not a valid ISIN.
      */
-    public static Optional<IsinCode> of(String value) {
+    public static Optional<Isin> of(String value) {
         if (value == null || !isValid(value)) {
             return empty();
         }
-        return Optional.of(new IsinCode(value));
+        return Optional.of(new Isin(value));
     }
 
     /**
@@ -50,6 +52,9 @@ public record IsinCode(String value) {
                 && !value.isBlank()
                 && value.equals(value.replaceAll("\\s+", ""));
     }
+
+    @JsonValue
+    public String value() { return value; }
 
     @Override
     public String toString() {

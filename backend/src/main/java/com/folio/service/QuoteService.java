@@ -2,7 +2,7 @@ package com.folio.service;
 
 import static java.lang.Integer.parseInt;
 
-import com.folio.domain.IsinCode;
+import com.folio.domain.Isin;
 import com.folio.model.IsinQuoteEntity;
 import com.folio.model.QuoteProviderEntity;
 import com.folio.model.SettingEntity;
@@ -78,7 +78,7 @@ public final class QuoteService {
 
         try {
             // 1. Short read-only transaction: collect held ISINs
-            Set<IsinCode> heldIsins = tx.execute(status -> getHeldIsins());
+            Set<Isin> heldIsins = tx.execute(status -> getHeldIsins());
             if (heldIsins == null || heldIsins.isEmpty()) {
                 log.info("No held ISINs to fetch quotes for");
                 return 0;
@@ -86,19 +86,19 @@ public final class QuoteService {
 
             // 2. No transaction: slow HTTP calls to external quote providers
             log.info("Fetching quotes for {} ISINs", heldIsins.size());
-            Map<IsinCode, IsinsQuoteLoader.QuoteResult> results = quoteLoader.fetchQuotes(heldIsins);
+            Map<Isin, IsinsQuoteLoader.QuoteResult> results = quoteLoader.fetchQuotes(heldIsins);
 
             // 3. Short write transaction: persist all fetched quotes
             Integer upserted = tx.execute(status -> {
                 int count = 0;
                 for (var entry : results.entrySet()) {
-                    IsinCode isinCode = entry.getKey();
+                    Isin isin = entry.getKey();
                     IsinsQuoteLoader.QuoteResult result = entry.getValue();
                     try {
-                        upsertQuote(isinCode.value(), result.price(), result.providerName());
+                        upsertQuote(isin.value(), result.price(), result.providerName());
                         count++;
                     } catch (Exception e) {
-                        log.error("Failed to persist quote for {}: {}", isinCode, e.getMessage());
+                        log.error("Failed to persist quote for {}: {}", isin, e.getMessage());
                     }
                 }
                 updateLastFetchTimestamp();
@@ -114,13 +114,13 @@ public final class QuoteService {
         }
     }
 
-    private Set<IsinCode> getHeldIsins() {
+    private Set<Isin> getHeldIsins() {
         List<String> isins = em.createQuery(
             "SELECT t.isin.isin FROM TransactionEntity t GROUP BY t.isin.isin HAVING SUM(t.count) > 0",
             String.class
         ).getResultList();
         return isins.stream()
-            .flatMap(s -> IsinCode.of(s).stream())
+            .flatMap(s -> Isin.of(s).stream())
             .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
     }
 

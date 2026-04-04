@@ -1,5 +1,6 @@
 package com.folio.dto;
 
+import com.folio.domain.Isin;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -10,19 +11,24 @@ final class DividendPaymentDtoTest {
 
     @Test
     void shouldBuildViaBuilder() {
+        // given
+        Isin isin = new Isin("DE000BASF111");
+
+        // when
         var dto = DividendPaymentDto.builder()
                 .id(1)
                 .timestamp(LocalDateTime.of(2026, 3, 15, 10, 30))
-                .isin("DE000BASF111")
+                .isin(isin)
                 .name("BASF SE")
                 .depot("DeGiro")
                 .value(34.0)
                 .build();
 
+        // then
         assertThat(dto.getId()).isEqualTo(1);
         assertThat(dto.getTimestamp()).isEqualTo("15.03.2026");
         assertThat(dto.getRawTimestamp()).isEqualTo(LocalDateTime.of(2026, 3, 15, 10, 30));
-        assertThat(dto.getIsin()).isEqualTo("DE000BASF111");
+        assertThat(dto.getIsin()).isEqualTo(isin);
         assertThat(dto.getName()).isEqualTo("BASF SE");
         assertThat(dto.getDepot()).isEqualTo("DeGiro");
         assertThat(dto.getValue()).isEqualTo(34.0);
@@ -50,17 +56,22 @@ final class DividendPaymentDtoTest {
 
     @Test
     void shouldSupportSetters() {
+        // given
         var dto = new DividendPaymentDto();
+        Isin isin = new Isin("US0378331005");
+
+        // when
         dto.setId(5);
         dto.setTimestamp("01.01.2026");
-        dto.setIsin("US0378331005");
+        dto.setIsin(isin);
         dto.setName("Apple Inc.");
         dto.setDepot("ZERO");
         dto.setValue(100.50);
 
+        // then
         assertThat(dto.getId()).isEqualTo(5);
         assertThat(dto.getTimestamp()).isEqualTo("01.01.2026");
-        assertThat(dto.getIsin()).isEqualTo("US0378331005");
+        assertThat(dto.getIsin()).isEqualTo(isin);
         assertThat(dto.getName()).isEqualTo("Apple Inc.");
         assertThat(dto.getDepot()).isEqualTo("ZERO");
         assertThat(dto.getValue()).isEqualTo(100.50);

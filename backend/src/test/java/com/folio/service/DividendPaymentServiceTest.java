@@ -1,5 +1,6 @@
 package com.folio.service;
 
+import com.folio.domain.Isin;
 import com.folio.dto.DividendPaymentDto;
 import com.folio.dto.DividendPaymentFilter;
 import com.folio.model.*;
@@ -91,7 +92,7 @@ class DividendPaymentServiceTest {
         List<DividendPaymentDto> result = dividendPaymentService.getDividendPayments(DividendPaymentFilter.none());
 
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).getIsin()).isEqualTo("DE000BASF111");
+        assertThat(result.get(0).getIsin()).isEqualTo(new Isin("DE000BASF111"));
         assertThat(result.get(0).getName()).isEqualTo("BASF SE");
         assertThat(result.get(0).getTimestamp()).isEqualTo("15.06.2026");
     }
@@ -107,7 +108,7 @@ class DividendPaymentServiceTest {
         List<DividendPaymentDto> result = dividendPaymentService.getDividendPayments(filter);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getIsin()).isEqualTo("DE000BASF111");
+        assertThat(result.get(0).getIsin()).isEqualTo(new Isin("DE000BASF111"));
     }
 
     @Test

@@ -7,7 +7,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-final class IsinCodeTest {
+final class IsinTest {
 
     @Test
     void shouldCreateValidIsin() {
@@ -15,7 +15,7 @@ final class IsinCodeTest {
         String value = "IE00B4L5Y983";
 
         // when
-        var isin = new IsinCode(value);
+        var isin = new Isin(value);
 
         // then
         assertThat(isin.value()).isEqualTo("IE00B4L5Y983");
@@ -24,7 +24,7 @@ final class IsinCodeTest {
     @Test
     void shouldReturnValueFromToString() {
         // given
-        var isin = new IsinCode("IE00B4L5Y983");
+        var isin = new Isin("IE00B4L5Y983");
 
         // when / then
         assertThat(isin.toString()).isEqualTo("IE00B4L5Y983");
@@ -33,14 +33,14 @@ final class IsinCodeTest {
     @Test
     void shouldRejectNull() {
         // given / when / then
-        assertThatThrownBy(() -> new IsinCode(null))
+        assertThatThrownBy(() -> new Isin(null))
                 .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     void shouldRejectBlank() {
         // given / when / then
-        assertThatThrownBy(() -> new IsinCode("            "))
+        assertThatThrownBy(() -> new Isin("            "))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("blank");
     }
@@ -48,7 +48,7 @@ final class IsinCodeTest {
     @Test
     void shouldRejectTooShort() {
         // given / when / then
-        assertThatThrownBy(() -> new IsinCode("IE00B4"))
+        assertThatThrownBy(() -> new Isin("IE00B4"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("12 characters");
     }
@@ -56,7 +56,7 @@ final class IsinCodeTest {
     @Test
     void shouldRejectTooLong() {
         // given / when / then
-        assertThatThrownBy(() -> new IsinCode("IE00B4L5Y9831"))
+        assertThatThrownBy(() -> new Isin("IE00B4L5Y9831"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("12 characters");
     }
@@ -64,7 +64,7 @@ final class IsinCodeTest {
     @Test
     void shouldRejectWhitespace() {
         // given / when / then
-        assertThatThrownBy(() -> new IsinCode("IE00 B4L5Y98"))
+        assertThatThrownBy(() -> new Isin("IE00 B4L5Y98"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("whitespace");
     }
@@ -72,7 +72,7 @@ final class IsinCodeTest {
     @Test
     void shouldReturnPresentOptionalForValidIsin() {
         // given / when
-        Optional<IsinCode> result = IsinCode.of("IE00B4L5Y983");
+        Optional<Isin> result = Isin.of("IE00B4L5Y983");
 
         // then
         assertThat(result).isPresent();
@@ -82,7 +82,7 @@ final class IsinCodeTest {
     @Test
     void shouldReturnEmptyOptionalForNull() {
         // given / when
-        Optional<IsinCode> result = IsinCode.of(null);
+        Optional<Isin> result = Isin.of(null);
 
         // then
         assertThat(result).isEmpty();
@@ -91,7 +91,7 @@ final class IsinCodeTest {
     @Test
     void shouldReturnEmptyOptionalForInvalidLength() {
         // given / when
-        Optional<IsinCode> result = IsinCode.of("TOO_SHORT");
+        Optional<Isin> result = Isin.of("TOO_SHORT");
 
         // then
         assertThat(result).isEmpty();
@@ -100,17 +100,17 @@ final class IsinCodeTest {
     @Test
     void shouldValidateCorrectly() {
         // given / when / then
-        assertThat(IsinCode.isValid("IE00B4L5Y983")).isTrue();
-        assertThat(IsinCode.isValid("short")).isFalse();
-        assertThat(IsinCode.isValid(null)).isFalse();
-        assertThat(IsinCode.isValid("IE00 B4L5Y98")).isFalse();
+        assertThat(Isin.isValid("IE00B4L5Y983")).isTrue();
+        assertThat(Isin.isValid("short")).isFalse();
+        assertThat(Isin.isValid(null)).isFalse();
+        assertThat(Isin.isValid("IE00 B4L5Y98")).isFalse();
     }
 
     @Test
     void shouldBeEqualForSameValue() {
         // given
-        var a = new IsinCode("IE00B4L5Y983");
-        var b = new IsinCode("IE00B4L5Y983");
+        var a = new Isin("IE00B4L5Y983");
+        var b = new Isin("IE00B4L5Y983");
 
         // when / then
         assertThat(a).isEqualTo(b);
@@ -120,8 +120,8 @@ final class IsinCodeTest {
     @Test
     void shouldNotBeEqualForDifferentValues() {
         // given
-        var a = new IsinCode("IE00B4L5Y983");
-        var b = new IsinCode("US0378331005");
+        var a = new Isin("IE00B4L5Y983");
+        var b = new Isin("US0378331005");
 
         // when / then
         assertThat(a).isNotEqualTo(b);

@@ -1,6 +1,7 @@
 package com.folio.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.folio.domain.Isin;
 import java.time.LocalDateTime;
 
 public final class DividendPaymentDto {
@@ -8,7 +9,7 @@ public final class DividendPaymentDto {
     private String timestamp;
     @JsonIgnore
     private LocalDateTime rawTimestamp;
-    private String isin;
+    private Isin isin;
     private String name;
     private String depot;
     private Double value;
@@ -21,8 +22,8 @@ public final class DividendPaymentDto {
     public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
     public LocalDateTime getRawTimestamp() { return rawTimestamp; }
     public void setRawTimestamp(LocalDateTime rawTimestamp) { this.rawTimestamp = rawTimestamp; }
-    public String getIsin() { return isin; }
-    public void setIsin(String isin) { this.isin = isin; }
+    public Isin getIsin() { return isin; }
+    public void setIsin(Isin isin) { this.isin = isin; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getDepot() { return depot; }

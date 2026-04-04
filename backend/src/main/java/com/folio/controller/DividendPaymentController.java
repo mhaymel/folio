@@ -23,7 +23,7 @@ public class DividendPaymentController {
 
     private static final Map<String, Comparator<DividendPaymentDto>> SORT_FIELDS = Map.of(
         "timestamp", SortHelper.comparing(DividendPaymentDto::getRawTimestamp),
-        "isin", SortHelper.text(DividendPaymentDto::getIsin),
+        "isin", SortHelper.text(d -> d.getIsin() == null ? null : d.getIsin().value()),
         "name", SortHelper.text(DividendPaymentDto::getName),
         "depot", SortHelper.text(DividendPaymentDto::getDepot),
         "value", SortHelper.number(DividendPaymentDto::getValue)

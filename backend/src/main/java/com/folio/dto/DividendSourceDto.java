@@ -1,20 +1,22 @@
 package com.folio.dto;
 
+import com.folio.domain.Isin;
+
 public final class DividendSourceDto {
-    private String isin;
+    private Isin isin;
     private String name;
     private Double estimatedAnnualIncome;
 
     public DividendSourceDto() {}
 
-    public DividendSourceDto(String isin, String name, Double estimatedAnnualIncome) {
+    public DividendSourceDto(Isin isin, String name, Double estimatedAnnualIncome) {
         this.isin = isin;
         this.name = name;
         this.estimatedAnnualIncome = estimatedAnnualIncome;
     }
 
-    public String getIsin() { return isin; }
-    public void setIsin(String isin) { this.isin = isin; }
+    public Isin getIsin() { return isin; }
+    public void setIsin(Isin isin) { this.isin = isin; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public Double getEstimatedAnnualIncome() { return estimatedAnnualIncome; }
@@ -22,4 +24,3 @@ public final class DividendSourceDto {
 
     public static DividendSourceDtoBuilder builder() { return new DividendSourceDtoBuilder(); }
 }
-

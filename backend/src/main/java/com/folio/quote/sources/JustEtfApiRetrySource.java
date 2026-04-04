@@ -1,13 +1,13 @@
 package com.folio.quote.sources;
 
-import com.folio.domain.IsinCode;
+import com.folio.domain.Isin;
+
 import static java.lang.String.format;
 import com.folio.quote.QuoteFetchHelper;
 import com.folio.quote.QuoteSource;
-import static java.lang.String.format;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
-import static java.lang.String.format;
+
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -39,7 +39,7 @@ public final class JustEtfApiRetrySource implements QuoteSource {
     }
 
     @Override
-    public Optional<Double> fetchQuote(IsinCode isin) {
+    public Optional<Double> fetchQuote(Isin isin) {
         String url = format(URL_TEMPLATE, isin.value());
         return QuoteFetchHelper.fetchJson(url, log, providerName()).flatMap(json -> {
             Matcher m = PRICE_PATTERN.matcher(json);

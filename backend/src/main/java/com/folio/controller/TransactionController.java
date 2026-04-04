@@ -26,7 +26,7 @@ public class TransactionController {
 
     private static final Map<String, Comparator<TransactionDto>> SORT_FIELDS = Map.of(
         "date", SortHelper.comparing(TransactionDto::getRawDate),
-        "isin", SortHelper.text(TransactionDto::getIsin),
+        "isin", SortHelper.text(t -> t.getIsin() == null ? null : t.getIsin().value()),
         "name", SortHelper.text(TransactionDto::getName),
         "depot", SortHelper.text(TransactionDto::getDepot),
         "count", SortHelper.number(TransactionDto::getCount),

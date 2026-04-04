@@ -1,5 +1,6 @@
 package com.folio.dto;
 
+import com.folio.domain.Isin;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -8,7 +9,7 @@ public final class TransactionDtoBuilder {
 
     private Integer id;
     private LocalDateTime date;
-    private String isin;
+    private Isin isin;
     private String name;
     private String depot;
     private Double count;
@@ -16,7 +17,7 @@ public final class TransactionDtoBuilder {
 
     public TransactionDtoBuilder id(Integer id) { this.id = id; return this; }
     public TransactionDtoBuilder date(LocalDateTime date) { this.date = date; return this; }
-    public TransactionDtoBuilder isin(String isin) { this.isin = isin; return this; }
+    public TransactionDtoBuilder isin(Isin isin) { this.isin = isin; return this; }
     public TransactionDtoBuilder name(String name) { this.name = name; return this; }
     public TransactionDtoBuilder depot(String depot) { this.depot = depot; return this; }
     public TransactionDtoBuilder count(Double count) { this.count = count; return this; }
@@ -35,4 +36,3 @@ public final class TransactionDtoBuilder {
         return t;
     }
 }
-

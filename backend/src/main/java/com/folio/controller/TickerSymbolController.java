@@ -9,6 +9,7 @@ import com.folio.service.SortHelper;
 import com.folio.dto.ExportColumn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.folio.domain.Isin;
 import jakarta.persistence.EntityManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,7 @@ import java.util.Map;
 public class TickerSymbolController {
 
     private static final Map<String, Comparator<TickerSymbolDto>> SORT_FIELDS = Map.of(
-        "isin", SortHelper.text(TickerSymbolDto::getIsin),
+        "isin", SortHelper.text(d -> d.getIsin() == null ? null : d.getIsin().value()),
         "tickerSymbol", SortHelper.text(TickerSymbolDto::getTickerSymbol),
         "name", SortHelper.text(TickerSymbolDto::getName)
     );
@@ -81,7 +82,7 @@ public class TickerSymbolController {
 
         return rows.stream()
             .map(r -> TickerSymbolDto.builder()
-                .isin((String) r[0])
+                .isin(new Isin((String) r[0]))
                 .tickerSymbol((String) r[1])
                 .name((String) r[2])
                 .build())

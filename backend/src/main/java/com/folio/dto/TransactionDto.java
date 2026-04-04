@@ -1,13 +1,14 @@
 package com.folio.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.folio.domain.Isin;
 import java.time.LocalDateTime;
 
 public final class TransactionDto {
     private Integer id;
     private String date;
     private LocalDateTime rawDate;
-    private String isin;
+    private Isin isin;
     private String name;
     private String depot;
     private Double count;
@@ -22,8 +23,8 @@ public final class TransactionDto {
     @JsonIgnore
     public LocalDateTime getRawDate() { return rawDate; }
     public void setRawDate(LocalDateTime rawDate) { this.rawDate = rawDate; }
-    public String getIsin() { return isin; }
-    public void setIsin(String isin) { this.isin = isin; }
+    public Isin getIsin() { return isin; }
+    public void setIsin(Isin isin) { this.isin = isin; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getDepot() { return depot; }

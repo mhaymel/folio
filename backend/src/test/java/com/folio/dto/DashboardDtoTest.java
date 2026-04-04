@@ -1,5 +1,6 @@
 package com.folio.dto;
 
+import com.folio.domain.Isin;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -9,11 +10,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 final class DashboardDtoTest {
 
+    private static final Isin ISIN_ETF  = new Isin("IE00B4L5Y983");
+    private static final Isin ISIN_BASF = new Isin("DE000BASF111");
+
     @Test
     void shouldBuildDashboardDtoViaBuilder() {
         // given
         var holdings = List.of(HoldingDto.builder()
-                .isin("IE00B1").name("Test ETF").investedAmount(1000.0).build());
+                .isin(ISIN_ETF).name("Test ETF").investedAmount(1000.0).build());
 
         // when
         DashboardDto dto = DashboardDto.builder()
@@ -38,10 +42,10 @@ final class DashboardDtoTest {
     void shouldBuildHoldingDtoViaBuilder() {
         // given / when
         var dto = HoldingDto.builder()
-                .isin("IE00B1").name("Test").investedAmount(500.0).build();
+                .isin(ISIN_ETF).name("Test").investedAmount(500.0).build();
 
         // then
-        assertThat(dto.getIsin()).isEqualTo("IE00B1");
+        assertThat(dto.getIsin()).isEqualTo(ISIN_ETF);
         assertThat(dto.getName()).isEqualTo("Test");
         assertThat(dto.getInvestedAmount()).isEqualTo(500.0);
     }
@@ -50,11 +54,10 @@ final class DashboardDtoTest {
     void shouldBuildDividendSourceDtoViaBuilder() {
         // given / when
         var dto = DividendSourceDto.builder()
-                .isin("DE0001").name("Div Stock").estimatedAnnualIncome(120.0).build();
+                .isin(ISIN_BASF).name("Div Stock").estimatedAnnualIncome(120.0).build();
 
         // then
-        assertThat(dto.getIsin()).isEqualTo("DE0001");
+        assertThat(dto.getIsin()).isEqualTo(ISIN_BASF);
         assertThat(dto.getEstimatedAnnualIncome()).isEqualTo(120.0);
     }
 }
-

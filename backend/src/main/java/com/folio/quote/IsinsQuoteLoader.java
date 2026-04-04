@@ -1,6 +1,7 @@
 package com.folio.quote;
 
-import com.folio.domain.IsinCode;
+import com.folio.domain.Isin;
+
 import static java.lang.String.format;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -36,18 +37,18 @@ public final class IsinsQuoteLoader {
      * @param isins set of validated ISIN codes to fetch
      * @return map of IsinCode → QuoteResult (price + provider name)
      */
-    public Map<IsinCode, QuoteResult> fetchQuotes(Set<IsinCode> isins) {
-        Map<IsinCode, QuoteResult> results = new HashMap<>();
-        Set<IsinCode> remaining = new LinkedHashSet<>(isins);
+    public Map<Isin, QuoteResult> fetchQuotes(Set<Isin> isins) {
+        Map<Isin, QuoteResult> results = new HashMap<>();
+        Set<Isin> remaining = new LinkedHashSet<>(isins);
 
         var iterator = sources.iterator();
         while (iterator.hasNext() && !remaining.isEmpty()) {
             QuoteSource source = iterator.next();
 
             log.debug("Trying source {} for {} remaining ISINs", source.providerName(), remaining.size());
-            Set<IsinCode> resolved = new HashSet<>();
+            Set<Isin> resolved = new HashSet<>();
 
-            for (IsinCode isin : remaining) {
+            for (Isin isin : remaining) {
                 try {
                     Optional<Double> price = source.fetchQuote(isin);
                     if (price.isPresent()) {

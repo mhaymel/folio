@@ -1,5 +1,6 @@
 package com.folio.service;
 
+import com.folio.domain.Isin;
 import com.folio.dto.*;
 import com.folio.repository.*;
 import jakarta.persistence.EntityManager;
@@ -27,7 +28,7 @@ public class PortfolioService {
     public List<StockDto> getStocks() {
         // Get open positions: ISIN + depot with SUM(count) > 0
         List<Tuple> positions = em.createQuery("""
-            SELECT t.isin.id as isinId, t.isin.isin as isinCode,
+            SELECT t.isin.id as isinId, t.isin.isin as isin,
                    t.depot.name as depotName,
                    SUM(t.count) as totalCount,
                    SUM(t.count * t.sharePrice) as totalCost
@@ -39,7 +40,7 @@ public class PortfolioService {
         List<StockDto> result = new ArrayList<>();
         for (Tuple pos : positions) {
             Integer isinId = pos.get("isinId", Integer.class);
-            String isinCode = pos.get("isinCode", String.class);
+            Isin isin = new Isin(pos.get("isin", String.class));
             String depotName = pos.get("depotName", String.class);
             Double totalCount = pos.get("totalCount", Double.class);
             Double totalCost = pos.get("totalCost", Double.class);
@@ -65,7 +66,7 @@ public class PortfolioService {
             Double estimatedAnnualIncome = (dps != null && dps > 0) ? dps * totalCount : null;
 
             result.add(StockDto.builder()
-                .isin(isinCode).name(name).country(country).branch(branch)
+                .isin(isin).name(name).country(country).branch(branch)
                 .depot(depotName).count(totalCount).avgEntryPrice(avgEntryPrice)
                 .currentQuote(currentQuote).performancePercent(performancePercent)
                 .dividendPerShare(dps).estimatedAnnualIncome(estimatedAnnualIncome)
@@ -79,7 +80,7 @@ public class PortfolioService {
     public List<StockDto> getAggregatedStocks() {
         // Get open positions: ISIN aggregated across all depots
         List<Tuple> positions = em.createQuery("""
-            SELECT t.isin.id as isinId, t.isin.isin as isinCode,
+            SELECT t.isin.id as isinId, t.isin.isin as isin,
                    SUM(t.count) as totalCount,
                    SUM(t.count * t.sharePrice) as totalCost
             FROM TransactionEntity t
@@ -90,7 +91,7 @@ public class PortfolioService {
         List<StockDto> result = new ArrayList<>();
         for (Tuple pos : positions) {
             Integer isinId = pos.get("isinId", Integer.class);
-            String isinCode = pos.get("isinCode", String.class);
+            Isin isin = new Isin(pos.get("isin", String.class));
             Double totalCount = pos.get("totalCount", Double.class);
             Double totalCost = pos.get("totalCost", Double.class);
 
@@ -110,7 +111,7 @@ public class PortfolioService {
             Double estimatedAnnualIncome = (dps != null && dps > 0) ? dps * totalCount : null;
 
             result.add(StockDto.builder()
-                .isin(isinCode).name(name).country(country).branch(branch)
+                .isin(isin).name(name).country(country).branch(branch)
                 .count(totalCount).avgEntryPrice(avgEntryPrice)
                 .currentQuote(currentQuote).performancePercent(performancePercent)
                 .dividendPerShare(dps).estimatedAnnualIncome(estimatedAnnualIncome)
@@ -248,7 +249,7 @@ public class PortfolioService {
         List<TransactionDto> result = txns.stream().map(t -> TransactionDto.builder()
             .id(t.getId())
             .date(t.getDate())
-            .isin(t.getIsin().getIsin())
+            .isin(new Isin(t.getIsin().getIsin()))
             .name(getFirstName(t.getIsin().getId()))
             .depot(t.getDepot().getName())
             .count(t.getCount())
@@ -261,7 +262,7 @@ public class PortfolioService {
         // matching stock are included, even if some transactions lack a resolved name.
         if (filter.name() != null && !filter.name().isBlank()) {
             String lower = filter.name().toLowerCase();
-            Set<String> matchingIsins = result.stream()
+            Set<Isin> matchingIsins = result.stream()
                 .filter(t -> t.getName() != null && t.getName().toLowerCase().contains(lower))
                 .map(TransactionDto::getIsin)
                 .collect(Collectors.toSet());

@@ -1,5 +1,6 @@
 package com.folio.service;
 
+import com.folio.domain.Isin;
 import com.folio.dto.DashboardDto;
 import com.folio.dto.DiversificationDto;
 import com.folio.dto.StockDto;
@@ -133,7 +134,7 @@ class PortfolioServiceTest {
 
         assertThat(stocks).hasSize(1);
         StockDto s = stocks.get(0);
-        assertThat(s.getIsin()).isEqualTo("DE000BASF111");
+        assertThat(s.getIsin()).isEqualTo(new Isin("DE000BASF111"));
         assertThat(s.getName()).isEqualTo("BASF SE");
         assertThat(s.getDepot()).isEqualTo("DeGiro");
         assertThat(s.getCount()).isEqualTo(10.0);
@@ -152,7 +153,7 @@ class PortfolioServiceTest {
         assertThat(stocks).hasSize(2);
         assertThat(stocks).extracting(StockDto::getDepot)
                 .containsExactlyInAnyOrder("DeGiro", "ZERO");
-        assertThat(stocks).allMatch(s -> "US0378331005".equals(s.getIsin()));
+        assertThat(stocks).allMatch(s -> new Isin("US0378331005").equals(s.getIsin()));
     }
 
     @Test
@@ -214,7 +215,7 @@ class PortfolioServiceTest {
 
         assertThat(stocks).hasSize(1);
         StockDto s = stocks.get(0);
-        assertThat(s.getIsin()).isEqualTo("US0378331005");
+        assertThat(s.getIsin()).isEqualTo(new Isin("US0378331005"));
         assertThat(s.getCount()).isEqualTo(8.0);
         // total cost = 5*150 + 3*160 = 750 + 480 = 1230, avg = 1230 / 8 = 153.75
         assertThat(s.getAvgEntryPrice()).isCloseTo(153.75, within(0.001));
@@ -337,7 +338,7 @@ class PortfolioServiceTest {
 
         assertThat(d.getTop5Holdings()).hasSize(5);
         // highest invested first: Stock6 (600), Stock5 (500), Stock4 (400), Stock3 (300), Stock2 (200)
-        assertThat(d.getTop5Holdings().get(0).getIsin()).isEqualTo("IE00B1XNT006");
+        assertThat(d.getTop5Holdings().get(0).getIsin()).isEqualTo(new Isin("IE00B1XNT006"));
         assertThat(d.getTop5Holdings().get(0).getInvestedAmount()).isCloseTo(600.0, within(0.001));
         // Stock1 (100) should be excluded
         assertThat(d.getTop5Holdings()).extracting("isin")
@@ -359,7 +360,7 @@ class PortfolioServiceTest {
 
         assertThat(d.getTop5DividendSources()).hasSize(2);
         // BASF should be first (higher income)
-        assertThat(d.getTop5DividendSources().get(0).getIsin()).isEqualTo("DE000BASF111");
+        assertThat(d.getTop5DividendSources().get(0).getIsin()).isEqualTo(new Isin("DE000BASF111"));
         assertThat(d.getTop5DividendSources().get(0).getEstimatedAnnualIncome()).isCloseTo(34.0, within(0.001));
     }
 
@@ -492,7 +493,7 @@ class PortfolioServiceTest {
         var txns = portfolioService.getTransactions(filter);
 
         assertThat(txns).hasSize(1);
-        assertThat(txns.get(0).getIsin()).isEqualTo("US0378331005");
+        assertThat(txns.get(0).getIsin()).isEqualTo(new Isin("US0378331005"));
     }
 }
 

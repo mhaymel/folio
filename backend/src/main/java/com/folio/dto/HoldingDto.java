@@ -1,20 +1,22 @@
 package com.folio.dto;
 
+import com.folio.domain.Isin;
+
 public final class HoldingDto {
-    private String isin;
+    private Isin isin;
     private String name;
     private Double investedAmount;
 
     public HoldingDto() {}
 
-    public HoldingDto(String isin, String name, Double investedAmount) {
+    public HoldingDto(Isin isin, String name, Double investedAmount) {
         this.isin = isin;
         this.name = name;
         this.investedAmount = investedAmount;
     }
 
-    public String getIsin() { return isin; }
-    public void setIsin(String isin) { this.isin = isin; }
+    public Isin getIsin() { return isin; }
+    public void setIsin(Isin isin) { this.isin = isin; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public Double getInvestedAmount() { return investedAmount; }
@@ -22,4 +24,3 @@ public final class HoldingDto {
 
     public static HoldingDtoBuilder builder() { return new HoldingDtoBuilder(); }
 }
-

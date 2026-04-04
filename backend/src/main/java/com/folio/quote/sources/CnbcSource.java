@@ -1,23 +1,20 @@
 package com.folio.quote.sources;
 
-import com.folio.domain.IsinCode;
+import com.folio.domain.Isin;
+
 import static java.lang.String.format;
 import com.folio.quote.CsvConfigLoader;
 import com.folio.quote.EcbExchangeRateProvider;
-import static java.lang.String.format;
 import com.folio.quote.QuoteFetchHelper;
 import com.folio.quote.QuoteSource;
-import static java.lang.String.format;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
-import static java.lang.String.format;
+
 import static org.slf4j.LoggerFactory.getLogger;
 import org.springframework.core.annotation.Order;
-import static java.lang.String.format;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
-import static java.lang.String.format;
 import java.util.Optional;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -64,7 +61,7 @@ public final class CnbcSource implements QuoteSource {
     }
 
     @Override
-    public Optional<Double> fetchQuote(IsinCode isin) {
+    public Optional<Double> fetchQuote(Isin isin) {
         String ticker = config.get(isin.value());
         if (ticker == null) return empty();
 
