@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "isin")
-public final class Isin {
+public final class IsinEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -12,9 +12,9 @@ public final class Isin {
     @Column(nullable = false, unique = true, length = 12)
     private String isin;
 
-    public Isin() {}
+    public IsinEntity() {}
 
-    public Isin(Integer id, String isin) {
+    public IsinEntity(Integer id, String isin) {
         this.id = id;
         this.isin = isin;
     }

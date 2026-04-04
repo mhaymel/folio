@@ -28,6 +28,7 @@ dependencies {
     implementation 'com.opencsv:opencsv:5.9'
     implementation 'org.apache.poi:poi-ooxml:5.2.5'
     implementation 'org.jsoup:jsoup:1.18.3'
+    implementation 'com.google.guava:guava:33.4.0-jre'
 
     implementation 'com.h2database:h2'
     runtimeOnly 'org.postgresql:postgresql'

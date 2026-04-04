@@ -22,13 +22,12 @@ final class QuoteFetcherIntegrationTest {
         result.ifPresent(q -> System.out.printf(
                 "AAPL  price=%.2f  currency=%s  time=%s%n",
                 q.amount().value(),
-                q.amount().currency().getName(),
+                q.amount().currency(),
                 q.timestamp()));
 
         // then
         assertThat(result).isPresent();
         assertThat(result.get().amount().value()).isGreaterThan(0);
-        assertThat(result.get().amount().currency().getName()).isNotBlank();
         assertThat(result.get().timestamp()).isNotNull();
     }
 
@@ -42,13 +41,12 @@ final class QuoteFetcherIntegrationTest {
         result.ifPresent(q -> System.out.printf(
                 "MSFT  price=%.2f  currency=%s  time=%s%n",
                 q.amount().value(),
-                q.amount().currency().getName(),
+                q.amount().currency(),
                 q.timestamp()));
 
         // then
         assertThat(result).isPresent();
         assertThat(result.get().amount().value()).isGreaterThan(0);
-        assertThat(result.get().amount().currency().getName()).isNotBlank();
         assertThat(result.get().timestamp()).isNotNull();
     }
 

@@ -2,7 +2,7 @@ package com.folio.service;
 
 import com.folio.dto.ImportResult;
 import com.folio.model.*;
-import com.folio.model.Currency;
+import com.folio.model.CurrencyEntity;
 import com.folio.parser.*;
 import com.folio.repository.ImportRepositories;
 import jakarta.persistence.EntityManager;
@@ -80,24 +80,24 @@ public class ImportService {
         return new BufferedReader(new InputStreamReader(is, UTF_8));
     }
 
-    private Map<String, Isin> bulkUpsertIsins(Set<String> isinCodes) {
+    private Map<String, IsinEntity> bulkUpsertIsins(Set<String> isinCodes) {
         if (isinCodes.isEmpty()) return Map.of();
 
-        Map<String, Isin> map = new HashMap<>();
+        Map<String, IsinEntity> map = new HashMap<>();
         repos.isin().findByIsinIn(isinCodes).forEach(i -> map.put(i.getIsin(), i));
 
         Set<String> missing = new HashSet<>(isinCodes);
         missing.removeAll(map.keySet());
         if (!missing.isEmpty()) {
-            List<Isin> created = repos.isin().saveAll(
-                missing.stream().map(code -> Isin.builder().isin(code).build()).toList());
+            List<IsinEntity> created = repos.isin().saveAll(
+                missing.stream().map(code -> IsinEntity.builder().isin(code).build()).toList());
             created.forEach(i -> map.put(i.getIsin(), i));
         }
         return map;
     }
 
-    private void bulkUpsertIsinNames(Map<String, Isin> isinMap, Map<String, String> isinCodeToName) {
-        Map<Integer, Isin> isinById = new HashMap<>();
+    private void bulkUpsertIsinNames(Map<String, IsinEntity> isinMap, Map<String, String> isinCodeToName) {
+        Map<Integer, IsinEntity> isinById = new HashMap<>();
         Set<Integer> isinIds = new HashSet<>();
         for (var entry : isinCodeToName.entrySet()) {
             String name = entry.getValue();
@@ -105,7 +105,7 @@ public class ImportService {
                 // skip - but still need to continue instead of break/continue
                 // filter below handles this
             }
-            Isin isin = isinMap.get(entry.getKey());
+            IsinEntity isin = isinMap.get(entry.getKey());
             if (isin != null) {
                 isinIds.add(isin.getId());
                 isinById.put(isin.getId(), isin);
@@ -117,15 +117,15 @@ public class ImportService {
         repos.isinName().findByIsinIdIn(isinIds)
             .forEach(in -> existingKeys.add(in.getIsin().getId() + ":" + in.getName()));
 
-        List<IsinName> toInsert = new ArrayList<>();
+        List<IsinNameEntity> toInsert = new ArrayList<>();
         for (var entry : isinCodeToName.entrySet()) {
             String name = entry.getValue();
             if (name == null || name.isBlank()) continue;
-            Isin isin = isinMap.get(entry.getKey());
+            IsinEntity isin = isinMap.get(entry.getKey());
             if (isin == null) continue;
             String key = isin.getId() + ":" + name.trim();
             if (existingKeys.add(key)) {
-                toInsert.add(IsinName.builder().isin(isin).name(name.trim()).build());
+                toInsert.add(IsinNameEntity.builder().isin(isin).name(name.trim()).build());
             }
         }
         if (!toInsert.isEmpty()) {
@@ -133,17 +133,17 @@ public class ImportService {
         }
     }
 
-    private Map<String, Currency> bulkUpsertCurrencies(Set<String> currencyCodes) {
+    private Map<String, CurrencyEntity> bulkUpsertCurrencies(Set<String> currencyCodes) {
         if (currencyCodes.isEmpty()) return Map.of();
 
-        Map<String, Currency> map = new HashMap<>();
+        Map<String, CurrencyEntity> map = new HashMap<>();
         repos.currency().findByNameIn(currencyCodes).forEach(c -> map.put(c.getName(), c));
 
         Set<String> missing = new HashSet<>(currencyCodes);
         missing.removeAll(map.keySet());
         if (!missing.isEmpty()) {
-            List<Currency> created = repos.currency().saveAll(
-                missing.stream().map(code -> Currency.builder().name(code).build()).toList());
+            List<CurrencyEntity> created = repos.currency().saveAll(
+                missing.stream().map(code -> CurrencyEntity.builder().name(code).build()).toList());
             created.forEach(c -> map.put(c.getName(), c));
         }
         return map;
@@ -195,16 +195,16 @@ public class ImportService {
         // 3. Save
         importLock.lock();
         try {
-            Depot depot = repos.depot().findByName("DeGiro").orElseThrow();
+            DepotEntity depot = repos.depot().findByName("DeGiro").orElseThrow();
             repos.transaction().deleteByDepotId(depot.getId());
 
-            Map<String, Isin> isinMap = bulkUpsertIsins(
+            Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedTransaction::isinCode).collect(toSet()));
             bulkUpsertIsinNames(isinMap,
                 parsed.stream().collect(toMap(ParsedTransaction::isinCode, ParsedTransaction::name, (a, b) -> a)));
 
-            List<Transaction> transactions = parsed.stream()
-                .map(p -> Transaction.builder()
+            List<TransactionEntity> transactions = parsed.stream()
+                .map(p -> TransactionEntity.builder()
                     .date(p.date()).isin(isinMap.get(p.isinCode())).depot(depot)
                     .count(p.count()).sharePrice(p.price()).build())
                 .toList();
@@ -265,16 +265,16 @@ public class ImportService {
         // 3. Save
         importLock.lock();
         try {
-            Depot depot = repos.depot().findByName("ZERO").orElseThrow();
+            DepotEntity depot = repos.depot().findByName("ZERO").orElseThrow();
             repos.transaction().deleteByDepotId(depot.getId());
 
-            Map<String, Isin> isinMap = bulkUpsertIsins(
+            Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedTransaction::isinCode).collect(toSet()));
             bulkUpsertIsinNames(isinMap,
                 parsed.stream().collect(toMap(ParsedTransaction::isinCode, ParsedTransaction::name, (a, b) -> a)));
 
-            List<Transaction> transactions = parsed.stream()
-                .map(p -> Transaction.builder()
+            List<TransactionEntity> transactions = parsed.stream()
+                .map(p -> TransactionEntity.builder()
                     .date(p.date()).isin(isinMap.get(p.isinCode())).depot(depot)
                     .count(p.count()).sharePrice(p.price()).build())
                 .toList();
@@ -337,16 +337,16 @@ public class ImportService {
         // 3. Save
         importLock.lock();
         try {
-            Depot depot = repos.depot().findByName("DeGiro").orElseThrow();
+            DepotEntity depot = repos.depot().findByName("DeGiro").orElseThrow();
             repos.dividendPayment().deleteByDepotId(depot.getId());
 
-            Map<String, Isin> isinMap = bulkUpsertIsins(
+            Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedDividendPayment::isinCode).collect(toSet()));
-            Map<String, Currency> currencyMap = bulkUpsertCurrencies(
+            Map<String, CurrencyEntity> currencyMap = bulkUpsertCurrencies(
                 parsed.stream().map(ParsedDividendPayment::currencyCode).collect(toSet()));
 
-            List<DividendPayment> payments = parsed.stream()
-                .map(p -> DividendPayment.builder()
+            List<DividendPaymentEntity> payments = parsed.stream()
+                .map(p -> DividendPaymentEntity.builder()
                     .timestamp(p.date()).isin(isinMap.get(p.isinCode())).depot(depot)
                     .currency(currencyMap.get(p.currencyCode())).value(p.amount()).build())
                 .toList();
@@ -405,15 +405,15 @@ public class ImportService {
         // 3. Save
         importLock.lock();
         try {
-            Depot depot = repos.depot().findByName("ZERO").orElseThrow();
+            DepotEntity depot = repos.depot().findByName("ZERO").orElseThrow();
             repos.dividendPayment().deleteByDepotId(depot.getId());
 
-            Map<String, Isin> isinMap = bulkUpsertIsins(
+            Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedDividendPayment::isinCode).collect(toSet()));
-            Map<String, Currency> currencyMap = bulkUpsertCurrencies(Set.of("EUR"));
+            Map<String, CurrencyEntity> currencyMap = bulkUpsertCurrencies(Set.of("EUR"));
 
-            List<DividendPayment> payments = parsed.stream()
-                .map(p -> DividendPayment.builder()
+            List<DividendPaymentEntity> payments = parsed.stream()
+                .map(p -> DividendPaymentEntity.builder()
                     .timestamp(p.date()).isin(isinMap.get(p.isinCode())).depot(depot)
                     .currency(currencyMap.get("EUR")).value(p.amount()).build())
                 .toList();
@@ -469,15 +469,15 @@ public class ImportService {
         try {
             repos.dividend().deleteAll();
 
-            Map<String, Isin> isinMap = bulkUpsertIsins(
+            Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedDividend::isinCode).collect(toSet()));
             bulkUpsertIsinNames(isinMap,
                 parsed.stream().collect(toMap(ParsedDividend::isinCode, ParsedDividend::name, (a, b) -> a)));
-            Map<String, Currency> currencyMap = bulkUpsertCurrencies(
+            Map<String, CurrencyEntity> currencyMap = bulkUpsertCurrencies(
                 parsed.stream().map(ParsedDividend::currencyCode).collect(toSet()));
 
-            List<Dividend> dividends = parsed.stream()
-                .map(p -> Dividend.builder()
+            List<DividendEntity> dividends = parsed.stream()
+                .map(p -> DividendEntity.builder()
                     .isin(isinMap.get(p.isinCode())).currency(currencyMap.get(p.currencyCode()))
                     .dividendPerShare(p.dps()).build())
                 .toList();
@@ -526,25 +526,25 @@ public class ImportService {
         // 3. Save
         importLock.lock();
         try {
-            Map<String, Isin> isinMap = bulkUpsertIsins(
+            Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedBranch::isinCode).collect(toSet()));
             bulkUpsertIsinNames(isinMap,
                 parsed.stream().collect(toMap(ParsedBranch::isinCode, ParsedBranch::name, (a, b) -> a)));
 
-            Map<String, Branch> branchMap = new HashMap<>();
+            Map<String, BranchEntity> branchMap = new HashMap<>();
             Set<String> branchNames = parsed.stream().map(ParsedBranch::branchName).collect(toSet());
             repos.branch().findByNameIn(branchNames).forEach(b -> branchMap.put(b.getName(), b));
             Set<String> missingBranches = new HashSet<>(branchNames);
             missingBranches.removeAll(branchMap.keySet());
             if (!missingBranches.isEmpty()) {
                 repos.branch().saveAll(
-                    missingBranches.stream().map(n -> Branch.builder().name(n).build()).toList()
+                    missingBranches.stream().map(n -> BranchEntity.builder().name(n).build()).toList()
                 ).forEach(b -> branchMap.put(b.getName(), b));
             }
 
             for (ParsedBranch p : parsed) {
-                Isin isin = isinMap.get(p.isinCode());
-                Branch branch = branchMap.get(p.branchName());
+                IsinEntity isin = isinMap.get(p.isinCode());
+                BranchEntity branch = branchMap.get(p.branchName());
                 em.createNativeQuery("DELETE FROM isin_branch WHERE isin_id = :isinId")
                     .setParameter("isinId", isin.getId()).executeUpdate();
                 em.createNativeQuery("INSERT INTO isin_branch (isin_id, branch_id) VALUES (:isinId, :branchId)")
@@ -592,25 +592,25 @@ public class ImportService {
         // 3. Save
         importLock.lock();
         try {
-            Map<String, Isin> isinMap = bulkUpsertIsins(
+            Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedCountry::isinCode).collect(toSet()));
             bulkUpsertIsinNames(isinMap,
                 parsed.stream().collect(toMap(ParsedCountry::isinCode, ParsedCountry::name, (a, b) -> a)));
 
-            Map<String, Country> countryMap = new HashMap<>();
+            Map<String, CountryEntity> countryMap = new HashMap<>();
             Set<String> countryNames = parsed.stream().map(ParsedCountry::countryName).collect(toSet());
             repos.country().findByNameIn(countryNames).forEach(c -> countryMap.put(c.getName(), c));
             Set<String> missingCountries = new HashSet<>(countryNames);
             missingCountries.removeAll(countryMap.keySet());
             if (!missingCountries.isEmpty()) {
                 repos.country().saveAll(
-                    missingCountries.stream().map(n -> Country.builder().name(n).build()).toList()
+                    missingCountries.stream().map(n -> CountryEntity.builder().name(n).build()).toList()
                 ).forEach(c -> countryMap.put(c.getName(), c));
             }
 
             for (ParsedCountry p : parsed) {
-                Isin isin = isinMap.get(p.isinCode());
-                Country country = countryMap.get(p.countryName());
+                IsinEntity isin = isinMap.get(p.isinCode());
+                CountryEntity country = countryMap.get(p.countryName());
                 em.createNativeQuery("DELETE FROM isin_country WHERE isin_id = :isinId")
                     .setParameter("isinId", isin.getId()).executeUpdate();
                 em.createNativeQuery("INSERT INTO isin_country (isin_id, country_id) VALUES (:isinId, :countryId)")
@@ -658,7 +658,7 @@ public class ImportService {
         // 3. Save
         importLock.lock();
         try {
-            Map<String, Isin> isinMap = bulkUpsertIsins(
+            Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedTickerSymbol::isinCode).collect(toSet()));
             bulkUpsertIsinNames(isinMap,
                 parsed.stream()
@@ -667,10 +667,10 @@ public class ImportService {
 
             int imported = 0;
             for (ParsedTickerSymbol p : parsed) {
-                Isin isin = isinMap.get(p.isinCode());
+                IsinEntity isin = isinMap.get(p.isinCode());
 
-                TickerSymbol tickerSymbol = repos.tickerSymbol().findBySymbol(p.symbol())
-                    .orElseGet(() -> repos.tickerSymbol().save(TickerSymbol.builder()
+                TickerSymbolEntity tickerSymbol = repos.tickerSymbol().findBySymbol(p.symbol())
+                    .orElseGet(() -> repos.tickerSymbol().save(TickerSymbolEntity.builder()
                         .isin(isin).symbol(p.symbol()).build()));
 
                 if (tickerSymbol.getIsin() == null) {

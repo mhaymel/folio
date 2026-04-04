@@ -3,18 +3,18 @@ package com.folio.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "depot")
-public final class Depot {
+@Table(name = "currency")
+public final class CurrencyEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, unique = true, length = 3)
     private String name;
 
-    public Depot() {}
+    public CurrencyEntity() {}
 
-    public Depot(Integer id, String name) {
+    public CurrencyEntity(Integer id, String name) {
         this.id = id;
         this.name = name;
     }
@@ -24,5 +24,5 @@ public final class Depot {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public static DepotBuilder builder() { return new DepotBuilder(); }
+    public static CurrencyBuilder builder() { return new CurrencyBuilder(); }
 }

@@ -1,12 +1,12 @@
 package com.folio.repository;
 
-import com.folio.model.Isin;
+import com.folio.model.IsinEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public interface IsinRepository extends JpaRepository<Isin, Integer> {
-    Optional<Isin> findByIsin(String isin);
-    List<Isin> findByIsinIn(Collection<String> isins);
+public interface IsinRepository extends JpaRepository<IsinEntity, Integer> {
+    Optional<IsinEntity> findByIsin(String isin);
+    List<IsinEntity> findByIsinIn(Collection<String> isins);
 }

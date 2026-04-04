@@ -1,6 +1,7 @@
 package com.folio.quote.yahoo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.folio.domain.Currency;
 import com.folio.domain.Quote;
 import com.folio.domain.TickerCode;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +64,7 @@ final class QuoteFetcherTest {
         // then
         assertThat(result).isPresent();
         assertThat(result.get().amount().value()).isEqualTo(182.63);
-        assertThat(result.get().amount().currency().getName()).isEqualTo("USD");
+        assertThat(result.get().amount().currency()).isEqualTo(Currency.USD);
         assertThat(result.get().timestamp()).isEqualTo(Instant.ofEpochSecond(1743693600));
     }
 

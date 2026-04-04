@@ -5,5 +5,5 @@ public final class QuoteProviderBuilder {
     private String name;
     public QuoteProviderBuilder id(Integer id) { this.id = id; return this; }
     public QuoteProviderBuilder name(String name) { this.name = name; return this; }
-    public QuoteProvider build() { return new QuoteProvider(id, name); }
+    public QuoteProviderEntity build() { return new QuoteProviderEntity(id, name); }
 }

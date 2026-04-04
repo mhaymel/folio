@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "dividend_payment")
-public final class DividendPayment {
+public final class DividendPaymentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -16,31 +16,31 @@ public final class DividendPayment {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "isin_id", nullable = false)
-    private Isin isin;
+    private IsinEntity isin;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "depot_id", nullable = false)
-    private Depot depot;
+    private DepotEntity depot;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "currency_id", nullable = false)
-    private Currency currency;
+    private CurrencyEntity currency;
 
     @Column(name = "\"value\"", nullable = false)
     private Double value;
 
-    public DividendPayment() {}
+    public DividendPaymentEntity() {}
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
     public LocalDateTime getTimestamp() { return timestamp; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
-    public Isin getIsin() { return isin; }
-    public void setIsin(Isin isin) { this.isin = isin; }
-    public Depot getDepot() { return depot; }
-    public void setDepot(Depot depot) { this.depot = depot; }
-    public Currency getCurrency() { return currency; }
-    public void setCurrency(Currency currency) { this.currency = currency; }
+    public IsinEntity getIsin() { return isin; }
+    public void setIsin(IsinEntity isin) { this.isin = isin; }
+    public DepotEntity getDepot() { return depot; }
+    public void setDepot(DepotEntity depot) { this.depot = depot; }
+    public CurrencyEntity getCurrency() { return currency; }
+    public void setCurrency(CurrencyEntity currency) { this.currency = currency; }
     public Double getValue() { return value; }
     public void setValue(Double value) { this.value = value; }
 

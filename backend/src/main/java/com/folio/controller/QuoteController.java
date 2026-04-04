@@ -4,7 +4,7 @@ import static java.lang.Integer.parseInt;
 import static java.lang.String.valueOf;
 
 import com.folio.dto.QuoteSettingsDto;
-import com.folio.model.Setting;
+import com.folio.model.SettingEntity;
 import com.folio.repository.SettingRepository;
 import com.folio.service.QuoteService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,8 +58,8 @@ public class QuoteController {
             throw new IllegalArgumentException("enabled must be provided");
         }
 
-        Setting setting = settingRepo.findByKey("quote.fetch.enabled")
-            .orElseGet(() -> Setting.builder().key("quote.fetch.enabled").value("false").build());
+        SettingEntity setting = settingRepo.findByKey("quote.fetch.enabled")
+            .orElseGet(() -> SettingEntity.builder().key("quote.fetch.enabled").value("false").build());
         setting.setValue(valueOf(enabled));
         settingRepo.save(setting);
 
@@ -74,8 +74,8 @@ public class QuoteController {
             throw new IllegalArgumentException("intervalMinutes must be a positive integer");
         }
 
-        Setting setting = settingRepo.findByKey("quote.fetch.interval.minutes")
-            .orElseGet(() -> Setting.builder().key("quote.fetch.interval.minutes").value("60").build());
+        SettingEntity setting = settingRepo.findByKey("quote.fetch.interval.minutes")
+            .orElseGet(() -> SettingEntity.builder().key("quote.fetch.interval.minutes").value("60").build());
         setting.setValue(valueOf(minutes));
         settingRepo.save(setting);
 

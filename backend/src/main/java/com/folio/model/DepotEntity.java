@@ -3,8 +3,8 @@ package com.folio.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "branch")
-public final class Branch {
+@Table(name = "depot")
+public final class DepotEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -12,9 +12,9 @@ public final class Branch {
     @Column(nullable = false, unique = true, length = 100)
     private String name;
 
-    public Branch() {}
+    public DepotEntity() {}
 
-    public Branch(Integer id, String name) {
+    public DepotEntity(Integer id, String name) {
         this.id = id;
         this.name = name;
     }
@@ -24,5 +24,5 @@ public final class Branch {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public static BranchBuilder builder() { return new BranchBuilder(); }
+    public static DepotBuilder builder() { return new DepotBuilder(); }
 }

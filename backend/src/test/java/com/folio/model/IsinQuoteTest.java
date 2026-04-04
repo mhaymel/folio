@@ -11,11 +11,11 @@ final class IsinQuoteTest {
     @Test
     void shouldBuildViaBuilder() {
         // given
-        var isin = new Isin();
-        var provider = new QuoteProvider();
+        var isin = new IsinEntity();
+        var provider = new QuoteProviderEntity();
 
         // when
-        var quote = IsinQuote.builder()
+        var quote = IsinQuoteEntity.builder()
                 .id(1).isin(isin).quoteProvider(provider)
                 .value(99.5).fetchedAt(LocalDateTime.now())
                 .build();
@@ -30,7 +30,7 @@ final class IsinQuoteTest {
     @Test
     void shouldCreateEmptyViaNoArgConstructor() {
         // given / when
-        var quote = new IsinQuote();
+        var quote = new IsinQuoteEntity();
 
         // then
         assertThat(quote.getId()).isNull();

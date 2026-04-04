@@ -2,7 +2,7 @@ package com.folio.controller;
 
 import com.folio.dto.ExportRequest;
 import com.folio.dto.PaginatedResponseDto;
-import com.folio.model.Branch;
+import com.folio.model.BranchEntity;
 import com.folio.repository.BranchRepository;
 import com.folio.service.ExportService;
 import com.folio.service.PaginationHelper;
@@ -19,11 +19,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/branches")
-@Tag(name = "Branches", description = "Branch reference data")
+@Tag(name = "Branches", description = "BranchEntity reference data")
 public class BranchController {
 
-    private static final Map<String, Comparator<Branch>> SORT_FIELDS = Map.of(
-        "name", SortHelper.text(Branch::getName)
+    private static final Map<String, Comparator<BranchEntity>> SORT_FIELDS = Map.of(
+        "name", SortHelper.text(BranchEntity::getName)
     );
 
     private final BranchRepository branchRepo;
@@ -36,12 +36,12 @@ public class BranchController {
 
     @GetMapping
     @Operation(summary = "Get all branches with sorting and pagination")
-    public ResponseEntity<PaginatedResponseDto<Branch>> getBranches(
+    public ResponseEntity<PaginatedResponseDto<BranchEntity>> getBranches(
             @RequestParam(required = false, defaultValue = "name") String sortField,
             @RequestParam(required = false, defaultValue = "asc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
-        List<Branch> data = sorted(sortField, sortDir);
+        List<BranchEntity> data = sorted(sortField, sortDir);
         return ResponseEntity.ok(PaginationHelper.paginate(data, page, pageSize));
     }
 
@@ -51,13 +51,13 @@ public class BranchController {
             @RequestParam(defaultValue = "csv") String format,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        List<Branch> data = sorted(sortField != null ? sortField : "name", sortDir);
-        List<ExportColumn<Branch>> columns = List.of(new ExportColumn<>("Branch", Branch::getName));
+        List<BranchEntity> data = sorted(sortField != null ? sortField : "name", sortDir);
+        List<ExportColumn<BranchEntity>> columns = List.of(new ExportColumn<>("BranchEntity", BranchEntity::getName));
         return exportService.export(new ExportRequest<>(data, columns, format, "branches"));
     }
 
-    private List<Branch> sorted(String sortField, String sortDir) {
-        List<Branch> data = branchRepo.findAllByOrderByNameAsc();
+    private List<BranchEntity> sorted(String sortField, String sortDir) {
+        List<BranchEntity> data = branchRepo.findAllByOrderByNameAsc();
         return SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
     }
 }

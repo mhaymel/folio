@@ -30,7 +30,7 @@ final class ImportToQueryIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    // countries.csv format: ISIN;Name;Country (no header)
+    // countries.csv format: ISIN;Name;CountryEntity (no header)
     @Test
     @Order(1)
     void step1_importCountries() throws Exception {
@@ -43,7 +43,7 @@ final class ImportToQueryIntegrationTest {
             .andExpect(jsonPath("$.imported", is(2)));
     }
 
-    // branches.csv format: ISIN;Name;Branch (no header)
+    // branches.csv format: ISIN;Name;BranchEntity (no header)
     @Test
     @Order(2)
     void step2_importBranches() throws Exception {
@@ -56,7 +56,7 @@ final class ImportToQueryIntegrationTest {
             .andExpect(jsonPath("$.imported", is(2)));
     }
 
-    // dividende.csv format: ISIN;Name;Currency;DPS (no header)
+    // dividende.csv format: ISIN;Name;CurrencyEntity;DPS (no header)
     @Test
     @Order(3)
     void step3_importDividends() throws Exception {
@@ -69,7 +69,7 @@ final class ImportToQueryIntegrationTest {
             .andExpect(jsonPath("$.imported", is(2)));
     }
 
-    // ticker_symbol.csv format: ISIN;TickerSymbol;Name (no header)
+    // ticker_symbol.csv format: ISIN;TickerSymbolEntity;Name (no header)
     @Test
     @Order(4)
     void step4_importTickerSymbols() throws Exception {

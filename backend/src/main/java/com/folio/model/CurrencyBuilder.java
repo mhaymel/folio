@@ -5,5 +5,5 @@ public final class CurrencyBuilder {
     private String name;
     public CurrencyBuilder id(Integer id) { this.id = id; return this; }
     public CurrencyBuilder name(String name) { this.name = name; return this; }
-    public Currency build() { return new Currency(id, name); }
+    public CurrencyEntity build() { return new CurrencyEntity(id, name); }
 }

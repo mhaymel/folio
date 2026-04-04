@@ -54,7 +54,14 @@
       "Bash(find /c/daten/dev/folio/frontend/src -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.jsx -o -name *.js \\\\\\))",
       "Bash(ls:*)",
       "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
-      "Bash(./mvnw test:*)"
+      "Bash(./mvnw test:*)",
+      "Bash(sed -i 's/\\\\bclass DividendPayment\\\\b/class DividendPaymentEntity/g' backend/src/main/java/com/folio/model/DividendPaymentEntity.java)",
+      "Bash(sed -i 's/\\\\bclass IsinName\\\\b/class IsinNameEntity/g' backend/src/main/java/com/folio/model/IsinNameEntity.java)",
+      "Bash(sed -i 's/\\\\bclass IsinQuote\\\\b/class IsinQuoteEntity/g' backend/src/main/java/com/folio/model/IsinQuoteEntity.java)",
+      "Bash(sed -i 's/\\\\bclass QuoteProvider\\\\b/class QuoteProviderEntity/g' backend/src/main/java/com/folio/model/QuoteProviderEntity.java)",
+      "Bash(sed -i 's/\\\\bclass TickerSymbol\\\\b/class TickerSymbolEntity/g' backend/src/main/java/com/folio/model/TickerSymbolEntity.java)",
+      "Bash(xargs sed:*)",
+      "Bash(git add:*)"
     ]
   }
 }

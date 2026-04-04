@@ -9,11 +9,11 @@ final class DividendTest {
     @Test
     void shouldBuildViaBuilder() {
         // given
-        var isin = new Isin();
-        var currency = new Currency();
+        var isin = new IsinEntity();
+        var currency = new CurrencyEntity();
 
         // when
-        var d = Dividend.builder()
+        var d = DividendEntity.builder()
                 .id(1).isin(isin).currency(currency).dividendPerShare(2.5).build();
 
         // then
@@ -25,7 +25,7 @@ final class DividendTest {
     @Test
     void shouldCreateEmptyViaNoArgConstructor() {
         // given / when
-        var d = new Dividend();
+        var d = new DividendEntity();
 
         // then
         assertThat(d.getId()).isNull();

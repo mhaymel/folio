@@ -7,5 +7,5 @@ public final class SettingBuilder {
     public SettingBuilder id(Integer id) { this.id = id; return this; }
     public SettingBuilder key(String key) { this.key = key; return this; }
     public SettingBuilder value(String value) { this.value = value; return this; }
-    public Setting build() { return new Setting(id, key, value); }
+    public SettingEntity build() { return new SettingEntity(id, key, value); }
 }

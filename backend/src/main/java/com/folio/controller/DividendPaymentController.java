@@ -18,7 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/dividend-payments")
-@Tag(name = "Dividend Payments", description = "Dividend payment endpoints")
+@Tag(name = "DividendEntity Payments", description = "DividendEntity payment endpoints")
 public class DividendPaymentController {
 
     private static final Map<String, Comparator<DividendPaymentDto>> SORT_FIELDS = Map.of(
@@ -98,7 +98,7 @@ public class DividendPaymentController {
                 new ExportColumn<>("Date", DividendPaymentDto::getTimestamp),
                 new ExportColumn<>("ISIN", DividendPaymentDto::getIsin),
                 new ExportColumn<>("Name", DividendPaymentDto::getName),
-                new ExportColumn<>("Depot", DividendPaymentDto::getDepot),
+                new ExportColumn<>("DepotEntity", DividendPaymentDto::getDepot),
                 new ExportColumn<>("Value (EUR)", DividendPaymentDto::getValue)
         );
 

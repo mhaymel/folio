@@ -158,6 +158,7 @@ includeBuild('backend')
 - `flyway-core`, `flyway-database-postgresql`
 - `postgresql` (runtimeOnly)
 - `com.opencsv:opencsv:5.9`
+- `com.google.guava:guava:33.4.0-jre`
 - `com.h2database:h2` (runtimeOnly — dev + test)
 
 **Note:** Lombok is NOT used. `nimbus-jose-jwt` for Clerk JWT verification is planned but not yet added.

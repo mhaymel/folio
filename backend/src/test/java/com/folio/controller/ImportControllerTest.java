@@ -22,7 +22,7 @@ final class ImportControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    // branches.csv format: ISIN;Name;Branch (no header row)
+    // branches.csv format: ISIN;Name;BranchEntity (no header row)
     @Test
     void importBranches_validCsv_returnsSuccess() throws Exception {
         String csv = "DE000BASF111;BASF SE;Chemicals\nUS0378331005;Apple Inc.;Technology";
@@ -34,7 +34,7 @@ final class ImportControllerTest {
             .andExpect(jsonPath("$.imported", is(2)));
     }
 
-    // countries.csv format: ISIN;Name;Country (no header row)
+    // countries.csv format: ISIN;Name;CountryEntity (no header row)
     @Test
     void importCountries_validCsv_returnsSuccess() throws Exception {
         String csv = "DE000BASF111;BASF SE;Germany\nUS0378331005;Apple Inc.;USA";
@@ -46,7 +46,7 @@ final class ImportControllerTest {
             .andExpect(jsonPath("$.imported", is(2)));
     }
 
-    // dividende.csv format: ISIN;Name;Currency;DividendPerShare (no header row)
+    // dividende.csv format: ISIN;Name;CurrencyEntity;DividendPerShare (no header row)
     @Test
     void importDividends_validCsv_returnsSuccess() throws Exception {
         String csv = "DE000BASF111;BASF SE;EUR;3,40\nUS0378331005;Apple Inc.;USD;0,96";
@@ -58,7 +58,7 @@ final class ImportControllerTest {
             .andExpect(jsonPath("$.imported", is(2)));
     }
 
-    // ticker_symbol.csv format: ISIN;TickerSymbol;Name (no header row)
+    // ticker_symbol.csv format: ISIN;TickerSymbolEntity;Name (no header row)
     @Test
     void importTickerSymbols_validCsv_returnsSuccess() throws Exception {
         String csv = "DE000BASF111;BAS.DE;BASF SE\nUS0378331005;AAPL;Apple Inc.";

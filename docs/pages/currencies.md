@@ -87,11 +87,15 @@ Returns a CSV or Excel file with all currencies (ignores pagination).
 
 ### Backend
 
-- **Entity:** `Currency` (see [`currency` table](../data-model.md#currency): `id`, `name` VARCHAR(3) UNIQUE).
+- **Entity:** `CurrencyEntity` (see [`currency` table](../data-model.md#currency): `id`, `name` VARCHAR(3) UNIQUE).
+- **Domain class:** `com.folio.domain.Currency` — immutable value type with:
+  - One `public static final` constant per seeded currency (e.g. `Currency.USD`, `Currency.EUR`).
+  - Factory method `currency(String name): Optional<Currency>` — returns the matching constant or empty; throws `IllegalArgumentException` for null/blank input.
+  - `name()` accessor returning the ISO 4217 code.
 - **Controller:** `CurrencyController` with endpoints:
   - `GET /api/currencies` (paginated, sorted)
   - `GET /api/currencies/export`
-- **Repository:** `CurrencyRepository extends JpaRepository<Currency, Integer>` with `findAllByOrderByNameAsc()`.
+- **Repository:** `CurrencyRepository extends JpaRepository<CurrencyEntity, Integer>` with `findAllByOrderByNameAsc()`.
 - **No DTO needed** — entity is returned directly.
 - **Export:** Uses generic `ExportService` with a single "Currency" column.
 

@@ -5,5 +5,5 @@ public final class DepotBuilder {
     private String name;
     public DepotBuilder id(Integer id) { this.id = id; return this; }
     public DepotBuilder name(String name) { this.name = name; return this; }
-    public Depot build() { return new Depot(id, name); }
+    public DepotEntity build() { return new DepotEntity(id, name); }
 }

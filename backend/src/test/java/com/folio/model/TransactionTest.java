@@ -11,13 +11,13 @@ final class TransactionTest {
     @Test
     void shouldBuildViaBuilder() {
         // given
-        var isin = new Isin();
+        var isin = new IsinEntity();
         isin.setIsin("IE00B1");
-        var depot = new Depot();
+        var depot = new DepotEntity();
         depot.setName("DeGiro");
 
         // when
-        var tx = Transaction.builder()
+        var tx = TransactionEntity.builder()
                 .id(1).date(LocalDateTime.of(2026, 1, 1, 10, 0))
                 .isin(isin).depot(depot)
                 .count(10.0).sharePrice(50.0)
@@ -34,7 +34,7 @@ final class TransactionTest {
     @Test
     void shouldCreateEmptyViaNoArgConstructor() {
         // given / when
-        var tx = new Transaction();
+        var tx = new TransactionEntity();
 
         // then
         assertThat(tx.getId()).isNull();
@@ -44,7 +44,7 @@ final class TransactionTest {
     @Test
     void shouldSupportSetters() {
         // given
-        var tx = new Transaction();
+        var tx = new TransactionEntity();
 
         // when
         tx.setCount(5.0);

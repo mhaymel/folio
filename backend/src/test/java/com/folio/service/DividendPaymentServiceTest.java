@@ -40,9 +40,9 @@ class DividendPaymentServiceTest {
     @Autowired
     private CurrencyRepository currencyRepo;
 
-    private Depot depotDeGiro;
-    private Depot depotZero;
-    private Currency eur;
+    private DepotEntity depotDeGiro;
+    private DepotEntity depotZero;
+    private CurrencyEntity eur;
 
     @BeforeEach
     void setUp() {
@@ -51,21 +51,21 @@ class DividendPaymentServiceTest {
         eur = currencyRepo.findByName("EUR").orElseThrow();
     }
 
-    private Isin createIsin(String code) {
-        Isin isin = new Isin();
+    private IsinEntity createIsin(String code) {
+        IsinEntity isin = new IsinEntity();
         isin.setIsin(code);
         return isinRepo.save(isin);
     }
 
-    private void createIsinName(Isin isin, String name) {
-        IsinName isinName = new IsinName();
+    private void createIsinName(IsinEntity isin, String name) {
+        IsinNameEntity isinName = new IsinNameEntity();
         isinName.setIsin(isin);
         isinName.setName(name);
         isinNameRepo.save(isinName);
     }
 
-    private DividendPayment createPayment(Isin isin, Depot depot, double value, LocalDateTime timestamp) {
-        DividendPayment dp = DividendPayment.builder()
+    private DividendPaymentEntity createPayment(IsinEntity isin, DepotEntity depot, double value, LocalDateTime timestamp) {
+        DividendPaymentEntity dp = DividendPaymentEntity.builder()
                 .isin(isin)
                 .depot(depot)
                 .currency(eur)
@@ -83,7 +83,7 @@ class DividendPaymentServiceTest {
 
     @Test
     void shouldReturnAllPayments() {
-        Isin basf = createIsin("DE000BASF111");
+        IsinEntity basf = createIsin("DE000BASF111");
         createIsinName(basf, "BASF SE");
         createPayment(basf, depotDeGiro, 34.0, LocalDateTime.of(2026, 3, 15, 10, 30));
         createPayment(basf, depotZero, 17.0, LocalDateTime.of(2026, 6, 15, 10, 30));
@@ -98,8 +98,8 @@ class DividendPaymentServiceTest {
 
     @Test
     void shouldFilterByIsin() {
-        Isin basf = createIsin("DE000BASF111");
-        Isin apple = createIsin("US0378331005");
+        IsinEntity basf = createIsin("DE000BASF111");
+        IsinEntity apple = createIsin("US0378331005");
         createPayment(basf, depotDeGiro, 34.0, LocalDateTime.of(2026, 3, 15, 10, 0));
         createPayment(apple, depotDeGiro, 10.0, LocalDateTime.of(2026, 3, 16, 10, 0));
 
@@ -112,7 +112,7 @@ class DividendPaymentServiceTest {
 
     @Test
     void shouldFilterByDepot() {
-        Isin basf = createIsin("DE000BASF111");
+        IsinEntity basf = createIsin("DE000BASF111");
         createPayment(basf, depotDeGiro, 34.0, LocalDateTime.of(2026, 3, 15, 10, 0));
         createPayment(basf, depotZero, 17.0, LocalDateTime.of(2026, 3, 16, 10, 0));
 
@@ -125,7 +125,7 @@ class DividendPaymentServiceTest {
 
     @Test
     void shouldFilterByMultipleDepots() {
-        Isin basf = createIsin("DE000BASF111");
+        IsinEntity basf = createIsin("DE000BASF111");
         createPayment(basf, depotDeGiro, 34.0, LocalDateTime.of(2026, 3, 15, 10, 0));
         createPayment(basf, depotZero, 17.0, LocalDateTime.of(2026, 3, 16, 10, 0));
 
@@ -137,8 +137,8 @@ class DividendPaymentServiceTest {
 
     @Test
     void shouldFilterByName() {
-        Isin basf = createIsin("DE000BASF111");
-        Isin apple = createIsin("US0378331005");
+        IsinEntity basf = createIsin("DE000BASF111");
+        IsinEntity apple = createIsin("US0378331005");
         createIsinName(basf, "BASF SE");
         createIsinName(apple, "Apple Inc.");
         createPayment(basf, depotDeGiro, 34.0, LocalDateTime.of(2026, 3, 15, 10, 0));
@@ -153,7 +153,7 @@ class DividendPaymentServiceTest {
 
     @Test
     void shouldFilterByDateRange() {
-        Isin basf = createIsin("DE000BASF111");
+        IsinEntity basf = createIsin("DE000BASF111");
         createPayment(basf, depotDeGiro, 34.0, LocalDateTime.of(2026, 1, 15, 10, 0));
         createPayment(basf, depotDeGiro, 17.0, LocalDateTime.of(2026, 6, 15, 10, 0));
         createPayment(basf, depotDeGiro, 20.0, LocalDateTime.of(2026, 12, 15, 10, 0));
@@ -168,7 +168,7 @@ class DividendPaymentServiceTest {
 
     @Test
     void shouldReturnNullNameWhenNoIsinName() {
-        Isin basf = createIsin("DE000BASF111");
+        IsinEntity basf = createIsin("DE000BASF111");
         createPayment(basf, depotDeGiro, 34.0, LocalDateTime.of(2026, 3, 15, 10, 0));
 
         List<DividendPaymentDto> result = dividendPaymentService.getDividendPayments(DividendPaymentFilter.none());

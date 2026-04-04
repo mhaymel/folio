@@ -63,7 +63,8 @@ This document defines the testing conventions that apply across the entire proje
 
 ### Existing Test Classes
 
-- **Unit tests:** Tiny types (`IsinCodeTest`), DTOs (`DashboardDtoTest`, `StockDtoTest`, `TransactionDtoTest`, `TransactionFilterTest`), models (`IsinTest`, `TransactionTest`, `DividendTest`, `DividendPaymentTest`, `IsinQuoteTest`), services (`ExportServiceTest`), quote system (`IsinsQuoteLoaderTest`, `QuoteFetchHelperTest`), external-API clients (`IsinToTickerTest`, `QuoteFetcherTest`).
+- **Unit tests:** Tiny types (`IsinCodeTest`, `CurrencyTest`), DTOs (`DashboardDtoTest`, `StockDtoTest`, `TransactionDtoTest`, `TransactionFilterTest`), models (`IsinTest`, `TransactionTest`, `DividendTest`, `DividendPaymentTest`, `IsinQuoteTest`), services (`ExportServiceTest`), quote system (`IsinsQuoteLoaderTest`, `QuoteFetchHelperTest`), external-API clients (`IsinToTickerTest`, `QuoteFetcherTest`), utilities (`ToStringTest`, `AssertTest`).
+- **Test utilities:** `com.util.Assert` — static helpers `assertThrowsNPE(Runnable)` and `assertThrowsIAE(Runnable)` for concise exception assertions.
 - **External API integration tests:** See [External API Integration Tests](#external-api-integration-tests) section below.
 - **REST API integration tests:** All 12 controllers tested against H2 in PostgreSQL mode:
   - `ReferenceDataControllerTest` — depots, currencies, countries, branches (GET + CSV/Excel export)

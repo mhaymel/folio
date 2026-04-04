@@ -1,4 +1,4 @@
-package com.folio.dto;
+    package com.folio.dto;
 
 public final class DividendSourceDtoBuilder {
     private String isin;

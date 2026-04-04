@@ -2,7 +2,7 @@ package com.folio.service;
 
 import com.folio.dto.DividendPaymentDto;
 import com.folio.dto.DividendPaymentFilter;
-import com.folio.model.DividendPayment;
+import com.folio.model.DividendPaymentEntity;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +23,7 @@ public class DividendPaymentService {
     @SuppressWarnings("unchecked")
     public List<DividendPaymentDto> getDividendPayments(DividendPaymentFilter filter) {
         StringBuilder jpql = new StringBuilder(
-            "SELECT dp FROM DividendPayment dp JOIN FETCH dp.isin JOIN FETCH dp.depot JOIN FETCH dp.currency WHERE 1=1");
+            "SELECT dp FROM DividendPaymentEntity dp JOIN FETCH dp.isin JOIN FETCH dp.depot JOIN FETCH dp.currency WHERE 1=1");
         Map<String, Object> params = new HashMap<>();
 
         if (filter.isin() != null && !filter.isin().isBlank()) {
@@ -51,9 +51,9 @@ public class DividendPaymentService {
         }
         jpql.append(" ORDER BY dp.timestamp DESC");
 
-        var query = em.createQuery(jpql.toString(), DividendPayment.class);
+        var query = em.createQuery(jpql.toString(), DividendPaymentEntity.class);
         params.forEach(query::setParameter);
-        List<DividendPayment> payments = query.getResultList();
+        List<DividendPaymentEntity> payments = query.getResultList();
 
         List<DividendPaymentDto> result = payments.stream().map(dp -> DividendPaymentDto.builder()
             .id(dp.getId())
@@ -81,7 +81,7 @@ public class DividendPaymentService {
 
     private String getFirstName(Integer isinId) {
         try {
-            return (String) em.createQuery("SELECT n.name FROM IsinName n WHERE n.isin.id = :id ORDER BY n.id ASC")
+            return (String) em.createQuery("SELECT n.name FROM IsinNameEntity n WHERE n.isin.id = :id ORDER BY n.id ASC")
                 .setParameter("id", isinId).setMaxResults(1).getSingleResult();
         } catch (Exception e) {
             return null;

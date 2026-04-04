@@ -3,9 +3,9 @@ package com.folio.service;
 import static java.lang.Integer.parseInt;
 
 import com.folio.domain.IsinCode;
-import com.folio.model.IsinQuote;
-import com.folio.model.QuoteProvider;
-import com.folio.model.Setting;
+import com.folio.model.IsinQuoteEntity;
+import com.folio.model.QuoteProviderEntity;
+import com.folio.model.SettingEntity;
 import com.folio.quote.IsinsQuoteLoader;
 import com.folio.repository.QuoteRepositories;
 import jakarta.persistence.EntityManager;
@@ -116,7 +116,7 @@ public final class QuoteService {
 
     private Set<IsinCode> getHeldIsins() {
         List<String> isins = em.createQuery(
-            "SELECT t.isin.isin FROM Transaction t GROUP BY t.isin.isin HAVING SUM(t.count) > 0",
+            "SELECT t.isin.isin FROM TransactionEntity t GROUP BY t.isin.isin HAVING SUM(t.count) > 0",
             String.class
         ).getResultList();
         return isins.stream()
@@ -125,23 +125,23 @@ public final class QuoteService {
     }
 
     private void upsertQuote(String isinCode, double price, String providerName) {
-        Integer isinId = (Integer) em.createQuery("SELECT i.id FROM Isin i WHERE i.isin = :code")
+        Integer isinId = (Integer) em.createQuery("SELECT i.id FROM IsinEntity i WHERE i.isin = :code")
             .setParameter("code", isinCode)
             .getSingleResult();
 
-        QuoteProvider provider = repos.provider().findByName(providerName)
-            .orElseGet(() -> repos.provider().save(QuoteProvider.builder().name(providerName).build()));
+        QuoteProviderEntity provider = repos.provider().findByName(providerName)
+            .orElseGet(() -> repos.provider().save(QuoteProviderEntity.builder().name(providerName).build()));
 
-        Optional<IsinQuote> existing = repos.isinQuote().findByIsinId(isinId);
+        Optional<IsinQuoteEntity> existing = repos.isinQuote().findByIsinId(isinId);
         if (existing.isPresent()) {
-            IsinQuote quote = existing.get();
+            IsinQuoteEntity quote = existing.get();
             quote.setValue(price);
             quote.setQuoteProvider(provider);
             quote.setFetchedAt(LocalDateTime.now());
             repos.isinQuote().save(quote);
         } else {
-            com.folio.model.Isin isin = em.find(com.folio.model.Isin.class, isinId);
-            IsinQuote quote = IsinQuote.builder()
+            com.folio.model.IsinEntity isin = em.find(com.folio.model.IsinEntity.class, isinId);
+            IsinQuoteEntity quote = IsinQuoteEntity.builder()
                 .isin(isin)
                 .quoteProvider(provider)
                 .value(price)
@@ -152,8 +152,8 @@ public final class QuoteService {
     }
 
     private void updateLastFetchTimestamp() {
-        Setting setting = repos.setting().findByKey("quote.last.fetch.timestamp")
-            .orElseGet(() -> Setting.builder().key("quote.last.fetch.timestamp").value("").build());
+        SettingEntity setting = repos.setting().findByKey("quote.last.fetch.timestamp")
+            .orElseGet(() -> SettingEntity.builder().key("quote.last.fetch.timestamp").value("").build());
         setting.setValue(LocalDateTime.now().toString());
         repos.setting().save(setting);
     }

@@ -3,9 +3,10 @@ package com.folio.quote.yahoo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.folio.domain.Amount;
+import com.folio.domain.Currency;
 import com.folio.domain.Quote;
 import com.folio.domain.TickerCode;
-import com.folio.model.Currency;
+import com.folio.model.CurrencyEntity;
 import org.slf4j.Logger;
 
 import java.net.URI;
@@ -16,6 +17,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
+import static com.folio.domain.Currency.currency;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -88,11 +90,15 @@ public final class QuoteFetcher {
         }
 
         double price = priceNode.asDouble();
-        if (price <= 0) {
+        if (price <= 0) return empty();
+
+        Optional<Currency> currency = currency(currencyNode.asText());
+        if (currency.isEmpty()) {
+            LOG.warn("Yahoo Finance: unknown currency {} in response", currencyNode.asText());
             return empty();
         }
 
-        Amount amount = new Amount(price, new Currency(null, currencyNode.asText()));
+        Amount amount = new Amount(price, currency.get());
         Instant timestamp = Instant.ofEpochSecond(timeNode.asLong());
         return Optional.of(new Quote(amount, timestamp));
     }

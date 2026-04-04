@@ -3,8 +3,8 @@ package com.folio.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "quote_provider")
-public final class QuoteProvider {
+@Table(name = "country")
+public final class CountryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -12,9 +12,9 @@ public final class QuoteProvider {
     @Column(nullable = false, unique = true, length = 100)
     private String name;
 
-    public QuoteProvider() {}
+    public CountryEntity() {}
 
-    public QuoteProvider(Integer id, String name) {
+    public CountryEntity(Integer id, String name) {
         this.id = id;
         this.name = name;
     }
@@ -24,5 +24,5 @@ public final class QuoteProvider {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public static QuoteProviderBuilder builder() { return new QuoteProviderBuilder(); }
+    public static CountryBuilder builder() { return new CountryBuilder(); }
 }

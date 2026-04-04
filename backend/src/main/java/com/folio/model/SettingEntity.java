@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "settings")
-public final class Setting {
+public final class SettingEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -15,9 +15,9 @@ public final class Setting {
     @Column(name = "\"value\"", nullable = false, length = 500)
     private String value;
 
-    public Setting() {}
+    public SettingEntity() {}
 
-    public Setting(Integer id, String key, String value) {
+    public SettingEntity(Integer id, String key, String value) {
         this.id = id;
         this.key = key;
         this.value = value;

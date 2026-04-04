@@ -1,14 +1,14 @@
 package com.folio.repository;
 
-import com.folio.model.Transaction;
+import com.folio.model.TransactionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface TransactionRepository extends JpaRepository<Transaction, Integer>, JpaSpecificationExecutor<Transaction> {
+public interface TransactionRepository extends JpaRepository<TransactionEntity, Integer>, JpaSpecificationExecutor<TransactionEntity> {
     @Modifying
-    @Query("DELETE FROM Transaction t WHERE t.depot.id = :depotId")
+    @Query("DELETE FROM TransactionEntity t WHERE t.depot.id = :depotId")
     void deleteByDepotId(@Param("depotId") Integer depotId);
 }

@@ -38,7 +38,7 @@ public class AnalyticsController {
     }
 
     @GetMapping("/countries")
-    @Operation(summary = "Country diversification breakdown")
+    @Operation(summary = "CountryEntity diversification breakdown")
     public ResponseEntity<PaginatedResponseDto<DiversificationEntry>> getCountryDiversification(
             @RequestParam(required = false, defaultValue = "investedAmount") String sortField,
             @RequestParam(required = false, defaultValue = "desc") String sortDir,
@@ -50,7 +50,7 @@ public class AnalyticsController {
     }
 
     @GetMapping("/branches")
-    @Operation(summary = "Branch diversification breakdown")
+    @Operation(summary = "BranchEntity diversification breakdown")
     public ResponseEntity<PaginatedResponseDto<DiversificationEntry>> getBranchDiversification(
             @RequestParam(required = false, defaultValue = "investedAmount") String sortField,
             @RequestParam(required = false, defaultValue = "desc") String sortDir,
@@ -78,7 +78,7 @@ public class AnalyticsController {
             data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
         }
 
-        String label = "countries".equals(type) ? "Country" : "Branch";
+        String label = "countries".equals(type) ? "CountryEntity" : "BranchEntity";
 
         List<ExportColumn<DiversificationEntry>> columns = List.of(
                 new ExportColumn<>(label, DiversificationEntry::getName),

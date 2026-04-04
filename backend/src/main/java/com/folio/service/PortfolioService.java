@@ -31,7 +31,7 @@ public class PortfolioService {
                    t.depot.name as depotName,
                    SUM(t.count) as totalCount,
                    SUM(t.count * t.sharePrice) as totalCost
-            FROM Transaction t
+            FROM TransactionEntity t
             GROUP BY t.isin.id, t.isin.isin, t.depot.name
             HAVING SUM(t.count) > 0
             """, Tuple.class).getResultList();
@@ -82,7 +82,7 @@ public class PortfolioService {
             SELECT t.isin.id as isinId, t.isin.isin as isinCode,
                    SUM(t.count) as totalCount,
                    SUM(t.count * t.sharePrice) as totalCost
-            FROM Transaction t
+            FROM TransactionEntity t
             GROUP BY t.isin.id, t.isin.isin
             HAVING SUM(t.count) > 0
             """, Tuple.class).getResultList();
@@ -213,7 +213,7 @@ public class PortfolioService {
     @SuppressWarnings("unchecked")
     public List<TransactionDto> getTransactions(TransactionFilter filter) {
         StringBuilder jpql = new StringBuilder(
-            "SELECT t FROM Transaction t JOIN FETCH t.isin JOIN FETCH t.depot WHERE 1=1");
+            "SELECT t FROM TransactionEntity t JOIN FETCH t.isin JOIN FETCH t.depot WHERE 1=1");
         Map<String, Object> params = new HashMap<>();
 
         if (filter.isin() != null && !filter.isin().isBlank()) {
@@ -241,9 +241,9 @@ public class PortfolioService {
         }
         jpql.append(" ORDER BY t.date DESC");
 
-        var query = em.createQuery(jpql.toString(), com.folio.model.Transaction.class);
+        var query = em.createQuery(jpql.toString(), com.folio.model.TransactionEntity.class);
         params.forEach(query::setParameter);
-        List<com.folio.model.Transaction> txns = query.getResultList();
+        List<com.folio.model.TransactionEntity> txns = query.getResultList();
 
         List<TransactionDto> result = txns.stream().map(t -> TransactionDto.builder()
             .id(t.getId())
@@ -275,7 +275,7 @@ public class PortfolioService {
 
     private String getFirstName(Integer isinId) {
         try {
-            return (String) em.createQuery("SELECT n.name FROM IsinName n WHERE n.isin.id = :id ORDER BY n.id ASC")
+            return (String) em.createQuery("SELECT n.name FROM IsinNameEntity n WHERE n.isin.id = :id ORDER BY n.id ASC")
                 .setParameter("id", isinId).setMaxResults(1).getSingleResult();
         } catch (Exception e) {
             return null;
@@ -304,7 +304,7 @@ public class PortfolioService {
 
     private Double getQuote(Integer isinId) {
         try {
-            return (Double) em.createQuery("SELECT q.value FROM IsinQuote q WHERE q.isin.id = :id")
+            return (Double) em.createQuery("SELECT q.value FROM IsinQuoteEntity q WHERE q.isin.id = :id")
                 .setParameter("id", isinId).setMaxResults(1).getSingleResult();
         } catch (Exception e) {
             return null;
@@ -313,7 +313,7 @@ public class PortfolioService {
 
     private Double getDividendPerShare(Integer isinId) {
         try {
-            return (Double) em.createQuery("SELECT d.dividendPerShare FROM Dividend d WHERE d.isin.id = :id")
+            return (Double) em.createQuery("SELECT d.dividendPerShare FROM DividendEntity d WHERE d.isin.id = :id")
                 .setParameter("id", isinId).setMaxResults(1).getSingleResult();
         } catch (Exception e) {
             return null;

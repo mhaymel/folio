@@ -11,12 +11,12 @@ final class DividendPaymentTest {
     @Test
     void shouldBuildViaBuilder() {
         // given
-        var isin = new Isin();
-        var depot = new Depot();
-        var currency = new Currency();
+        var isin = new IsinEntity();
+        var depot = new DepotEntity();
+        var currency = new CurrencyEntity();
 
         // when
-        var dp = DividendPayment.builder()
+        var dp = DividendPaymentEntity.builder()
                 .id(1).timestamp(LocalDateTime.of(2026, 6, 1, 0, 0))
                 .isin(isin).depot(depot).currency(currency).value(42.0)
                 .build();
@@ -30,7 +30,7 @@ final class DividendPaymentTest {
     @Test
     void shouldCreateEmptyViaNoArgConstructor() {
         // given / when
-        var dp = new DividendPayment();
+        var dp = new DividendPaymentEntity();
 
         // then
         assertThat(dp.getId()).isNull();

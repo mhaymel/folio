@@ -90,8 +90,8 @@ public class StocksController {
         List<ExportColumn<StockDto>> columns = List.of(
                 new ExportColumn<>("ISIN", StockDto::getIsin),
                 new ExportColumn<>("Name", StockDto::getName),
-                new ExportColumn<>("Country", StockDto::getCountry),
-                new ExportColumn<>("Branch", StockDto::getBranch),
+                new ExportColumn<>("CountryEntity", StockDto::getCountry),
+                new ExportColumn<>("BranchEntity", StockDto::getBranch),
                 new ExportColumn<>("Count", StockDto::getCount),
                 new ExportColumn<>("Avg Price", StockDto::getAvgEntryPrice),
                 new ExportColumn<>("Quote", StockDto::getCurrentQuote),

@@ -30,7 +30,7 @@ public class WallStreetOnline {
                     value = parseGermanDouble(priceSpan.text().trim());
                 }
 
-                // 2. Currency is in the sibling div.quote_currency
+                // 2. CurrencyEntity is in the sibling div.quote_currency
                 Element parent = quoteValueDiv.parent();
                 if (parent != null) {
                     Element currencyDiv = parent.selectFirst("div.quote_currency");
@@ -63,7 +63,7 @@ public class WallStreetOnline {
 
 
             System.out.println("Value:    " + value);
-            System.out.println("Currency: " + currency);
+            System.out.println("CurrencyEntity: " + currency);
             System.out.println("Date:     " + date);
 
             return value;

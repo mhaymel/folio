@@ -19,7 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/transactions")
-@Tag(name = "Transactions", description = "Transaction data endpoints")
+@Tag(name = "Transactions", description = "TransactionEntity data endpoints")
 public class TransactionController {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -102,7 +102,7 @@ public class TransactionController {
                 new ExportColumn<>("Date", TransactionDto::getDate),
                 new ExportColumn<>("ISIN", TransactionDto::getIsin),
                 new ExportColumn<>("Name", TransactionDto::getName),
-                new ExportColumn<>("Depot", TransactionDto::getDepot),
+                new ExportColumn<>("DepotEntity", TransactionDto::getDepot),
                 new ExportColumn<>("Count", TransactionDto::getCount),
                 new ExportColumn<>("Share Price", TransactionDto::getSharePrice)
         );

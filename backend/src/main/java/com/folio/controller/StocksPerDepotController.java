@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/stocks-per-depot")
-@Tag(name = "Stocks per Depot", description = "Portfolio positions grouped by depot")
+@Tag(name = "Stocks per DepotEntity", description = "Portfolio positions grouped by depot")
 public class StocksPerDepotController {
 
     private static final Map<String, Comparator<StockDto>> SORT_FIELDS = Map.ofEntries(
@@ -96,9 +96,9 @@ public class StocksPerDepotController {
         List<ExportColumn<StockDto>> columns = List.of(
                 new ExportColumn<>("ISIN", StockDto::getIsin),
                 new ExportColumn<>("Name", StockDto::getName),
-                new ExportColumn<>("Country", StockDto::getCountry),
-                new ExportColumn<>("Branch", StockDto::getBranch),
-                new ExportColumn<>("Depot", StockDto::getDepot),
+                new ExportColumn<>("CountryEntity", StockDto::getCountry),
+                new ExportColumn<>("BranchEntity", StockDto::getBranch),
+                new ExportColumn<>("DepotEntity", StockDto::getDepot),
                 new ExportColumn<>("Count", StockDto::getCount),
                 new ExportColumn<>("Avg Price", StockDto::getAvgEntryPrice),
                 new ExportColumn<>("Quote", StockDto::getCurrentQuote),
