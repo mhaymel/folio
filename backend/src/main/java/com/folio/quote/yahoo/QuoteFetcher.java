@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.folio.domain.Amount;
 import com.folio.domain.Currency;
 import com.folio.domain.Quote;
-import com.folio.domain.TickerCode;
+import com.folio.domain.TickerSymbol;
 import com.folio.model.CurrencyEntity;
 import org.slf4j.Logger;
 
@@ -43,7 +43,7 @@ public final class QuoteFetcher {
         this.objectMapper = requireNonNull(objectMapper);
     }
 
-    public Optional<Quote> fetchQuote(TickerCode tickerCode) {
+    public Optional<Quote> fetchQuote(TickerSymbol tickerCode) {
         requireNonNull(tickerCode);
         String url = BASE_URL + tickerCode.value();
         LOG.info("Yahoo Finance: GET {}", url);

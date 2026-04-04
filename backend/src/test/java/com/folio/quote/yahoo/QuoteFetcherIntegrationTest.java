@@ -1,7 +1,7 @@
 package com.folio.quote.yahoo;
 
 import com.folio.domain.Quote;
-import com.folio.domain.TickerCode;
+import com.folio.domain.TickerSymbol;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -15,7 +15,7 @@ final class QuoteFetcherIntegrationTest {
     @Test
     void fetchesQuoteForApple() {
         // given
-        TickerCode aapl = new TickerCode("AAPL");
+        TickerSymbol aapl = new TickerSymbol("AAPL");
 
         // when
         Optional<Quote> result = quoteFetcher.fetchQuote(aapl);
@@ -34,7 +34,7 @@ final class QuoteFetcherIntegrationTest {
     @Test
     void fetchesQuoteForMicrosoft() {
         // given
-        TickerCode msft = new TickerCode("MSFT");
+        TickerSymbol msft = new TickerSymbol("MSFT");
 
         // when
         Optional<Quote> result = quoteFetcher.fetchQuote(msft);
@@ -53,7 +53,7 @@ final class QuoteFetcherIntegrationTest {
     @Test
     void returnsEmptyForUnknownTicker() {
         // given
-        TickerCode unknown = new TickerCode("ZZZZZZZZZZ");
+        TickerSymbol unknown = new TickerSymbol("ZZZZZZZZZZ");
 
         // when
         Optional<Quote> result = quoteFetcher.fetchQuote(unknown);
@@ -63,4 +63,3 @@ final class QuoteFetcherIntegrationTest {
         assertThat(result).isEmpty();
     }
 }
-

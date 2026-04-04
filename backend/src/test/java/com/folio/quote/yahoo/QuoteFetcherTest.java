@@ -3,7 +3,7 @@ package com.folio.quote.yahoo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.folio.domain.Currency;
 import com.folio.domain.Quote;
-import com.folio.domain.TickerCode;
+import com.folio.domain.TickerSymbol;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 
 final class QuoteFetcherTest {
 
-    private static final TickerCode AAPL = new TickerCode("AAPL");
+    private static final TickerSymbol AAPL = new TickerSymbol("AAPL");
 
     private HttpClient httpClient;
     private QuoteFetcher quoteFetcher;
@@ -165,7 +165,7 @@ final class QuoteFetcherTest {
     }
 
     @Test
-    void throwsOnNullTickerCode() {
+    void throwsOnNullTickerSymbol() {
         assertThatThrownBy(() -> quoteFetcher.fetchQuote(null))
                 .isInstanceOf(NullPointerException.class);
     }
