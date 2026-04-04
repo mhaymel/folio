@@ -25,18 +25,22 @@ Do **not** use Lombok. Write explicit Java: getters, setters, constructors, manu
 
 ### Design
 
-- Do **not** use abstract classes. Define contracts as interfaces; share reusable logic via helper/utility classes or default interface methods.
-- **All classes must be `final`** — prevents unintended subclassing and makes the design explicit. (JPA entities included; switch `FetchType.LAZY` to `EAGER` where needed so Hibernate does not require proxy subclasses.) **Exception:** classes that Spring needs to CGLIB-proxy must **not** be `final`. This includes classes annotated with `@Configuration`, `@SpringBootApplication`, and any Spring bean (service, controller, etc.) whose methods are annotated with `@Transactional` (or other AOP-proxied annotations such as `@Cacheable`, `@Async`, etc.).
-- Do **not** inherit from concrete classes. Only extend interfaces (or implement them).
-- Do **not** create inner classes (including static nested classes and inner records). Extract every nested type to its own top-level file. For the Builder pattern, use `<Type>Builder` as the class name (e.g. `IsinBuilder`).
-- **Java records** are encouraged for simple, immutable value objects (e.g. parsed CSV rows). Each record must be in its own top-level file — never defined inside another class. Records do not need builders; use the canonical constructor directly. The constructor parameter limit (max 3) does not apply to records.
-- **Use static imports** for static method calls where unambiguous (e.g. `getLogger(…)` instead of `LoggerFactory.getLogger(…)`, `requireNonNull(…)` instead of `Objects.requireNonNull(…)`). When two static-imported names collide (e.g. `List.of` vs `Map.of`), keep one qualified to avoid ambiguity.
-- Prefer constructor injection; never use field injection (`@Autowired` on fields).
-- Keep controllers thin — business logic belongs in service classes.
-- Each REST controller should map to exactly one service.
-- All parameters to public methods and constructors must be checked for nullity (e.g. `Objects.requireNonNull`) and throw `IllegalArgumentException` if invalid.
-- **Constructors** must have **at most 3 parameters**. Keep constructor bodies free of logic — only parameter validation (precondition checks) is allowed.
-- **Methods** must have **at most 3 parameters**; prefer 0 or 1. If more are needed, introduce a parameter object or rethink the design.
+| ID | Rule |
+|----|------|
+| **DES&#8209;01** | Do **not** use abstract classes. |
+| **DES&#8209;02** | Define contracts as interfaces. |
+| **DES&#8209;03** | Share reusable logic via helper/utility classes or default interface methods. |
+| **DES&#8209;04** | **All classes must be `final`** — prevents unintended subclassing and makes the design explicit. (JPA entities included; switch `FetchType.LAZY` to `EAGER` where needed so Hibernate does not require proxy subclasses.) **Exception:** classes that Spring needs to CGLIB-proxy must **not** be `final`. This includes classes annotated with `@Configuration`, `@SpringBootApplication`, and any Spring bean (service, controller, etc.) whose methods are annotated with `@Transactional` (or other AOP-proxied annotations such as `@Cacheable`, `@Async`, etc.). |
+| **DES&#8209;05** | Do **not** inherit from concrete classes. Only extend interfaces (or implement them). |
+| **DES&#8209;06** | Do **not** create inner classes (including static nested classes and inner records). Extract every nested type to its own top-level file. For the Builder pattern, use `<Type>Builder` as the class name (e.g. `IsinBuilder`). |
+| **DES&#8209;07** | **Java records** are encouraged for simple, immutable value objects (e.g. parsed CSV rows). Each record must be in its own top-level file — never defined inside another class. Records do not need builders; use the canonical constructor directly. The constructor parameter limit (max 3) does not apply to records. |
+| **DES&#8209;08** | **Use static imports** for static method calls where unambiguous (e.g. `getLogger(…)` instead of `LoggerFactory.getLogger(…)`, `requireNonNull(…)` instead of `Objects.requireNonNull(…)`). When two static-imported names collide (e.g. `List.of` vs `Map.of`), keep one qualified to avoid ambiguity. |
+| **DES&#8209;09** | Prefer constructor injection; never use field injection (`@Autowired` on fields). |
+| **DES&#8209;10** | Keep controllers thin — business logic belongs in service classes. |
+| **DES&#8209;11** | Each REST controller should map to exactly one service. |
+| **DES&#8209;12** | All parameters to public methods and constructors must be checked for nullity (`requireNonNull`) and throw `IllegalArgumentException` if invalid. Use `requireNonNull` with one parameter only — no message string. |
+| **DES&#8209;13** | **Constructors** must have **at most 3 parameters**. Keep constructor bodies free of logic — only parameter validation (precondition checks) is allowed. |
+| **DES&#8209;14** | **Methods** must have **at most 3 parameters**; prefer 0 or 1. If more are needed, introduce a parameter object or rethink the design. |
 
 ### Naming
 
@@ -69,6 +73,11 @@ Do **not** use Lombok. Write explicit Java: getters, setters, constructors, manu
 ### Testing
 
 See [testing.md](testing.md) for all testing conventions, scope, and infrastructure.
+
+Key naming rules:
+- Unit test class: `<ClassUnderTest>Test` (e.g. `QuoteFetcherTest`)
+- External API integration test class: `<ClassUnderTest>IntegrationTest` (e.g. `QuoteFetcherIntegrationTest`, `IsinToTickerIntegrationTest`)
+- Test method: `should<ExpectedBehaviour>[When<Condition>]` — no `test` prefix
 
 ---
 

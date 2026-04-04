@@ -1,6 +1,6 @@
 # Documentation Structure Overview
 
-## Current Structure (as of 2026-03-30)
+## Current Structure (as of 2026-04-03)
 
 ```
 docs/
@@ -11,10 +11,9 @@ docs/
 ├── testing.md                          # Testing requirements and conventions
 ├── coding-guidelines.md                # Java/React/TS coding standards
 ├── gaps.and.issues.md                  # Known issues and missing implementations
-├── missing.md                          # Feature gaps
-├── UI_MD_MOVED.md                      # Historical: ui.md move summary
-├── DIVIDEND_PAYMENTS_ADDED.md          # Historical: dividend payments spec added
-├── PAGES_DIRECTORY_MOVED.md            # Historical: pages directory move summary
+├── missing.md                          # Feature gaps with severity table
+├── EFFORT_ESTIMATION.md                # Effort estimates per feature area
+├── MARKETBEAT_ADDED.md                 # Historical: MarketBeat source added
 ├── pages/                              # Page specifications (14 files)
 │   ├── analytics.md
 │   ├── branches.md
@@ -39,7 +38,8 @@ docs/
     ├── Transactions.csv
     ├── ZERO-kontoumsaetze-22.03.2026.csv
     ├── ZERO-orders-22.03.2026.csv
-    └── ZERO-orders-27.03.2026.csv
+    ├── ZERO-orders-27.03.2026.csv
+    └── ZERO-orders-31.03.2026.csv
 ```
 
 ## Document Types
@@ -62,9 +62,8 @@ Each file describes a single UI page with:
 - Implementation notes
 
 ### Historical Summaries
-- **UI_MD_MOVED.md** — Documents the move of ui.md from pages/ to root
-- **DIVIDEND_PAYMENTS_ADDED.md** — Documents the addition of dividend-payments.md spec
-- **PAGES_DIRECTORY_MOVED.md** — Documents the move of pages/ from frontend/pages/ to root
+- **EFFORT_ESTIMATION.md** — Effort estimates per feature area
+- **MARKETBEAT_ADDED.md** — Documents the addition of the MarketBeat quote source
 
 ## Link Patterns
 
