@@ -111,6 +111,19 @@ export interface Currency {
   name: string;
 }
 
+export interface IsinDto {
+  isin: string;
+  tickerSymbol: string | null;
+  name: string | null;
+  country: string | null;
+  branch: string | null;
+}
+
+export interface IsinFiltersDto {
+  countries: string[];
+  branches: string[];
+}
+
 export interface TickerSymbolDto {
   isin: string;
   tickerSymbol: string;

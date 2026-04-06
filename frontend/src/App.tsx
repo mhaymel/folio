@@ -14,7 +14,8 @@ import Analytics from './pages/Analytics';
 import Import from './pages/Import';
 import DividendPayments from './pages/DividendPayments';
 import Settings from './pages/Settings';
-import YahooIsin from './pages/YahooIsin';
+import Isins from './pages/Isins';
+import YahooTickerForIsin from './pages/YahooTickerForIsin';
 import YahooQuotes from './pages/YahooQuotes';
 import { YahooIsinProvider } from './context/YahooIsinContext';
 
@@ -32,13 +33,14 @@ export default function App() {
           <Route path="/branches" element={<Branches />} />
           <Route path="/depots" element={<Depots />} />
           <Route path="/currencies" element={<Currencies />} />
+          <Route path="/isins" element={<Isins />} />
           <Route path="/ticker-symbols" element={<TickerSymbols />} />
           <Route path="/isin-names" element={<IsinNames />} />
           <Route path="/dividend-payments" element={<DividendPayments />} />
           <Route path="/analytics/:type" element={<Analytics />} />
           <Route path="/import" element={<Import />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/yahoo-isin" element={<YahooIsin />} />
+          <Route path="/yahoo-ticker-for-isin" element={<YahooTickerForIsin />} />
           <Route path="/yahoo-quotes" element={<YahooQuotes />} />
         </Route>
       </Routes>

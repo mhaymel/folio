@@ -1,6 +1,6 @@
-# Yahoo ISIN
+# Yahoo Ticker for ISIN
 
-> Route: `/yahoo-isin` — look up ticker symbols from Yahoo Finance for all currently held ISINs.
+> Route: `/yahoo-ticker-for-isin` — resolve ticker symbols from Yahoo Finance for all ISINs known to the backend.
 
 Follow UI conventions in [ui.md](../ui.md) and testing conventions in [testing.md](../testing.md).
 
@@ -8,7 +8,7 @@ Follow UI conventions in [ui.md](../ui.md) and testing conventions in [testing.m
 
 ## Overview
 
-For every ISIN the user currently holds (positive transaction sum), a ticker symbol is resolved via the Yahoo Finance search API. Results are displayed in up to three tables and can optionally be persisted to the database.
+For every ISIN stored in the database, a ticker symbol is resolved via the Yahoo Finance search API. Results are displayed in up to three tables and can optionally be persisted to the database.
 
 The same ticker symbol may be returned for more than one ISIN (e.g. a share listed on multiple exchanges). Each ISIN may have at most one ticker entry.
 
@@ -28,9 +28,9 @@ All tables are hidden on mount and populated only after **Fetch from Yahoo** is 
 
 ## REST API
 
-### `POST /api/yahoo-isin/fetch`
+### `POST /api/yahoo-ticker-for-isin/fetch`
 
-Resolves ticker symbols for all held ISINs. Nothing is written to the database.
+Resolves ticker symbols for all ISINs known to the backend. Nothing is written to the database.
 
 **Request body:** none
 
@@ -51,7 +51,7 @@ Resolves ticker symbols for all held ISINs. Nothing is written to the database.
 
 ---
 
-### `POST /api/yahoo-isin/save`
+### `POST /api/yahoo-ticker-for-isin/save`
 
 Persists the `withTicker` results to the database. For each entry:
 
@@ -69,12 +69,25 @@ Persists the `withTicker` results to the database. For each entry:
 
 ## UI
 
+### Filters
+
+Shown only after a successful fetch. Applied client-side to all three result tables simultaneously.
+
+| Control | Type | Applies to |
+|---------|------|-----------|
+| ISIN | Text input | All tables |
+| Ticker Symbol | Text input | With Ticker, Duplicate Tickers |
+| Name | Text input | All tables |
+| Clear Filters | Button | Resets all three filter inputs |
+
+---
+
 ### Buttons
 
 | Button | Behaviour |
 |--------|-----------|
-| **Fetch from Yahoo** | Calls `POST /api/yahoo-isin/fetch`. Disabled while loading or saving. Shows spinner. |
-| **Save** | Calls `POST /api/yahoo-isin/save` with the current With Ticker results. Enabled only after a successful fetch. Disabled while loading or saving. |
+| **Fetch from Yahoo** | Calls `POST /api/yahoo-ticker-for-isin/fetch`. Disabled while loading or saving. Shows spinner. |
+| **Save** | Calls `POST /api/yahoo-ticker-for-isin/save` with the current With Ticker results. Enabled only after a successful fetch. Disabled while loading or saving. |
 | **Clear** | Clears all tables and the status message. |
 
 **Status messages**

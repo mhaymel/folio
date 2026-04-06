@@ -10,6 +10,7 @@ import api from '../api/client';
 import type { YahooIsinDuplicateTickerItem, YahooIsinFetchResult, YahooIsinSaveResult, YahooIsinWithTickerItem, YahooIsinWithoutTickerItem } from '../types';
 import IsinCell from '../components/IsinCell';
 import PaginationControls from '../components/PaginationControls';
+import LabeledInput from '../components/LabeledInput';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -62,7 +63,7 @@ const duplicateTickerColumns = [
   { id: 'name', header: 'Name', accessor: 'name', sortType: 'text' as const, alignment: 'left' as const, width: 300, minWidth: 200 },
 ];
 
-export default function YahooIsin() {
+export default function YahooTickerForIsin() {
   const {
     withTicker, setWithTicker,
     withoutTicker, setWithoutTicker,
@@ -75,16 +76,45 @@ export default function YahooIsin() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
+  const [isinFilter, setIsinFilter] = useState('');
+  const [tickerFilter, setTickerFilter] = useState('');
+  const [nameFilter, setNameFilter] = useState('');
 
-  const wt = usePagination(withTicker);
-  const wot = usePagination(withoutTicker);
-  const dt = usePagination(duplicateTickers);
+  const filteredWithTicker = useMemo(() => {
+    let data = withTicker;
+    if (isinFilter) data = data.filter(r => r.isin.toLowerCase().includes(isinFilter.toLowerCase()));
+    if (tickerFilter) data = data.filter(r => r.tickerSymbol.toLowerCase().includes(tickerFilter.toLowerCase()));
+    if (nameFilter) data = data.filter(r => r.name?.toLowerCase().includes(nameFilter.toLowerCase()));
+    return data;
+  }, [withTicker, isinFilter, tickerFilter, nameFilter]);
+
+  const filteredWithoutTicker = useMemo(() => {
+    let data = withoutTicker;
+    if (isinFilter) data = data.filter(r => r.isin.toLowerCase().includes(isinFilter.toLowerCase()));
+    if (nameFilter) data = data.filter(r => r.name?.toLowerCase().includes(nameFilter.toLowerCase()));
+    return data;
+  }, [withoutTicker, isinFilter, nameFilter]);
+
+  const filteredDuplicateTickers = useMemo(() => {
+    let data = duplicateTickers;
+    if (isinFilter) data = data.filter(r => r.isin.toLowerCase().includes(isinFilter.toLowerCase()));
+    if (tickerFilter) data = data.filter(r => r.tickerSymbol.toLowerCase().includes(tickerFilter.toLowerCase()));
+    if (nameFilter) data = data.filter(r => r.name?.toLowerCase().includes(nameFilter.toLowerCase()));
+    return data;
+  }, [duplicateTickers, isinFilter, tickerFilter, nameFilter]);
+
+  const wt = usePagination(filteredWithTicker);
+  const wot = usePagination(filteredWithoutTicker);
+  const dt = usePagination(filteredDuplicateTickers);
+
+  const clearFilters = () => { setIsinFilter(''); setTickerFilter(''); setNameFilter(''); };
 
   const handleFetch = async () => {
     setLoading(true);
     setStatus('');
+    clearFilters();
     try {
-      const r = await api.post<YahooIsinFetchResult>('/yahoo-isin/fetch');
+      const r = await api.post<YahooIsinFetchResult>('/yahoo-ticker-for-isin/fetch');
       setWithTicker(r.data.withTicker);
       setWithoutTicker(r.data.withoutTicker);
       setDuplicateTickers(r.data.duplicateTickers);
@@ -101,7 +131,7 @@ export default function YahooIsin() {
     setSaving(true);
     setStatus('');
     try {
-      const r = await api.post<YahooIsinSaveResult>('/yahoo-isin/save', withTicker);
+      const r = await api.post<YahooIsinSaveResult>('/yahoo-ticker-for-isin/save', withTicker);
       setStatus(`${r.data.created} created, ${r.data.updated} updated.`);
     } catch {
       setSaveError(true);
@@ -110,7 +140,7 @@ export default function YahooIsin() {
     }
   };
 
-  const handleClear = () => clear();
+  const handleClear = () => { clear(); clearFilters(); };
 
   return (
     <Flex flexDirection="column" gap={16}>
@@ -123,7 +153,7 @@ export default function YahooIsin() {
         <Paragraph>Ticker symbols could not be saved. Please try again.</Paragraph>
       </Modal>
 
-      <Heading level={1}>Yahoo ISIN</Heading>
+      <Heading level={1}>Yahoo Ticker for ISIN</Heading>
 
       <Flex alignItems="center" gap={12}>
         <Button variant="emphasized" onClick={handleFetch} disabled={loading || saving}>
@@ -141,10 +171,17 @@ export default function YahooIsin() {
 
       {fetched && (
         <>
+          <Flex gap={16} alignItems="flex-end" flexWrap="wrap">
+            <LabeledInput label="ISIN" value={isinFilter} onChange={setIsinFilter} />
+            <LabeledInput label="Ticker Symbol" value={tickerFilter} onChange={setTickerFilter} />
+            <LabeledInput label="Name" value={nameFilter} onChange={setNameFilter} />
+            <Button variant="emphasized" onClick={clearFilters}>Clear Filters</Button>
+          </Flex>
+
           <Heading level={2}>ISINs with Ticker Symbol</Heading>
 
           <Flex alignItems="center" justifyContent="space-between">
-            <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>{withTicker.length} ISINs with ticker symbol</Paragraph>
+            <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>{filteredWithTicker.length} ISINs with ticker symbol</Paragraph>
             <Button variant="emphasized" onClick={wt.handleShowAll}>
               {wt.pageSize === -1 ? 'Paginate' : 'Show All'}
             </Button>
@@ -159,7 +196,7 @@ export default function YahooIsin() {
           <Heading level={2}>ISINs without Ticker Symbol</Heading>
 
           <Flex alignItems="center" justifyContent="space-between">
-            <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>{withoutTicker.length} ISINs without ticker symbol</Paragraph>
+            <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>{filteredWithoutTicker.length} ISINs without ticker symbol</Paragraph>
             <Button variant="emphasized" onClick={wot.handleShowAll}>
               {wot.pageSize === -1 ? 'Paginate' : 'Show All'}
             </Button>
@@ -176,7 +213,7 @@ export default function YahooIsin() {
               <Heading level={2}>Duplicate Ticker Symbols</Heading>
 
               <Flex alignItems="center" justifyContent="space-between">
-                <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>{duplicateTickers.length} rows — ticker symbols assigned to more than one ISIN</Paragraph>
+                <Paragraph style={{ color: 'var(--dt-color-text-subdued)' }}>{filteredDuplicateTickers.length} rows — ticker symbols assigned to more than one ISIN</Paragraph>
                 <Button variant="emphasized" onClick={dt.handleShowAll}>
                   {dt.pageSize === -1 ? 'Paginate' : 'Show All'}
                 </Button>

@@ -1,12 +1,7 @@
 package com.folio.controller;
 
 import com.folio.domain.Isin;
-import com.folio.domain.TickerSymbol;
-import com.folio.dto.YahooIsinDuplicateTickerItem;
-import com.folio.dto.YahooIsinFetchResult;
-import com.folio.dto.YahooIsinSaveResult;
-import com.folio.dto.YahooIsinWithTickerItem;
-import com.folio.dto.YahooIsinWithoutTickerItem;
+import com.folio.dto.*;
 import com.folio.model.IsinEntity;
 import com.folio.model.TickerSymbolEntity;
 import com.folio.online.yahoo.IsinTickerSearch;
@@ -23,18 +18,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RestController
-@RequestMapping("/api/yahoo-isin")
-@Tag(name = "Yahoo ISIN", description = "Lookup ticker symbols from Yahoo Finance for held portfolio ISINs")
+@RequestMapping("/api/yahoo-ticker-for-isin")
+@Tag(name = "Yahoo Ticker for ISIN", description = "Resolve ticker symbols from Yahoo Finance for all known ISINs")
 public class YahooIsinController {
 
     private final EntityManager em;
@@ -51,10 +40,10 @@ public class YahooIsinController {
     }
 
     @PostMapping("/fetch")
-    @Operation(summary = "Fetch ticker symbols from Yahoo Finance for all held ISINs — results are not persisted")
+    @Operation(summary = "Fetch ticker symbols from Yahoo Finance for all known ISINs — results are not persisted")
     @Transactional(readOnly = true)
     public ResponseEntity<YahooIsinFetchResult> fetch() {
-        Map<String, String> isinToName = loadHeldIsinsWithNames();
+        Map<String, String> isinToName = loadAllIsinsWithNames();
 
         Set<Isin> isins = isinToName.keySet().stream()
                 .map(Isin::new)
@@ -114,17 +103,11 @@ public class YahooIsinController {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, String> loadHeldIsinsWithNames() {
+    private Map<String, String> loadAllIsinsWithNames() {
         List<Object[]> rows = em.createNativeQuery("""
                 SELECT i.isin,
                        (SELECT n.name FROM isin_name n WHERE n.isin_id = i.id ORDER BY n.id ASC LIMIT 1)
                 FROM isin i
-                WHERE EXISTS (
-                    SELECT 1 FROM "transaction" t
-                    WHERE t.isin_id = i.id
-                    GROUP BY t.isin_id
-                    HAVING SUM(t."count") > 0
-                )
                 ORDER BY i.isin ASC
                 """).getResultList();
 
