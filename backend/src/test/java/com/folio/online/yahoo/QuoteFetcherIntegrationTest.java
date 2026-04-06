@@ -1,4 +1,4 @@
-package com.folio.quote.yahoo;
+package com.folio.online.yahoo;
 
 import com.folio.domain.Quote;
 import com.folio.domain.TickerSymbol;

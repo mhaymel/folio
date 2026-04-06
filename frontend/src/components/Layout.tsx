@@ -15,6 +15,8 @@ const NAV_ITEMS = [
   { label: 'Dividend Payments', to: '/dividend-payments' },
   { label: 'Country Analysis', to: '/analytics/countries' },
   { label: 'Branch Analysis', to: '/analytics/branches' },
+  { label: 'Yahoo ISIN', to: '/yahoo-isin' },
+  { label: 'Yahoo Quotes', to: '/yahoo-quotes' },
   { label: 'Import', to: '/import' },
   { label: 'Settings', to: '/settings' },
 ];

@@ -9,6 +9,7 @@ export interface UseServerTableOptions<T, R extends PaginatedResponse<T> = Pagin
   defaultPageSize?: number;
   extraParams?: Record<string, string | number>;
   responseMapper?: (response: R) => void;
+  loadOnMount?: boolean;
 }
 
 export interface UseServerTableReturn<T> {
@@ -26,6 +27,7 @@ export interface UseServerTableReturn<T> {
   handleShowAll: () => void;
   handlePageSizeChange: (size: number) => void;
   reload: () => void;
+  clear: () => void;
   sortBy: { id: string; desc: boolean }[];
   exportParams: Record<string, string>;
 }
@@ -54,6 +56,7 @@ export default function useServerTable<T, R extends PaginatedResponse<T> = Pagin
     defaultPageSize = 10,
     extraParams,
     responseMapper,
+    loadOnMount = true,
   } = options;
 
   const persisted = useRef(loadPersistedState(endpoint));
@@ -72,12 +75,16 @@ export default function useServerTable<T, R extends PaginatedResponse<T> = Pagin
   const extraParamsRef = useRef(extraParams);
   extraParamsRef.current = extraParams;
 
+  // Track whether a load has been triggered at least once (used when loadOnMount=false)
+  const hasLoadedRef = useRef(loadOnMount);
+
   // Persist state on changes
   useEffect(() => {
     persistState(endpoint, { page, pageSize, sortField, sortDir });
   }, [endpoint, page, pageSize, sortField, sortDir]);
 
   const load = useCallback(async () => {
+    hasLoadedRef.current = true;
     setLoading(true);
     try {
       const params: Record<string, string | number> = { sortField, sortDir, page, pageSize };
@@ -97,7 +104,7 @@ export default function useServerTable<T, R extends PaginatedResponse<T> = Pagin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endpoint, sortField, sortDir, page, pageSize, extraParamsKey]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { if (hasLoadedRef.current) load(); }, [load]);
 
   const handleSortChange = useCallback((s: any) => {
     if (s?.[0]) {
@@ -121,6 +128,13 @@ export default function useServerTable<T, R extends PaginatedResponse<T> = Pagin
   const handlePageSizeChange = useCallback((size: number) => {
     setPageSize(size);
     setPage(1);
+  }, []);
+
+  const clear = useCallback(() => {
+    hasLoadedRef.current = false;
+    setData([]);
+    setTotalItems(0);
+    setTotalPages(1);
   }, []);
 
   const sortBy = [{ id: sortField, desc: sortDir === 'desc' }];
@@ -149,6 +163,7 @@ export default function useServerTable<T, R extends PaginatedResponse<T> = Pagin
     handleShowAll,
     handlePageSizeChange,
     reload: load,
+    clear,
     sortBy,
     exportParams,
   };

@@ -25,6 +25,9 @@ public final class IsinQuoteEntity {
     @Column(name = "fetched_at", nullable = false)
     private LocalDateTime fetchedAt;
 
+    @Column(name = "currency", length = 3)
+    private String currency;
+
     public IsinQuoteEntity() {}
 
     public Integer getId() { return id; }
@@ -37,6 +40,8 @@ public final class IsinQuoteEntity {
     public void setValue(Double value) { this.value = value; }
     public LocalDateTime getFetchedAt() { return fetchedAt; }
     public void setFetchedAt(LocalDateTime fetchedAt) { this.fetchedAt = fetchedAt; }
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
 
     public static IsinQuoteBuilder builder() { return new IsinQuoteBuilder(); }
 }

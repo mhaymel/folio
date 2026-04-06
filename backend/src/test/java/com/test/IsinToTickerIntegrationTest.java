@@ -1,5 +1,6 @@
 package com.test;
 
+import com.folio.service.IsinToTicker;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -49,6 +50,15 @@ final class IsinToTickerIntegrationTest {
 
         // then
         assertThat(ticker).isEmpty();
+    }
+
+    @Test
+    void omvAgResolvesToTicker() {
+        // AT0000743059 = OMV AG
+        Optional<String> ticker = isinToTicker.tickerFor("AT0000743059");
+        System.out.println("AT0000743059 → " + ticker.orElse("NOT FOUND"));
+
+        assertThat(ticker).isPresent();
     }
 
     @Test

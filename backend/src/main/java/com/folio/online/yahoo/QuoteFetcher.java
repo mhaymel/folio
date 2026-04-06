@@ -1,4 +1,4 @@
-package com.folio.quote.yahoo;
+package com.folio.online.yahoo;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,7 +6,6 @@ import com.folio.domain.Amount;
 import com.folio.domain.Currency;
 import com.folio.domain.Quote;
 import com.folio.domain.TickerSymbol;
-import com.folio.model.CurrencyEntity;
 import org.slf4j.Logger;
 
 import java.net.URI;
@@ -20,8 +19,11 @@ import java.util.Optional;
 import static com.folio.domain.Currency.currency;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
+import org.springframework.stereotype.Component;
+
 import static org.slf4j.LoggerFactory.getLogger;
 
+@Component
 public final class QuoteFetcher {
 
     private static final Logger LOG = getLogger(QuoteFetcher.class);
@@ -43,9 +45,9 @@ public final class QuoteFetcher {
         this.objectMapper = requireNonNull(objectMapper);
     }
 
-    public Optional<Quote> fetchQuote(TickerSymbol tickerCode) {
-        requireNonNull(tickerCode);
-        String url = BASE_URL + tickerCode.value();
+    public Optional<Quote> fetchQuote(TickerSymbol tickerSymbol) {
+        requireNonNull(tickerSymbol);
+        String url = BASE_URL + tickerSymbol.value();
         LOG.info("Yahoo Finance: GET {}", url);
         try {
             HttpRequest request = HttpRequest.newBuilder()

@@ -136,3 +136,42 @@ export interface DividendPaymentPaginatedResponse extends PaginatedResponse<Divi
 export interface DividendPaymentFiltersDto {
   depots: string[];
 }
+
+export interface YahooIsinWithTickerItem {
+  isin: string;
+  tickerSymbol: string;
+  name: string | null;
+}
+
+export interface YahooIsinWithoutTickerItem {
+  isin: string;
+  name: string | null;
+}
+
+export interface YahooIsinFetchResult {
+  withTicker: YahooIsinWithTickerItem[];
+  withoutTicker: YahooIsinWithoutTickerItem[];
+}
+
+export interface YahooQuoteWithQuoteDto {
+  isin: string;
+  name: string | null;
+  tickerSymbol: string | null;
+  price: number;
+  currency: string | null;
+  provider: string;
+  fetchedAt: string;
+}
+
+export interface YahooQuoteWithoutQuoteDto {
+  isin: string;
+  name: string | null;
+  tickerSymbol: string | null;
+}
+
+export interface YahooFetchResultDto {
+  total: number;
+  fetched: number;
+  noTicker: number;
+  noQuote: number;
+}

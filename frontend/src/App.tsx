@@ -14,6 +14,8 @@ import Analytics from './pages/Analytics';
 import Import from './pages/Import';
 import DividendPayments from './pages/DividendPayments';
 import Settings from './pages/Settings';
+import YahooIsin from './pages/YahooIsin';
+import YahooQuotes from './pages/YahooQuotes';
 
 export default function App() {
   return (
@@ -34,6 +36,8 @@ export default function App() {
           <Route path="/analytics/:type" element={<Analytics />} />
           <Route path="/import" element={<Import />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/yahoo-isin" element={<YahooIsin />} />
+          <Route path="/yahoo-quotes" element={<YahooQuotes />} />
         </Route>
       </Routes>
     </BrowserRouter>

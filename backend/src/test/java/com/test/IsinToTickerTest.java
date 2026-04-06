@@ -1,6 +1,7 @@
 package com.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.folio.service.IsinToTicker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

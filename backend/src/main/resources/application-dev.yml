@@ -19,3 +19,5 @@ spring:
 folio:
   security:
     enabled: false
+  startup-import:
+    samples-dir: docs/samples

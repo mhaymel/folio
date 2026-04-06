@@ -1,9 +1,10 @@
-package com.folio.quote.yahoo;
+package com.folio.online.yahoo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.folio.domain.Currency;
 import com.folio.domain.Quote;
 import com.folio.domain.TickerSymbol;
+import com.folio.online.yahoo.QuoteFetcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
