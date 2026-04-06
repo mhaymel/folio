@@ -13,7 +13,7 @@ public final class TickerSymbolEntity {
     @JoinColumn(name = "isin_id", unique = true)
     private IsinEntity isin;
 
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(nullable = false, length = 20)
     private String symbol;
 
     public TickerSymbolEntity() {}

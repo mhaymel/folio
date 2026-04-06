@@ -9,6 +9,7 @@ public final class TransactionDto {
     private String date;
     private LocalDateTime rawDate;
     private Isin isin;
+    private String tickerSymbol;
     private String name;
     private String depot;
     private Double count;
@@ -25,6 +26,8 @@ public final class TransactionDto {
     public void setRawDate(LocalDateTime rawDate) { this.rawDate = rawDate; }
     public Isin getIsin() { return isin; }
     public void setIsin(Isin isin) { this.isin = isin; }
+    public String getTickerSymbol() { return tickerSymbol; }
+    public void setTickerSymbol(String tickerSymbol) { this.tickerSymbol = tickerSymbol; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getDepot() { return depot; }

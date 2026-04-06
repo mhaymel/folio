@@ -66,7 +66,8 @@ public class PortfolioService {
             Double estimatedAnnualIncome = (dps != null && dps > 0) ? dps * totalCount : null;
 
             result.add(StockDto.builder()
-                .isin(isin).name(name).country(country).branch(branch)
+                .isin(isin).tickerSymbol(getTickerSymbol(isinId)).name(name)
+                .country(country).branch(branch)
                 .depot(depotName).count(totalCount).avgEntryPrice(avgEntryPrice)
                 .currentQuote(currentQuote).performancePercent(performancePercent)
                 .dividendPerShare(dps).estimatedAnnualIncome(estimatedAnnualIncome)
@@ -111,7 +112,8 @@ public class PortfolioService {
             Double estimatedAnnualIncome = (dps != null && dps > 0) ? dps * totalCount : null;
 
             result.add(StockDto.builder()
-                .isin(isin).name(name).country(country).branch(branch)
+                .isin(isin).tickerSymbol(getTickerSymbol(isinId)).name(name)
+                .country(country).branch(branch)
                 .count(totalCount).avgEntryPrice(avgEntryPrice)
                 .currentQuote(currentQuote).performancePercent(performancePercent)
                 .dividendPerShare(dps).estimatedAnnualIncome(estimatedAnnualIncome)
@@ -250,6 +252,7 @@ public class PortfolioService {
             .id(t.getId())
             .date(t.getDate())
             .isin(new Isin(t.getIsin().getIsin()))
+            .tickerSymbol(getTickerSymbol(t.getIsin().getId()))
             .name(getFirstName(t.getIsin().getId()))
             .depot(t.getDepot().getName())
             .count(t.getCount())
@@ -271,7 +274,29 @@ public class PortfolioService {
                 .toList();
         }
 
+        // Apply ticker symbol filter in-memory (same ISIN grouping logic as name filter).
+        if (filter.tickerSymbol() != null && !filter.tickerSymbol().isBlank()) {
+            String lower = filter.tickerSymbol().toLowerCase();
+            Set<Isin> matchingIsins = result.stream()
+                .filter(t -> t.getTickerSymbol() != null && t.getTickerSymbol().toLowerCase().contains(lower))
+                .map(TransactionDto::getIsin)
+                .collect(Collectors.toSet());
+            result = result.stream()
+                .filter(t -> matchingIsins.contains(t.getIsin()))
+                .toList();
+        }
+
         return result;
+    }
+
+    private String getTickerSymbol(Integer isinId) {
+        try {
+            return (String) em.createNativeQuery(
+                "SELECT ts.symbol FROM ticker_symbol ts WHERE ts.isin_id = :id")
+                .setParameter("id", isinId).setMaxResults(1).getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private String getFirstName(Integer isinId) {

@@ -16,9 +16,11 @@ import DividendPayments from './pages/DividendPayments';
 import Settings from './pages/Settings';
 import YahooIsin from './pages/YahooIsin';
 import YahooQuotes from './pages/YahooQuotes';
+import { YahooIsinProvider } from './context/YahooIsinContext';
 
 export default function App() {
   return (
+    <YahooIsinProvider>
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
@@ -41,5 +43,6 @@ export default function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </YahooIsinProvider>
   );
 }

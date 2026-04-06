@@ -42,11 +42,14 @@ public class TickerSymbolController {
     @Operation(summary = "Get all ISIN to ticker symbol mappings")
     @Transactional(readOnly = true)
     public ResponseEntity<PaginatedResponseDto<TickerSymbolDto>> getTickerSymbols(
+            @RequestParam(required = false) String isin,
+            @RequestParam(required = false) String tickerSymbol,
+            @RequestParam(required = false) String name,
             @RequestParam(required = false, defaultValue = "isin") String sortField,
             @RequestParam(required = false, defaultValue = "asc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
-        List<TickerSymbolDto> data = SortHelper.sort(loadAll(), sortField, sortDir, SORT_FIELDS);
+        List<TickerSymbolDto> data = filterAndSort(loadAll(), isin, tickerSymbol, name, sortField, sortDir);
         return ResponseEntity.ok(PaginationHelper.paginate(data, page, pageSize));
     }
 
@@ -55,18 +58,38 @@ public class TickerSymbolController {
     @Transactional(readOnly = true)
     public ResponseEntity<byte[]> exportTickerSymbols(
             @RequestParam(defaultValue = "csv") String format,
+            @RequestParam(required = false) String isin,
+            @RequestParam(required = false) String tickerSymbol,
+            @RequestParam(required = false) String name,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        List<TickerSymbolDto> data = loadAll();
-        if (sortField != null && !sortField.isBlank()) {
-            data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
-        }
+        List<TickerSymbolDto> data = filterAndSort(loadAll(), isin, tickerSymbol, name, sortField, sortDir);
         List<ExportColumn<TickerSymbolDto>> columns = List.of(
                 new ExportColumn<>("ISIN", TickerSymbolDto::getIsin),
                 new ExportColumn<>("Ticker Symbol", TickerSymbolDto::getTickerSymbol),
                 new ExportColumn<>("Name", TickerSymbolDto::getName)
         );
         return exportService.export(new ExportRequest<>(data, columns, format, "ticker-symbols"));
+    }
+
+    private static List<TickerSymbolDto> filterAndSort(List<TickerSymbolDto> data, String isin, String tickerSymbol,
+                                                        String name, String sortField, String sortDir) {
+        if (isin != null && !isin.isBlank()) {
+            String lower = isin.toLowerCase();
+            data = data.stream().filter(d -> d.getIsin() != null && d.getIsin().value().toLowerCase().contains(lower)).toList();
+        }
+        if (tickerSymbol != null && !tickerSymbol.isBlank()) {
+            String lower = tickerSymbol.toLowerCase();
+            data = data.stream().filter(d -> d.getTickerSymbol() != null && d.getTickerSymbol().toLowerCase().contains(lower)).toList();
+        }
+        if (name != null && !name.isBlank()) {
+            String lower = name.toLowerCase();
+            data = data.stream().filter(d -> d.getName() != null && d.getName().toLowerCase().contains(lower)).toList();
+        }
+        if (sortField != null && !sortField.isBlank()) {
+            data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
+        }
+        return data;
     }
 
     @SuppressWarnings("unchecked")

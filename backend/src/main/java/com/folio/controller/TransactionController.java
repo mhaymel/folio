@@ -27,6 +27,7 @@ public class TransactionController {
     private static final Map<String, Comparator<TransactionDto>> SORT_FIELDS = Map.of(
         "date", SortHelper.comparing(TransactionDto::getRawDate),
         "isin", SortHelper.text(t -> t.getIsin() == null ? null : t.getIsin().value()),
+        "tickerSymbol", SortHelper.text(TransactionDto::getTickerSymbol),
         "name", SortHelper.text(TransactionDto::getName),
         "depot", SortHelper.text(TransactionDto::getDepot),
         "count", SortHelper.number(TransactionDto::getCount),
@@ -45,6 +46,7 @@ public class TransactionController {
     @Operation(summary = "Get all transactions with optional filters, sorting, and pagination")
     public ResponseEntity<TransactionPaginatedResponseDto> getTransactions(
             @RequestParam(required = false) String isin,
+            @RequestParam(required = false) String tickerSymbol,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String depot,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
@@ -55,7 +57,7 @@ public class TransactionController {
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
 
         List<TransactionDto> data = portfolioService.getTransactions(
-            new TransactionFilter(isin, name, depot, fromDate, toDate));
+            new TransactionFilter(isin, tickerSymbol, name, depot, fromDate, toDate));
 
         data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
 
@@ -86,13 +88,14 @@ public class TransactionController {
     public ResponseEntity<byte[]> exportTransactions(
             @RequestParam(defaultValue = "csv") String format,
             @RequestParam(required = false) String isin,
+            @RequestParam(required = false) String tickerSymbol,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String depot,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "desc") String sortDir) {
 
         List<TransactionDto> data = portfolioService.getTransactions(
-            new TransactionFilter(isin, name, depot, null, null));
+            new TransactionFilter(isin, tickerSymbol, name, depot, null, null));
 
         if (sortField != null && !sortField.isBlank()) {
             data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
@@ -101,6 +104,7 @@ public class TransactionController {
         List<ExportColumn<TransactionDto>> columns = List.of(
                 new ExportColumn<>("Date", TransactionDto::getDate),
                 new ExportColumn<>("ISIN", TransactionDto::getIsin),
+                new ExportColumn<>("Ticker", TransactionDto::getTickerSymbol),
                 new ExportColumn<>("Name", TransactionDto::getName),
                 new ExportColumn<>("DepotEntity", TransactionDto::getDepot),
                 new ExportColumn<>("Count", TransactionDto::getCount),

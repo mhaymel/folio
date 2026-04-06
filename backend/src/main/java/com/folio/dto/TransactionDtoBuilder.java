@@ -10,6 +10,7 @@ public final class TransactionDtoBuilder {
     private Integer id;
     private LocalDateTime date;
     private Isin isin;
+    private String tickerSymbol;
     private String name;
     private String depot;
     private Double count;
@@ -18,6 +19,7 @@ public final class TransactionDtoBuilder {
     public TransactionDtoBuilder id(Integer id) { this.id = id; return this; }
     public TransactionDtoBuilder date(LocalDateTime date) { this.date = date; return this; }
     public TransactionDtoBuilder isin(Isin isin) { this.isin = isin; return this; }
+    public TransactionDtoBuilder tickerSymbol(String tickerSymbol) { this.tickerSymbol = tickerSymbol; return this; }
     public TransactionDtoBuilder name(String name) { this.name = name; return this; }
     public TransactionDtoBuilder depot(String depot) { this.depot = depot; return this; }
     public TransactionDtoBuilder count(Double count) { this.count = count; return this; }
@@ -29,6 +31,7 @@ public final class TransactionDtoBuilder {
         t.setDate(date != null ? date.format(DATE_FMT) : null);
         t.setRawDate(date);
         t.setIsin(isin);
+        t.setTickerSymbol(tickerSymbol);
         t.setName(name);
         t.setDepot(depot);
         t.setCount(count);

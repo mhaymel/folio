@@ -24,6 +24,7 @@ public class StocksPerDepotController {
 
     private static final Map<String, Comparator<StockDto>> SORT_FIELDS = Map.ofEntries(
         Map.entry("isin", SortHelper.text(s -> s.getIsin() == null ? null : s.getIsin().value())),
+        Map.entry("tickerSymbol", SortHelper.text(StockDto::getTickerSymbol)),
         Map.entry("name", SortHelper.text(StockDto::getName)),
         Map.entry("country", SortHelper.text(StockDto::getCountry)),
         Map.entry("branch", SortHelper.text(StockDto::getBranch)),
@@ -48,6 +49,7 @@ public class StocksPerDepotController {
     @Operation(summary = "Get current portfolio positions grouped by depot")
     public ResponseEntity<StockPaginatedResponseDto> getStocksPerDepot(
             @RequestParam(required = false) String isin,
+            @RequestParam(required = false) String tickerSymbol,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String depot,
             @RequestParam(required = false) String country,
@@ -56,7 +58,7 @@ public class StocksPerDepotController {
             @RequestParam(required = false, defaultValue = "asc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
-        List<StockDto> data = filterAndSort(portfolioService.getStocks(), isin, name, depot, country, branch, sortField, sortDir);
+        List<StockDto> data = filterAndSort(portfolioService.getStocks(), isin, tickerSymbol, name, depot, country, branch, sortField, sortDir);
         double sumCount = data.stream().mapToDouble(StockDto::getCount).sum();
         PaginatedResponseDto<StockDto> paginated = PaginationHelper.paginate(data, page, pageSize);
         return ResponseEntity.ok(new StockPaginatedResponseDto(
@@ -85,16 +87,18 @@ public class StocksPerDepotController {
     public ResponseEntity<byte[]> exportStocks(
             @RequestParam(defaultValue = "csv") String format,
             @RequestParam(required = false) String isin,
+            @RequestParam(required = false) String tickerSymbol,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String depot,
             @RequestParam(required = false) String country,
             @RequestParam(required = false) String branch,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        List<StockDto> data = filterAndSort(portfolioService.getStocks(), isin, name, depot, country, branch, sortField, sortDir);
+        List<StockDto> data = filterAndSort(portfolioService.getStocks(), isin, tickerSymbol, name, depot, country, branch, sortField, sortDir);
 
         List<ExportColumn<StockDto>> columns = List.of(
                 new ExportColumn<>("ISIN", StockDto::getIsin),
+                new ExportColumn<>("Ticker", StockDto::getTickerSymbol),
                 new ExportColumn<>("Name", StockDto::getName),
                 new ExportColumn<>("CountryEntity", StockDto::getCountry),
                 new ExportColumn<>("BranchEntity", StockDto::getBranch),
@@ -118,12 +122,16 @@ public class StocksPerDepotController {
             .collect(Collectors.toSet());
     }
 
-    private static List<StockDto> filterAndSort(List<StockDto> data, String isin, String name,
-                                                 String depot, String country, String branch,
+    private static List<StockDto> filterAndSort(List<StockDto> data, String isin, String tickerSymbol,
+                                                 String name, String depot, String country, String branch,
                                                  String sortField, String sortDir) {
         if (isin != null && !isin.isBlank()) {
             String lower = isin.toLowerCase();
             data = data.stream().filter(s -> s.getIsin() != null && s.getIsin().value().toLowerCase().contains(lower)).toList();
+        }
+        if (tickerSymbol != null && !tickerSymbol.isBlank()) {
+            String lower = tickerSymbol.toLowerCase();
+            data = data.stream().filter(s -> s.getTickerSymbol() != null && s.getTickerSymbol().toLowerCase().contains(lower)).toList();
         }
         if (name != null && !name.isBlank()) {
             String lower = name.toLowerCase();

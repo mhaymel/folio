@@ -15,15 +15,15 @@ import IsinCell from '../components/IsinCell';
 
 const STORAGE_KEY = 'stocks_per_depot_filters';
 
-function loadFiltersFromStorage(): { isin: string; name: string; depots: string[]; countries: string[]; branches: string[] } {
+function loadFiltersFromStorage(): { isin: string; tickerSymbol: string; name: string; depots: string[]; countries: string[]; branches: string[] } {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch { /* ignore */ }
-  return { isin: '', name: '', depots: [], countries: [], branches: [] };
+  return { isin: '', tickerSymbol: '', name: '', depots: [], countries: [], branches: [] };
 }
 
-function saveFiltersToStorage(state: { isin: string; name: string; depots: string[]; countries: string[]; branches: string[] }) {
+function saveFiltersToStorage(state: { isin: string; tickerSymbol: string; name: string; depots: string[]; countries: string[]; branches: string[] }) {
   try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* ignore */ }
 }
 
@@ -35,6 +35,7 @@ const fmtPct = (v: number | null) =>
 export default function StocksPerDepot() {
   const saved = loadFiltersFromStorage();
   const [isinFilter, setIsinFilter] = useState(saved.isin);
+  const [tickerFilter, setTickerFilter] = useState(saved.tickerSymbol ?? '');
   const [nameFilter, setNameFilter] = useState(saved.name);
   const [depotFilter, setDepotFilter] = useState<string[]>(saved.depots);
   const [countryFilter, setCountryFilter] = useState<string[]>(saved.countries);
@@ -43,18 +44,19 @@ export default function StocksPerDepot() {
   const [sumCount, setSumCount] = useState(0);
 
   useEffect(() => {
-    saveFiltersToStorage({ isin: isinFilter, name: nameFilter, depots: depotFilter, countries: countryFilter, branches: branchFilter });
-  }, [isinFilter, nameFilter, depotFilter, countryFilter, branchFilter]);
+    saveFiltersToStorage({ isin: isinFilter, tickerSymbol: tickerFilter, name: nameFilter, depots: depotFilter, countries: countryFilter, branches: branchFilter });
+  }, [isinFilter, tickerFilter, nameFilter, depotFilter, countryFilter, branchFilter]);
 
   const extraParams = useMemo(() => {
     const p: Record<string, string> = {};
     if (isinFilter) p.isin = isinFilter;
+    if (tickerFilter) p.tickerSymbol = tickerFilter;
     if (nameFilter) p.name = nameFilter;
     if (depotFilter.length > 0) p.depot = depotFilter.join(',');
     if (countryFilter.length > 0) p.country = countryFilter.join(',');
     if (branchFilter.length > 0) p.branch = branchFilter.join(',');
     return p;
-  }, [isinFilter, nameFilter, depotFilter, countryFilter, branchFilter]);
+  }, [isinFilter, tickerFilter, nameFilter, depotFilter, countryFilter, branchFilter]);
 
   const table = useServerTable<StockDto, StockPaginatedResponse>({
     endpoint: '/stocks-per-depot',
@@ -76,6 +78,7 @@ export default function StocksPerDepot() {
 
   const handleCellDoubleClick = (field: string, value: string) => {
     if (field === 'isin') { setIsinFilter(value); table.setPage(1); }
+    else if (field === 'tickerSymbol') { setTickerFilter(value); table.setPage(1); }
     else if (field === 'name') { setNameFilter(value); table.setPage(1); }
     else if (field === 'depot') { setDepotFilter([value]); table.setPage(1); }
   };
@@ -85,6 +88,12 @@ export default function StocksPerDepot() {
       id: 'isin', header: 'ISIN', accessor: 'isin', sortType: 'text' as const, alignment: 'left' as const, width: 140, minWidth: 140,
       cell: ({ rowData }: { rowData: StockDto }) => (
         <IsinCell isin={rowData.isin} onFilter={(v) => { setIsinFilter(v); table.setPage(1); }} activeFilter={isinFilter} onDoubleClick={() => handleCellDoubleClick('isin', rowData.isin)} />
+      ),
+    },
+    {
+      id: 'tickerSymbol', header: 'Ticker', accessor: (r: StockDto) => r.tickerSymbol ?? '', sortType: 'text' as const, alignment: 'left' as const, width: 100, minWidth: 80,
+      cell: ({ rowData }: { rowData: StockDto }) => (
+        <span onDoubleClick={() => rowData.tickerSymbol && handleCellDoubleClick('tickerSymbol', rowData.tickerSymbol)} style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.tickerSymbol ?? ''}</span>
       ),
     },
     {
@@ -116,6 +125,8 @@ export default function StocksPerDepot() {
       <Flex gap={16} alignItems="flex-end" flexWrap="wrap">
         <LabeledInput label="ISIN" value={isinFilter}
           onChange={(v: string) => { setIsinFilter(v); table.setPage(1); }} />
+        <LabeledInput label="Ticker Symbol" value={tickerFilter}
+          onChange={(v: string) => { setTickerFilter(v); table.setPage(1); }} />
         <LabeledInput label="Name" value={nameFilter}
           onChange={(v: string) => { setNameFilter(v); table.setPage(1); }} />
         <MultiSelect options={filterOptions.depots} selected={depotFilter}
@@ -124,7 +135,7 @@ export default function StocksPerDepot() {
           onChange={(v) => { setCountryFilter(v); table.setPage(1); }} label="Country" />
         <MultiSelect options={filterOptions.branches} selected={branchFilter}
           onChange={(v) => { setBranchFilter(v); table.setPage(1); }} label="Branch" />
-        <Button variant="emphasized" onClick={() => { setIsinFilter(''); setNameFilter(''); setDepotFilter([]); setCountryFilter([]); setBranchFilter([]); table.setPage(1); }}>Clear</Button>
+        <Button variant="emphasized" onClick={() => { setIsinFilter(''); setTickerFilter(''); setNameFilter(''); setDepotFilter([]); setCountryFilter([]); setBranchFilter([]); table.setPage(1); }}>Clear</Button>
         <Button variant="emphasized" onClick={() => { table.reload(); loadFilters(); }}>Refresh</Button>
       </Flex>
 

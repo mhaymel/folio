@@ -15,15 +15,15 @@ import IsinCell from '../components/IsinCell';
 
 const STORAGE_KEY = 'transactions_filters';
 
-function loadFiltersFromStorage(): { isin: string; name: string; depots: string[] } {
+function loadFiltersFromStorage(): { isin: string; tickerSymbol: string; name: string; depots: string[] } {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch { /* ignore */ }
-  return { isin: '', name: '', depots: [] };
+  return { isin: '', tickerSymbol: '', name: '', depots: [] };
 }
 
-function saveFiltersToStorage(state: { isin: string; name: string; depots: string[] }) {
+function saveFiltersToStorage(state: { isin: string; tickerSymbol: string; name: string; depots: string[] }) {
   try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* ignore */ }
 }
 
@@ -35,21 +35,23 @@ export default function Transactions() {
   const [filteredCount, setFilteredCount] = useState(0);
   const [sumCount, setSumCount] = useState(0);
   const [isinFilter, setIsinFilter] = useState(saved.isin);
+  const [tickerFilter, setTickerFilter] = useState(saved.tickerSymbol ?? '');
   const [nameFilter, setNameFilter] = useState(saved.name);
   const [depotFilter, setDepotFilter] = useState<string[]>(saved.depots);
   const [depotOptions, setDepotOptions] = useState<string[]>([]);
 
   useEffect(() => {
-    saveFiltersToStorage({ isin: isinFilter, name: nameFilter, depots: depotFilter });
-  }, [isinFilter, nameFilter, depotFilter]);
+    saveFiltersToStorage({ isin: isinFilter, tickerSymbol: tickerFilter, name: nameFilter, depots: depotFilter });
+  }, [isinFilter, tickerFilter, nameFilter, depotFilter]);
 
   const extraParams = useMemo(() => {
     const p: Record<string, string> = {};
     if (isinFilter) p.isin = isinFilter;
+    if (tickerFilter) p.tickerSymbol = tickerFilter;
     if (nameFilter) p.name = nameFilter;
     if (depotFilter.length > 0) p.depot = depotFilter.join(',');
     return p;
-  }, [isinFilter, nameFilter, depotFilter]);
+  }, [isinFilter, tickerFilter, nameFilter, depotFilter]);
 
   const table = useServerTable<TransactionDto, TransactionPaginatedResponse>({
     endpoint: '/transactions',
@@ -73,6 +75,7 @@ export default function Transactions() {
 
   const handleCellDoubleClick = (field: string, value: string) => {
     if (field === 'isin') { setIsinFilter(value); table.setPage(1); }
+    else if (field === 'tickerSymbol') { setTickerFilter(value); table.setPage(1); }
     else if (field === 'name') { setNameFilter(value); table.setPage(1); }
     else if (field === 'depot') { setDepotFilter([value]); table.setPage(1); }
   };
@@ -83,6 +86,12 @@ export default function Transactions() {
       id: 'isin', header: 'ISIN', accessor: 'isin', sortType: 'text' as const, alignment: 'left' as const, width: 140, minWidth: 140,
       cell: ({ rowData }: { rowData: TransactionDto }) => (
         <IsinCell isin={rowData.isin} onFilter={(v) => { setIsinFilter(v); table.setPage(1); }} activeFilter={isinFilter} onDoubleClick={() => handleCellDoubleClick('isin', rowData.isin)} />
+      ),
+    },
+    {
+      id: 'tickerSymbol', header: 'Ticker', accessor: (row: TransactionDto) => row.tickerSymbol ?? '', sortType: 'text' as const, alignment: 'left' as const, width: 100, minWidth: 80,
+      cell: ({ rowData }: { rowData: TransactionDto }) => (
+        <span onDoubleClick={() => rowData.tickerSymbol && handleCellDoubleClick('tickerSymbol', rowData.tickerSymbol)} style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.tickerSymbol ?? ''}</span>
       ),
     },
     {
@@ -113,11 +122,13 @@ export default function Transactions() {
       <Flex gap={16} alignItems="flex-end" flexWrap="wrap">
         <LabeledInput label="ISIN" value={isinFilter}
           onChange={(v: string) => { setIsinFilter(v); table.setPage(1); }} />
+        <LabeledInput label="Ticker Symbol" value={tickerFilter}
+          onChange={(v: string) => { setTickerFilter(v); table.setPage(1); }} />
         <LabeledInput label="Name" value={nameFilter}
           onChange={(v: string) => { setNameFilter(v); table.setPage(1); }} />
         <MultiSelect options={depotOptions} selected={depotFilter}
           onChange={(v) => { setDepotFilter(v); table.setPage(1); }} label="Depot" />
-        <Button variant="emphasized" onClick={() => { setIsinFilter(''); setNameFilter(''); setDepotFilter([]); table.setPage(1); }}>Clear</Button>
+        <Button variant="emphasized" onClick={() => { setIsinFilter(''); setTickerFilter(''); setNameFilter(''); setDepotFilter([]); table.setPage(1); }}>Clear</Button>
       </Flex>
 
       <Flex alignItems="center" justifyContent="space-between">

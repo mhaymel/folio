@@ -4,6 +4,7 @@ import com.folio.domain.Isin;
 
 public final class StockDto {
     private Isin isin;
+    private String tickerSymbol;
     private String name;
     private String country;
     private String branch;
@@ -19,6 +20,8 @@ public final class StockDto {
 
     public Isin getIsin() { return isin; }
     public void setIsin(Isin isin) { this.isin = isin; }
+    public String getTickerSymbol() { return tickerSymbol; }
+    public void setTickerSymbol(String tickerSymbol) { this.tickerSymbol = tickerSymbol; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getCountry() { return country; }

@@ -7,13 +7,14 @@ import java.time.LocalDateTime;
  */
 public record TransactionFilter(
     String isin,
+    String tickerSymbol,
     String name,
     String depot,
     LocalDateTime fromDate,
     LocalDateTime toDate
 ) {
     public static TransactionFilter none() {
-        return new TransactionFilter(null, null, null, null, null);
+        return new TransactionFilter(null, null, null, null, null, null);
     }
 }
 

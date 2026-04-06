@@ -26,6 +26,7 @@ export interface TransactionDto {
   id: number;
   date: string;
   isin: string;
+  tickerSymbol: string | null;
   name: string | null;
   depot: string;
   count: number;
@@ -34,6 +35,7 @@ export interface TransactionDto {
 
 export interface StockDto {
   isin: string;
+  tickerSymbol: string | null;
   name: string | null;
   country: string | null;
   branch: string | null;
@@ -148,9 +150,21 @@ export interface YahooIsinWithoutTickerItem {
   name: string | null;
 }
 
+export interface YahooIsinDuplicateTickerItem {
+  isin: string;
+  tickerSymbol: string;
+  name: string | null;
+}
+
 export interface YahooIsinFetchResult {
   withTicker: YahooIsinWithTickerItem[];
   withoutTicker: YahooIsinWithoutTickerItem[];
+  duplicateTickers: YahooIsinDuplicateTickerItem[];
+}
+
+export interface YahooIsinSaveResult {
+  created: number;
+  updated: number;
 }
 
 export interface YahooQuoteWithQuoteDto {

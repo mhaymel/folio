@@ -18,7 +18,7 @@ CREATE TABLE isin_name (
 
 CREATE TABLE ticker_symbol (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    symbol VARCHAR(20) NOT NULL UNIQUE,
+    symbol VARCHAR(20) NOT NULL,
     isin_id INTEGER UNIQUE REFERENCES isin(id)
 );
 
