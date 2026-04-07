@@ -166,6 +166,32 @@ final class QuoteFetcherTest {
     }
 
     @Test
+    void convertsZAcToCentsInZAR() throws Exception {
+        // given — Yahoo returns ZAc (cents) for JSE stocks; price must be divided by 100
+        stubResponse(200, """
+                {
+                  "chart": {
+                    "result": [{
+                      "meta": {
+                        "regularMarketPrice": 18263.0,
+                        "currency": "ZAc",
+                        "regularMarketTime": 1743693600
+                      }
+                    }]
+                  }
+                }
+                """);
+
+        // when
+        Optional<Quote> result = quoteFetcher.fetchQuote(AAPL);
+
+        // then
+        assertThat(result).isPresent();
+        assertThat(result.get().amount().value()).isEqualTo(182.63);
+        assertThat(result.get().amount().currency()).isEqualTo(Currency.ZAR);
+    }
+
+    @Test
     void throwsOnNullTickerSymbol() {
         assertThatThrownBy(() -> quoteFetcher.fetchQuote(null))
                 .isInstanceOf(NullPointerException.class);

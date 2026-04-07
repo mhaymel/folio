@@ -17,7 +17,7 @@ Two tables are shown:
 1. **With quote** — held ISINs that have an entry in `isin_quote` (price, currency, provider, fetched timestamp).
 2. **Without quote** — held ISINs that have no quote yet (includes those with no ticker symbol).
 
-Both tables are **empty on mount** and only load after the **Fetch Quotes** button is clicked. The button triggers a Yahoo-specific fetch and reloads both tables on completion.
+Both tables are **empty on first visit** and only load after the **Fetch Quotes** button is clicked. Once loaded, the data (including the fetch status message) **persists across navigation** via `sessionStorage` — returning to the page restores the previous results without a new fetch. Clicking **Fetch Quotes** clears both tables and the status message, then fetches fresh data.
 
 ---
 
@@ -158,6 +158,6 @@ Filters: ISIN, Name, Ticker (text inputs, substring match).
 ### Features
 
 - Table conventions per [ui.md](../ui.md) apply (sortable, resizable, pagination, full width, export).
-- Both tables are **empty on mount** — no data is loaded until the user clicks Fetch Quotes.
+- Both tables are **empty on first visit** — no data is loaded until the user clicks Fetch Quotes. On return visits the previous results are restored from `sessionStorage`.
 - Price displayed with 2 decimal places (German locale format).
 - Prices ≤ 0 from Yahoo are discarded by `QuoteFetcher` before storage.

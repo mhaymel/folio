@@ -7,12 +7,11 @@ The data model shall be designed to support the required functionality and perfo
 ---
 
 ## `ticker_symbol`
-Maps a ticker symbol to a stock.
+Registry of known ticker symbols.
 
 | Column  | Type        | Constraints              | Description                        |
 |---------|-------------|---------------------------|------------------------------------|
 | id      | INTEGER     | PK                       | Surrogate primary key              |
-| isin_id | INTEGER     | FK → isin.id, UNIQUE     | Reference to the stock          |
 | symbol  | VARCHAR(20) | UNIQUE, NOT NULL         | Ticker symbol (e.g. AAPL, BASF.DE) |
 
 ## `currency`
@@ -98,10 +97,12 @@ Maps an ISIN to a human-readable stock name. An ISIN can have multiple names (e.
 ## `isin_ticker`
 Maps an ISIN to its ticker symbol(s).
 
-| Column           | Type    | Constraints                  | Description               |
-|------------------|---------|------------------------------|---------------------------|
-| isin_id          | INTEGER | PK, FK → isin.id             | Reference to ISIN         |
-| ticker_symbol_id | INTEGER | PK, FK → ticker_symbol.id    | Reference to ticker symbol |
+| Column           | Type    | Constraints                       | Description               |
+|------------------|---------|-----------------------------------|---------------------------|
+| id               | INTEGER | PK                                | Surrogate primary key     |
+| isin_id          | INTEGER | FK → isin.id                      | Reference to ISIN         |
+| ticker_symbol_id | INTEGER | FK → ticker_symbol.id             | Reference to ticker symbol |
+|                  |         | UNIQUE (isin_id, ticker_symbol_id) | Prevents duplicate links  |
 
 ## `isin_branch`
 Maps an ISIN to its industry branch. Sourced from [`docs/samples/branches.csv`](samples/branches.csv).

@@ -94,7 +94,14 @@ public final class QuoteFetcher {
         double price = priceNode.asDouble();
         if (price <= 0) return empty();
 
-        Optional<Currency> currency = currency(currencyNode.asText());
+        String currencyCode = currencyNode.asText().toUpperCase();
+        // Yahoo returns ZAc (South African cents) for JSE-listed stocks; 100 ZAc = 1 ZAR
+        if ("ZAC".equals(currencyCode)) {
+            price = price / 100.0;
+            currencyCode = "ZAR";
+        }
+
+        Optional<Currency> currency = currency(currencyCode);
         if (currency.isEmpty()) {
             LOG.warn("Yahoo Finance: unknown currency {} in response", currencyNode.asText());
             return empty();

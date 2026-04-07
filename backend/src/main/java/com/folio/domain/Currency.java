@@ -57,7 +57,7 @@ public final class Currency {
 
     public static Optional<Currency> currency(String name) {
         notEmpty(name);
-        return Optional.ofNullable(currencies.get(name));
+        return Optional.ofNullable(currencies.get(name.toUpperCase()));
     }
 
     public String name() {
@@ -65,7 +65,7 @@ public final class Currency {
     }
 
     private Currency(String name) {
-        this.name = notEmpty(name);
+        this.name = notEmpty(name).toUpperCase();
     }
 
     @Override

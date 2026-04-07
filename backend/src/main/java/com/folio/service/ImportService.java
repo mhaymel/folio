@@ -669,13 +669,9 @@ public class ImportService {
             for (ParsedTickerSymbol p : parsed) {
                 IsinEntity isin = isinMap.get(p.isinCode());
 
-                TickerSymbolEntity tickerSymbol = repos.tickerSymbol().findByIsin(isin)
+                TickerSymbolEntity tickerSymbol = repos.tickerSymbol().findBySymbol(p.symbol())
                     .orElseGet(() -> repos.tickerSymbol().save(TickerSymbolEntity.builder()
-                        .isin(isin).symbol(p.symbol()).build()));
-
-                if (!p.symbol().equals(tickerSymbol.getSymbol())) {
-                    tickerSymbol.setSymbol(p.symbol());
-                }
+                        .symbol(p.symbol()).build()));
 
                 Long count = (Long) em.createNativeQuery(
                         "SELECT COUNT(*) FROM isin_ticker WHERE isin_id = :isinId AND ticker_symbol_id = :tsId")

@@ -473,7 +473,7 @@ class PortfolioServiceTest {
         createTransaction(basf, depotDeGiro, 10, 50.0);
         createTransaction(basf, depotZero, 5, 55.0);
 
-        var filter = new com.folio.dto.TransactionFilter(null, null, "DeGiro", null, null);
+        var filter = new com.folio.dto.TransactionFilter(null, null, null, "DeGiro", null, null);
         var txns = portfolioService.getTransactions(filter);
 
         assertThat(txns).hasSize(1);
@@ -489,7 +489,7 @@ class PortfolioServiceTest {
         createTransaction(basf, depotDeGiro, 10, 50.0);
         createTransaction(apple, depotDeGiro, 5, 150.0);
 
-        var filter = new com.folio.dto.TransactionFilter(null, "apple", null, null, null);
+        var filter = new com.folio.dto.TransactionFilter(null, null, "apple", null, null, null);
         var txns = portfolioService.getTransactions(filter);
 
         assertThat(txns).hasSize(1);

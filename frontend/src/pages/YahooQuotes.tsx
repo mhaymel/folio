@@ -16,8 +16,13 @@ const fmtPrice = (v: number | null) =>
   v != null ? v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '\u2014';
 
 export default function YahooQuotes() {
-  const [fetchStatus, setFetchStatus] = useState('');
+  const [fetchStatus, setFetchStatus] = useState(() => sessionStorage.getItem('yahoo_fetch_status') ?? '');
   const [loading, setLoading] = useState(false);
+
+  const saveFetchStatus = (msg: string) => {
+    setFetchStatus(msg);
+    try { sessionStorage.setItem('yahoo_fetch_status', msg); } catch { /* ignore */ }
+  };
 
   // With-quote filters
   const [wqIsin, setWqIsin] = useState('');
@@ -63,18 +68,20 @@ export default function YahooQuotes() {
 
   const handleFetch = async () => {
     setLoading(true);
-    setFetchStatus('');
+    saveFetchStatus('');
+    wqTable.clear();
+    woqTable.clear();
     try {
       const r = await api.post<YahooFetchResultDto>('/yahoo-quotes/fetch');
       const { fetched, total, noTicker, noQuote } = r.data;
       const parts = [`${fetched} of ${total} quotes fetched`];
       if (noTicker > 0) parts.push(`${noTicker} no ticker`);
       if (noQuote > 0) parts.push(`${noQuote} no quote`);
-      setFetchStatus(parts.join(', ') + '.');
+      saveFetchStatus(parts.join(', ') + '.');
       wqTable.reload();
       woqTable.reload();
     } catch {
-      setFetchStatus('Fetch failed.');
+      saveFetchStatus('Fetch failed.');
     } finally {
       setLoading(false);
     }

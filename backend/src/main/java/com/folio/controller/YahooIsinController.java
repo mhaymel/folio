@@ -86,16 +86,42 @@ public class YahooIsinController {
         int updated = 0;
 
         for (YahooIsinWithTickerItem item : items) {
-            Optional<IsinEntity> isinEntity = isinRepository.findByIsin(item.isin());
-            if (isinEntity.isEmpty()) continue;
+            Optional<IsinEntity> isinEntityOpt = isinRepository.findByIsin(item.isin());
+            if (isinEntityOpt.isEmpty()) continue;
+            IsinEntity isinEntity = isinEntityOpt.get();
 
-            Optional<TickerSymbolEntity> existingByIsin = tickerSymbolRepository.findByIsin(isinEntity.get());
-            if (existingByIsin.isPresent()) {
-                existingByIsin.get().setSymbol(item.tickerSymbol());
-                updated++;
+            TickerSymbolEntity tickerSymbol = tickerSymbolRepository.findBySymbol(item.tickerSymbol())
+                .orElseGet(() -> tickerSymbolRepository.save(new TickerSymbolEntity(null, item.tickerSymbol())));
+
+            Long exactMatch = (Long) em.createNativeQuery(
+                    "SELECT COUNT(*) FROM isin_ticker WHERE isin_id = :isinId AND ticker_symbol_id = :tsId")
+                .setParameter("isinId", isinEntity.getId())
+                .setParameter("tsId", tickerSymbol.getId())
+                .getSingleResult();
+
+            if (exactMatch > 0) {
+                // already linked — nothing to do
             } else {
-                tickerSymbolRepository.save(new TickerSymbolEntity(null, isinEntity.get(), item.tickerSymbol()));
-                created++;
+                List<?> existingLink = em.createNativeQuery(
+                        "SELECT id FROM isin_ticker WHERE isin_id = :isinId")
+                    .setParameter("isinId", isinEntity.getId())
+                    .getResultList();
+
+                if (!existingLink.isEmpty()) {
+                    em.createNativeQuery(
+                            "UPDATE isin_ticker SET ticker_symbol_id = :tsId WHERE isin_id = :isinId")
+                        .setParameter("tsId", tickerSymbol.getId())
+                        .setParameter("isinId", isinEntity.getId())
+                        .executeUpdate();
+                    updated++;
+                } else {
+                    em.createNativeQuery(
+                            "INSERT INTO isin_ticker (isin_id, ticker_symbol_id) VALUES (:isinId, :tsId)")
+                        .setParameter("isinId", isinEntity.getId())
+                        .setParameter("tsId", tickerSymbol.getId())
+                        .executeUpdate();
+                    created++;
+                }
             }
         }
 

@@ -75,8 +75,10 @@ export default function useServerTable<T, R extends PaginatedResponse<T> = Pagin
   const extraParamsRef = useRef(extraParams);
   extraParamsRef.current = extraParams;
 
-  // Track whether a load has been triggered at least once (used when loadOnMount=false)
-  const hasLoadedRef = useRef(loadOnMount);
+  // Track whether a load has been triggered at least once (used when loadOnMount=false).
+  // Also persisted to sessionStorage so navigating back restores data automatically.
+  const hasLoadedKey = `table_hasloaded_${endpoint}`;
+  const hasLoadedRef = useRef(loadOnMount || sessionStorage.getItem(hasLoadedKey) === 'true');
 
   // Persist state on changes
   useEffect(() => {
@@ -85,6 +87,7 @@ export default function useServerTable<T, R extends PaginatedResponse<T> = Pagin
 
   const load = useCallback(async () => {
     hasLoadedRef.current = true;
+    try { sessionStorage.setItem(hasLoadedKey, 'true'); } catch { /* ignore */ }
     setLoading(true);
     try {
       const params: Record<string, string | number> = { sortField, sortDir, page, pageSize };
@@ -132,10 +135,11 @@ export default function useServerTable<T, R extends PaginatedResponse<T> = Pagin
 
   const clear = useCallback(() => {
     hasLoadedRef.current = false;
+    try { sessionStorage.removeItem(hasLoadedKey); } catch { /* ignore */ }
     setData([]);
     setTotalItems(0);
     setTotalPages(1);
-  }, []);
+  }, [hasLoadedKey]);
 
   const sortBy = [{ id: sortField, desc: sortDir === 'desc' }];
 

@@ -291,8 +291,11 @@ public class PortfolioService {
 
     private String getTickerSymbol(Integer isinId) {
         try {
-            return (String) em.createNativeQuery(
-                "SELECT ts.symbol FROM ticker_symbol ts WHERE ts.isin_id = :id")
+            return (String) em.createNativeQuery("""
+                SELECT ts.symbol FROM isin_ticker it
+                JOIN ticker_symbol ts ON ts.id = it.ticker_symbol_id
+                WHERE it.isin_id = :id
+                """)
                 .setParameter("id", isinId).setMaxResults(1).getSingleResult();
         } catch (Exception e) {
             return null;
