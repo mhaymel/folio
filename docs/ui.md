@@ -4,7 +4,7 @@ This document defines the baseline UI conventions that apply across all pages. P
 
 ---
 
-## Core Principles
+## 1. Core Principles
 
 - **Thin frontend / fat backend** — The frontend shall contain as little logic as possible. All filtering, sorting, aggregation, and data derivation must happen on the backend. The frontend sends user criteria (filter values, sort field/direction) to the backend via REST query parameters and renders the response as-is. This minimises frontend code and keeps a single source of truth for business logic.
 - **User-centred design** — Prioritise ease of use and task efficiency.
@@ -13,19 +13,19 @@ This document defines the baseline UI conventions that apply across all pages. P
 
 ---
 
-## Design
+## 2. Design
 
-### Visual Design
+### 2.1 Visual Design
 
 - Maintain a clean, modern, and uncluttered layout.
 - Use Strato design-system components and CSS custom-property tokens consistently.
 
-### Responsiveness
+### 2.2 Responsiveness
 
 - Support desktop and mobile viewports.
 - Adapt to different screen sizes and orientations; layout components must respond to viewport changes.
 
-### Intuitiveness
+### 2.3 Intuitiveness
 
 - Provide clear, predictable navigation.
 - Give immediate visual feedback on interactive elements.
@@ -33,17 +33,17 @@ This document defines the baseline UI conventions that apply across all pages. P
 
 ---
 
-## Functional Requirements
+## 3. Functional Requirements
 
-### Performance
+### 3.1 Performance
 
 - Pages shall load without unnecessary delays.
 - Data tables shall handle large datasets without degradation.
 - Interactions shall feel responsive and immediate.
 
-### Date and Number Formatting
+### 3.2 Date and Number Formatting
 
-#### Dates
+#### 3.2.1 Dates
 
 | Context | Format | Example |
 |---------|--------|---------|
@@ -52,7 +52,7 @@ This document defines the baseline UI conventions that apply across all pages. P
 
 **Backend-formatted:** All date values are formatted by the backend before being sent to the frontend. The backend returns date-only fields as `DD-MM-YYYY` strings and date-time fields as `DD.MM.YYYY HH:mm` strings. The frontend renders these strings as-is — no `sortAccessor`, no `isoDate`/`fmtDate` helpers, no `new Date()` parsing. Sorting is handled by the backend on the underlying `LocalDateTime` column before formatting.
 
-#### Numbers
+#### 3.2.2 Numbers
 
 - Use German locale: `toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })`
 - Decimal separator: comma (`,`)
@@ -61,11 +61,11 @@ This document defines the baseline UI conventions that apply across all pages. P
 
 ---
 
-### Data Tables
+### 3.3 Data Tables
 
 All `DataTable` instances shall follow these conventions unless a page-specific spec states otherwise.
 
-#### Layout and Sizing
+#### 3.3.1 Layout and Sizing
 
 | Prop | Required | Purpose |
 |------|----------|---------|
@@ -80,7 +80,7 @@ Every column shall specify both `width` (initial) and `minWidth` (minimum). Choo
 | **Text** (Name, ISIN, Country, …) | Set `width` and `minWidth` to the smallest values that show the longest expected value without truncation | left |
 | **Number** (Count, Price, %, …) | Set `width` and `minWidth` to the smallest values that show the longest expected formatted number without truncation | right |
 
-#### Visual Consistency
+#### 3.3.2 Visual Consistency
 
 - Use a clean, consistent visual style across all tables.
 - Column spacing and row padding shall be uniform; avoid overly dense or overly spacious layouts.
@@ -88,7 +88,7 @@ Every column shall specify both `width` (initial) and `minWidth` (minimum). Choo
 - Colour usage shall follow the Strato design-system tokens for text, backgrounds, and accents.
 - Tables must be responsive: content shall remain readable and accessible on different screen sizes and devices without horizontal overflow or layout breakage.
 
-#### ISIN Column Conventions
+#### 3.3.3 ISIN Column Conventions
 
 All tables that contain an ISIN column shall follow these conventions:
 
@@ -101,7 +101,7 @@ All tables that contain an ISIN column shall follow these conventions:
 - **Icon visibility:** Both icons are shown at 50 % opacity by default and full opacity on hover.
 - The shared `IsinCell` component (`src/components/IsinCell.tsx`) implements all of the above and is used across all pages with ISIN columns.
 
-#### Sorting and Filtering
+#### 3.3.4 Sorting and Filtering
 
 - **Server-side sorting**: All sorting must be performed by the backend. When the user clicks a column header, the frontend must:
   1. Capture the new sort field and direction from the `onSortByChange` callback.
@@ -112,7 +112,7 @@ All tables that contain an ISIN column shall follow these conventions:
 - **Date columns must be sorted by their logical value** (the underlying `LocalDateTime`), **not alphanumerically** by the formatted string. Since sorting is server-side, the backend sorts on the raw `LocalDateTime` column before formatting — no `sortAccessor` or client-side date parsing is needed.
 - Define a sensible default sort (e.g. most recent date first) and send it on the initial request.
 
-#### Pagination
+#### 3.3.5 Pagination
 
 Pagination is **server-side**. The backend slices the sorted/filtered result set and returns a paginated envelope. The frontend does **not** use Strato's `<DataTablePagination>` component.
 
@@ -134,7 +134,7 @@ Pagination is **server-side**. The backend slices the sorted/filtered result set
 - The **page-size selector** shall use a Strato `Select` component (not a native `<select>`) with options `10`, `20`, `50`, `100`. Changing the page size resets `page` to `1` and triggers a refetch.
 - When filters or sort change, `page` resets to `1`.
 
-#### Export
+#### 3.3.6 Export
 
 - Each table shall offer **Export CSV** and **Export Excel** buttons, positioned top-right next to the Show All / Paginate toggle.
 - **Formats:**
@@ -144,43 +144,44 @@ Pagination is **server-side**. The backend slices the sorted/filtered result set
 - **Sort forwarding:** Every page shall track its active sort state (initialised from `defaultSortBy`) and pass `sortField` and `sortDir` to the export endpoint so the exported file matches the on-screen order.
 - **Backend-driven generation:** The frontend sends a request to a backend export endpoint, passing the active sort field, sort direction, and all applied filters. The backend generates the file and returns it as a downloadable response. This keeps large-dataset exports off the client.
 
-#### Filter Input Focus Retention
+#### 3.3.7 Filter Input Focus Retention
 
 - **Filter inputs must always remain mounted**, even while data is loading. The loading indicator (spinner) shall only replace the table/data area, never the filter bar. This prevents focus loss when the user is typing in a filter field and a refetch is triggered.
 
-#### Row Count Display
+#### 3.3.8 Row Count Display
 
 - **Filtered:** `"N of M items"` (e.g. `"12 of 50 stocks"`).
 - **Unfiltered:** `"M items"` (e.g. `"50 stocks"`).
 - The count shall update in real time as filters change.
 - To support the "N of M" format, paginated response envelopes on endpoints that support filtering must include both `filteredCount` (count after filtering) and `totalCount` (count of all items regardless of filters).
 
-#### Text Filter Input Labels
+#### 3.3.9 Text Filter Input Labels
 
 - All free-text filter inputs (e.g. ISIN, Name) shall have a visible **title label** above the input — matching the same font, size, and placement as the labels on dropdown multi-select filters. For example, the ISIN text input shall have the label "ISIN" and the Name text input shall have the label "Name".
 
-#### Debounce on Text Filter Inputs
+#### 3.3.10 Debounce on Text Filter Inputs
 
 - All free-text filter inputs (e.g. ISIN, Name) shall be **debounced with a 300 ms delay** before triggering an API refetch. This avoids excessive requests on every keystroke.
 
-#### Refresh Button
+#### 3.3.11 Refresh Button
 
 - Every page with a data table shall include a **Refresh** button that reloads all data from the backend.
 
-#### Button Visibility
+#### 3.3.12 Button Visibility
 
 - All buttons must be visually distinguishable from the background. Buttons shall have a visible border and background colour that contrasts with the page background, ensuring they are discoverable without hovering. Button text must be readable at all times.
 
-#### Table Cell Vertical Alignment and Padding
+#### 3.3.13 Table Cell Vertical Alignment and Padding
 
-- All table cells (`<td>` and `<th>`) shall be vertically aligned to **center** (`vertical-align: middle`).
-- All table cells shall have horizontal padding (at least 8 px left and right) to ensure text does not touch the cell border.
+- All table cells shall have horizontal padding (at least 8 px left and right) to ensure text does not touch the cell border. Applied via the global `table td / table th` rule in `index.css`.
+- Custom cell renderers (`cell:` prop on DataTable columns) shall use `display: flex; alignItems: center; height: '100%'` on their root element so that content is vertically centred within the cell regardless of row height.
+- Do not add `padding-top` or `padding-bottom` to the global `table td` rule. Strato manages vertical cell padding internally via a wrapper inside the `<td>`; adding vertical padding to the `<td>` itself doubles the spacing and breaks the layout.
 
-#### State Preservation Across Navigation
+#### 3.3.14 State Preservation Across Navigation
 
 - Filter values, sort field/direction, current page, and page size shall be preserved when the user navigates away from a page and returns. The state is stored in `sessionStorage` keyed by endpoint. This ensures the user sees the same view they left, without resetting to defaults on every navigation.
 
-#### Multi-Select Dropdown Filters
+#### 3.3.15 Multi-Select Dropdown Filters
 
 - Dropdown filters for categorical values (e.g. Depot, Country, Branch) shall be **multi-select**: the user can select zero or more options. When no options are selected, all items are shown (equivalent to "All"). The backend accepts comma-separated values for these filter parameters and filters using an `IN` clause (or set membership check).
 - **Strato Components:** All dropdown multi-select boxes shall use Strato components from the design system (see [Strato Select documentation](https://developer.dynatrace.com/design/components/forms/Select/)). Do not use native HTML `<select>` elements.
@@ -196,6 +197,6 @@ Pagination is **server-side**. The backend slices the sorted/filtered result set
 
 ---
 
-### Testing
+### 3.4 Testing
 
 See [testing.md](testing.md) for all testing conventions, scope, and infrastructure.

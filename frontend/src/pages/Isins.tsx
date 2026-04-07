@@ -88,7 +88,7 @@ export default function Isins() {
     {
       id: 'name', header: 'Name', accessor: (r: IsinDto) => r.name ?? '', sortType: 'text' as const, alignment: 'left' as const, width: 240, minWidth: 120,
       cell: ({ rowData }: { rowData: IsinDto }) => (
-        <span onDoubleClick={() => rowData.name && handleCellDoubleClick('name', rowData.name)} style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', cursor: 'pointer' }}>{rowData.name ?? ''}</span>
+        <span onDoubleClick={() => rowData.name && handleCellDoubleClick('name', rowData.name)} style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', height: '100%', cursor: 'pointer' }}>{rowData.name ?? ''}</span>
       ),
     },
     { id: 'country', header: 'Country', accessor: (r: IsinDto) => r.country ?? '', sortType: 'text' as const, alignment: 'left' as const, width: 120, minWidth: 80 },

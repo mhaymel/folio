@@ -88,12 +88,14 @@ body {
 table td,
 table th {
   vertical-align: middle;
-  padding: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 /* Strato DataTable overrides */
 [data-testid="data-table"] td,
 [data-testid="data-table"] th {
   vertical-align: middle;
-  padding: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
 }

@@ -26,7 +26,7 @@ export default function IsinCell({ isin, onFilter, activeFilter, onDoubleClick }
   return (
     <span
       onDoubleClick={onDoubleClick}
-      style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', gap: 4, overflow: 'hidden' }}
+      style={{ paddingLeft: 10, display: 'flex', alignItems: 'center', height: '100%', gap: 4, overflow: 'hidden' }}
     >
       <span style={{ fontFamily: 'monospace', flexShrink: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {isin}
