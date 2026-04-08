@@ -41,6 +41,9 @@ Do **not** use Lombok. Write explicit Java: getters, setters, constructors, manu
 | **DES&#8209;12** | All parameters to public methods and constructors must be checked for nullity (`requireNonNull`) and throw `IllegalArgumentException` if invalid. Use `requireNonNull` with one parameter only — no message string. |
 | **DES&#8209;13** | **Constructors** must have **at most 3 parameters**. Keep constructor bodies free of logic — only parameter validation (precondition checks) is allowed. |
 | **DES&#8209;14** | **Methods** must have **at most 3 parameters**; prefer 0 or 1. If more are needed, introduce a parameter object or rethink the design. |
+| **DES&#8209;15** | **Do not use underscores in method names.** Use `lowerCamelCase` exclusively. This applies to all methods, including unit test methods. For tests, write `shouldAcceptNonEmptyArray()` not `should_accept_non_empty_array()`. |
+| **DES&#8209;16** | **No unused imports.** Remove all unused imports from Java files. IDEs (IntelliJ, VS Code) provide quick-fix commands to clean imports — use them before committing code. |
+| **DES&#8209;17** | **No wildcard imports** (`import java.util.*;`). Always use explicit, fully-qualified imports. This makes dependencies clear and avoids name collisions. IDEs can auto-organize imports — use them. |
 
 ### Naming
 
@@ -78,6 +81,7 @@ Key naming rules:
 - Unit test class: `<ClassUnderTest>Test` (e.g. `QuoteFetcherTest`)
 - External API integration test class: `<ClassUnderTest>IntegrationTest` (e.g. `QuoteFetcherIntegrationTest`, `IsinToTickerIntegrationTest`)
 - Test method: `should<ExpectedBehaviour>[When<Condition>]` — no `test` prefix
+- **Do not use separator comments** like `// --- methodToBeTested ---` or `// --- section name ---`. Test method names are self-documenting; let the test structure speak for itself.
 
 ---
 

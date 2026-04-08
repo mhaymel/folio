@@ -14,8 +14,7 @@ public final class Throw {
     }
 
     public static <T> T IAE(String message) {
-        nn(message);
-        throw new IllegalArgumentException(message);
+        throw new IllegalArgumentException(nn(message));
     }
 
     public static <T> T ISE(String format, Object... args) {
