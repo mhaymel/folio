@@ -86,25 +86,10 @@ public class YahooQuotesController {
         int noQuote = 0;
 
         for (Object[] row : rows) {
-            String isinCode = (String) row[0];
-            String ticker = (String) row[1];
-
-            if (ticker == null || ticker.isBlank()) {
-                noTicker++;
-                continue;
-            }
-
-            Optional<com.folio.domain.Quote> quote = quoteFetcher.fetchQuote(new TickerSymbol(ticker));
-            if (quote.isEmpty()) {
-                log.debug("Yahoo Finance: no quote for ticker {} (ISIN {})", ticker, isinCode);
-                noQuote++;
-                continue;
-            }
-
-            double price = quote.get().amount().value();
-            String currency = quote.get().amount().currency().name();
-            upsertQuote(isinCode, price, currency);
-            fetched++;
+            YahooFetchResultDto r = processRow(row);
+            fetched += r.fetched();
+            noTicker += r.noTicker();
+            noQuote += r.noQuote();
         }
 
         log.info("Yahoo quote fetch complete: total={} fetched={} noTicker={} noQuote={}",
@@ -217,6 +202,19 @@ public class YahooQuotesController {
         if (filter == null || filter.isBlank()) return true;
         if (value == null) return false;
         return value.toLowerCase(Locale.ROOT).contains(filter.toLowerCase(Locale.ROOT));
+    }
+
+    private YahooFetchResultDto processRow(Object[] row) {
+        String isinCode = (String) row[0];
+        String ticker = (String) row[1];
+        if (ticker == null || ticker.isBlank()) return new YahooFetchResultDto(0, 0, 1, 0);
+        Optional<com.folio.domain.Quote> quote = quoteFetcher.fetchQuote(new TickerSymbol(ticker));
+        if (quote.isEmpty()) {
+            log.debug("Yahoo Finance: no quote for ticker {} (ISIN {})", ticker, isinCode);
+            return new YahooFetchResultDto(0, 0, 0, 1);
+        }
+        upsertQuote(isinCode, quote.get().amount().value(), quote.get().amount().currency().name());
+        return new YahooFetchResultDto(0, 1, 0, 0);
     }
 
     private void upsertQuote(String isinCode, double price, String currency) {

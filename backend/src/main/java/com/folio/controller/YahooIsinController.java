@@ -84,48 +84,48 @@ public class YahooIsinController {
     public ResponseEntity<YahooIsinSaveResult> save(@RequestBody List<YahooIsinWithTickerItem> items) {
         int created = 0;
         int updated = 0;
-
         for (YahooIsinWithTickerItem item : items) {
-            Optional<IsinEntity> isinEntityOpt = isinRepository.findByIsin(item.isin());
-            if (isinEntityOpt.isEmpty()) continue;
-            IsinEntity isinEntity = isinEntityOpt.get();
-
-            TickerSymbolEntity tickerSymbol = tickerSymbolRepository.findBySymbol(item.tickerSymbol())
-                .orElseGet(() -> tickerSymbolRepository.save(new TickerSymbolEntity(null, item.tickerSymbol())));
-
-            Long exactMatch = (Long) em.createNativeQuery(
-                    "SELECT COUNT(*) FROM isin_ticker WHERE isin_id = :isinId AND ticker_symbol_id = :tsId")
-                .setParameter("isinId", isinEntity.getId())
-                .setParameter("tsId", tickerSymbol.getId())
-                .getSingleResult();
-
-            if (exactMatch > 0) {
-                // already linked — nothing to do
-            } else {
-                List<?> existingLink = em.createNativeQuery(
-                        "SELECT id FROM isin_ticker WHERE isin_id = :isinId")
-                    .setParameter("isinId", isinEntity.getId())
-                    .getResultList();
-
-                if (!existingLink.isEmpty()) {
-                    em.createNativeQuery(
-                            "UPDATE isin_ticker SET ticker_symbol_id = :tsId WHERE isin_id = :isinId")
-                        .setParameter("tsId", tickerSymbol.getId())
-                        .setParameter("isinId", isinEntity.getId())
-                        .executeUpdate();
-                    updated++;
-                } else {
-                    em.createNativeQuery(
-                            "INSERT INTO isin_ticker (isin_id, ticker_symbol_id) VALUES (:isinId, :tsId)")
-                        .setParameter("isinId", isinEntity.getId())
-                        .setParameter("tsId", tickerSymbol.getId())
-                        .executeUpdate();
-                    created++;
-                }
-            }
+            YahooIsinSaveResult r = saveItem(item);
+            created += r.created();
+            updated += r.updated();
         }
-
         return ResponseEntity.ok(new YahooIsinSaveResult(created, updated));
+    }
+
+    private YahooIsinSaveResult saveItem(YahooIsinWithTickerItem item) {
+        Optional<IsinEntity> isinEntityOpt = isinRepository.findByIsin(item.isin());
+        if (isinEntityOpt.isEmpty()) return new YahooIsinSaveResult(0, 0);
+        IsinEntity isinEntity = isinEntityOpt.get();
+
+        TickerSymbolEntity tickerSymbol = tickerSymbolRepository.findBySymbol(item.tickerSymbol())
+            .orElseGet(() -> tickerSymbolRepository.save(new TickerSymbolEntity(null, item.tickerSymbol())));
+
+        Long exactMatch = (Long) em.createNativeQuery(
+                "SELECT COUNT(*) FROM isin_ticker WHERE isin_id = :isinId AND ticker_symbol_id = :tsId")
+            .setParameter("isinId", isinEntity.getId())
+            .setParameter("tsId", tickerSymbol.getId())
+            .getSingleResult();
+        if (exactMatch > 0) return new YahooIsinSaveResult(0, 0);
+
+        List<?> existingLink = em.createNativeQuery(
+                "SELECT id FROM isin_ticker WHERE isin_id = :isinId")
+            .setParameter("isinId", isinEntity.getId())
+            .getResultList();
+
+        if (!existingLink.isEmpty()) {
+            em.createNativeQuery(
+                    "UPDATE isin_ticker SET ticker_symbol_id = :tsId WHERE isin_id = :isinId")
+                .setParameter("tsId", tickerSymbol.getId())
+                .setParameter("isinId", isinEntity.getId())
+                .executeUpdate();
+            return new YahooIsinSaveResult(0, 1);
+        }
+        em.createNativeQuery(
+                "INSERT INTO isin_ticker (isin_id, ticker_symbol_id) VALUES (:isinId, :tsId)")
+            .setParameter("isinId", isinEntity.getId())
+            .setParameter("tsId", tickerSymbol.getId())
+            .executeUpdate();
+        return new YahooIsinSaveResult(1, 0);
     }
 
     @SuppressWarnings("unchecked")

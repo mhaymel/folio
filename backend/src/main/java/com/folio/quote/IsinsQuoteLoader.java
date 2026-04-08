@@ -1,14 +1,19 @@
 package com.folio.quote;
 
 import com.folio.domain.Isin;
-
-import static java.lang.String.format;
 import org.slf4j.Logger;
-import static org.slf4j.LoggerFactory.getLogger;
-import static java.lang.String.format;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import static java.lang.String.format;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Cascade fallback quote loader. Tries each source in order;
@@ -77,9 +82,5 @@ public final class IsinsQuoteLoader {
         return results;
     }
 
-    /**
-     * Result of a successful quote fetch.
-     */
-    public record QuoteResult(double price, String providerName) {}
 }
 

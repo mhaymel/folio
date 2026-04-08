@@ -97,18 +97,11 @@ public class ImportService {
     }
 
     private void bulkUpsertIsinNames(Map<String, IsinEntity> isinMap, Map<String, String> isinCodeToName) {
-        Map<Integer, IsinEntity> isinById = new HashMap<>();
         Set<Integer> isinIds = new HashSet<>();
         for (var entry : isinCodeToName.entrySet()) {
-            String name = entry.getValue();
-            if (name == null || name.isBlank()) {
-                // skip - but still need to continue instead of break/continue
-                // filter below handles this
-            }
             IsinEntity isin = isinMap.get(entry.getKey());
             if (isin != null) {
                 isinIds.add(isin.getId());
-                isinById.put(isin.getId(), isin);
             }
         }
         if (isinIds.isEmpty()) return;
@@ -119,18 +112,23 @@ public class ImportService {
 
         List<IsinNameEntity> toInsert = new ArrayList<>();
         for (var entry : isinCodeToName.entrySet()) {
-            String name = entry.getValue();
-            if (name == null || name.isBlank()) continue;
-            IsinEntity isin = isinMap.get(entry.getKey());
-            if (isin == null) continue;
-            String key = isin.getId() + ":" + name.trim();
-            if (existingKeys.add(key)) {
-                toInsert.add(IsinNameEntity.builder().isin(isin).name(name.trim()).build());
-            }
+            buildIsinName(entry, isinMap, existingKeys).ifPresent(toInsert::add);
         }
         if (!toInsert.isEmpty()) {
             repos.isinName().saveAll(toInsert);
         }
+    }
+
+    private Optional<IsinNameEntity> buildIsinName(Map.Entry<String, String> entry,
+                                                    Map<String, IsinEntity> isinMap,
+                                                    Set<String> existingKeys) {
+        String name = entry.getValue();
+        if (name == null || name.isBlank()) return Optional.empty();
+        IsinEntity isin = isinMap.get(entry.getKey());
+        if (isin == null) return Optional.empty();
+        String key = isin.getId() + ":" + name.trim();
+        if (!existingKeys.add(key)) return Optional.empty();
+        return Optional.of(IsinNameEntity.builder().isin(isin).name(name.trim()).build());
     }
 
     private Map<String, CurrencyEntity> bulkUpsertCurrencies(Set<String> currencyCodes) {

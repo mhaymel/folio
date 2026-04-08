@@ -1,24 +1,29 @@
 package com.folio.service;
 
-import static java.lang.Integer.parseInt;
-
 import com.folio.domain.Isin;
 import com.folio.model.IsinQuoteEntity;
 import com.folio.model.QuoteProviderEntity;
 import com.folio.model.SettingEntity;
 import com.folio.quote.IsinsQuoteLoader;
+import com.folio.quote.QuoteResult;
 import com.folio.repository.QuoteRepositories;
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
-import static org.slf4j.LoggerFactory.getLogger;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static java.lang.Integer.parseInt;
+import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
 public final class QuoteService {
@@ -86,14 +91,14 @@ public final class QuoteService {
 
             // 2. No transaction: slow HTTP calls to external quote providers
             log.info("Fetching quotes for {} ISINs", heldIsins.size());
-            Map<Isin, IsinsQuoteLoader.QuoteResult> results = quoteLoader.fetchQuotes(heldIsins);
+            Map<Isin, QuoteResult> results = quoteLoader.fetchQuotes(heldIsins);
 
             // 3. Short write transaction: persist all fetched quotes
             Integer upserted = tx.execute(status -> {
                 int count = 0;
                 for (var entry : results.entrySet()) {
                     Isin isin = entry.getKey();
-                    IsinsQuoteLoader.QuoteResult result = entry.getValue();
+                    QuoteResult result = entry.getValue();
                     try {
                         upsertQuote(isin.value(), result.price(), result.providerName());
                         count++;

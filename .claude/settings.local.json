@@ -62,7 +62,12 @@
       "Bash(sed -i 's/\\\\bclass TickerSymbol\\\\b/class TickerSymbolEntity/g' backend/src/main/java/com/folio/model/TickerSymbolEntity.java)",
       "Bash(xargs sed:*)",
       "Bash(git add:*)",
-      "WebFetch(domain:query2.finance.yahoo.com)"
+      "WebFetch(domain:query2.finance.yahoo.com)",
+      "Bash(grep -r \"public.*public class\\\\|final class.*extends.*[^I]$\" /c/daten/dev/folio/backend/src/main/java)",
+      "Bash(grep -rn \"^public\\\\|^class\\\\|^interface\" /c/daten/dev/folio/backend/src/main/java/com/folio/controller/*.java)",
+      "Bash(grep -E \"public class.*[^l]$|class.*[^l]$\")",
+      "Bash(./mvnw compile:*)",
+      "Bash(grep -v \"//.*continue\\\\|//.*break\")"
     ]
   }
 }
