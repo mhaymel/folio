@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithRouter } from '../test/test-utils';
 import TickerSymbols from './TickerSymbols';
@@ -54,10 +54,11 @@ describe('TickerSymbols', () => {
   it('renders all column headers', async () => {
     renderWithRouter(<TickerSymbols />);
     await waitFor(() => {
-      expect(screen.getByText('ISIN')).toBeInTheDocument();
+      expect(within(screen.getByTestId('data-table')).getByText('ISIN')).toBeInTheDocument();
     });
-    expect(screen.getByText('Ticker Symbol')).toBeInTheDocument();
-    expect(screen.getByText('Name')).toBeInTheDocument();
+    const table = screen.getByTestId('data-table');
+    expect(within(table).getByText('Ticker Symbol')).toBeInTheDocument();
+    expect(within(table).getByText('Name')).toBeInTheDocument();
   });
 
   it('shows item count', async () => {
@@ -127,28 +128,30 @@ describe('TickerSymbols', () => {
   it('has correct column alignments', async () => {
     renderWithRouter(<TickerSymbols />);
     await waitFor(() => {
-      expect(screen.getByText('ISIN')).toBeInTheDocument();
+      expect(within(screen.getByTestId('data-table')).getByText('ISIN')).toBeInTheDocument();
     });
-    expect(screen.getByText('ISIN').getAttribute('data-alignment')).toBe('left');
-    expect(screen.getByText('Ticker Symbol').getAttribute('data-alignment')).toBe('left');
-    expect(screen.getByText('Name').getAttribute('data-alignment')).toBe('left');
+    const table = screen.getByTestId('data-table');
+    expect(within(table).getByText('ISIN').getAttribute('data-alignment')).toBe('left');
+    expect(within(table).getByText('Ticker Symbol').getAttribute('data-alignment')).toBe('left');
+    expect(within(table).getByText('Name').getAttribute('data-alignment')).toBe('left');
   });
 
   it('toggles sort direction without unsorted state', async () => {
     const user = userEvent.setup();
     renderWithRouter(<TickerSymbols />);
     await waitFor(() => {
-      expect(screen.getByText('ISIN')).toBeInTheDocument();
+      expect(within(screen.getByTestId('data-table')).getByText('ISIN')).toBeInTheDocument();
     });
+    const isinHeader = within(screen.getByTestId('data-table')).getByText('ISIN');
 
-    await user.click(screen.getByText('ISIN'));
+    await user.click(isinHeader);
     await waitFor(() => {
       expect(api.get).toHaveBeenCalledWith('/ticker-symbols', {
         params: expect.objectContaining({ sortField: 'isin', sortDir: 'desc' }),
       });
     });
 
-    await user.click(screen.getByText('ISIN'));
+    await user.click(isinHeader);
     await waitFor(() => {
       expect(api.get).toHaveBeenCalledWith('/ticker-symbols', {
         params: expect.objectContaining({ sortField: 'isin', sortDir: 'asc' }),
