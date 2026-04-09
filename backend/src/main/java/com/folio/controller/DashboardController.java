@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/dashboard")
 @Tag(name = "Dashboard", description = "Portfolio dashboard summary")
-public class DashboardController {
+public final class DashboardController {
 
     private final PortfolioService portfolioService;
     private final ExportService exportService;

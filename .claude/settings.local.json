@@ -67,7 +67,8 @@
       "Bash(grep -rn \"^public\\\\|^class\\\\|^interface\" /c/daten/dev/folio/backend/src/main/java/com/folio/controller/*.java)",
       "Bash(grep -E \"public class.*[^l]$|class.*[^l]$\")",
       "Bash(./mvnw compile:*)",
-      "Bash(grep -v \"//.*continue\\\\|//.*break\")"
+      "Bash(grep -v \"//.*continue\\\\|//.*break\")",
+      "Bash(mvn compile:*)"
     ]
   }
 }

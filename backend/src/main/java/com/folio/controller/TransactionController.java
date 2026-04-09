@@ -20,7 +20,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/transactions")
 @Tag(name = "Transactions", description = "TransactionEntity data endpoints")
-public class TransactionController {
+public final class TransactionController {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 

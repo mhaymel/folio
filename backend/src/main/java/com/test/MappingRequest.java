@@ -1,5 +1,5 @@
 package com.test;
 
-public record MappingRequest(String idType, String idValue) {
+record MappingRequest(String idType, String idValue) {
 }
 

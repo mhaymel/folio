@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/import")
 @Tag(name = "Import", description = "CSV file import endpoints")
-public class ImportController {
+public final class ImportController {
 
     private final ImportService importService;
 

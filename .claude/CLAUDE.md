@@ -17,6 +17,10 @@ Folio is a personal investment portfolio tracker: Spring Boot backend + React/Ty
 
 Always read the relevant doc section before making changes that touch requirements or architecture.
 
+## Skills
+
+When reviewing, refactoring, or writing Java code, apply the rules from the `java-clean-code` skill (`skills/java-clean-code/`). Load all rule files from `skills/java-clean-code/rules/` before applying fixes.
+
 ## Reference project
 
 `/c/mnt/private/dev/depot` is a separate project containing reference implementations of portfolio calculations (performance, gains/losses, dividends, etc.). It is **not** used or imported by Folio, but serves as a starting point and reference for implementing equivalent functionality here. Code quality there is not authoritative — treat it as a source of ideas, not as ground truth.

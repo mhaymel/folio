@@ -31,9 +31,6 @@ public final class IsinsQuoteLoader {
      */
     public IsinsQuoteLoader(List<QuoteSource> sources) {
         this.sources = sources;
-        log.info("IsinsQuoteLoader initialized with {} sources: {}",
-            sources.size(),
-            sources.stream().map(s -> s.providerName() + "(" + s.getClass().getSimpleName() + ")").toList());
     }
 
     /**

@@ -18,7 +18,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/quotes")
 @Tag(name = "Quotes", description = "Quote fetch management")
-public class QuoteController {
+public final class QuoteController {
 
     private final SettingRepository settingRepo;
     private final QuoteService quoteService;

@@ -20,7 +20,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/depots")
 @Tag(name = "Depots", description = "DepotEntity reference data")
-public class DepotController {
+public final class DepotController {
 
     private static final Map<String, Comparator<DepotEntity>> SORT_FIELDS = Map.of(
         "name", SortHelper.text(DepotEntity::getName)

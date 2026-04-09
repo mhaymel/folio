@@ -34,8 +34,8 @@ public final class QuoteService {
     private final QuoteRepositories repos;
     private final EntityManager em;
     private final TransactionTemplate tx;
-    private final AtomicBoolean fetchInProgress = new AtomicBoolean(false);
-    private final AtomicLong lastScheduledFetch = new AtomicLong(0);
+    private final AtomicBoolean fetchInProgress;
+    private final AtomicLong lastScheduledFetch;
 
     public QuoteService(IsinsQuoteLoader quoteLoader, QuoteRepositories repos, EntityManager em,
                         TransactionTemplate tx) {
@@ -43,6 +43,8 @@ public final class QuoteService {
         this.repos = repos;
         this.em = em;
         this.tx = tx;
+        this.fetchInProgress = new AtomicBoolean(false);
+        this.lastScheduledFetch = new AtomicLong(0);
     }
 
     /**

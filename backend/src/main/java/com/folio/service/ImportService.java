@@ -41,12 +41,13 @@ public class ImportService {
      * Each {@code @Transactional} import method acquires this lock before
      * touching the database and releases it in a {@code finally} block.
      */
-    private final ReentrantLock importLock = new ReentrantLock();
+    private final ReentrantLock importLock;
 
     private final ImportRepositories repos;
     private final EntityManager em;
 
     public ImportService(ImportRepositories repos, EntityManager em) {
+        this.importLock = new ReentrantLock();
         this.repos = repos;
         this.em = em;
     }

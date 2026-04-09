@@ -7,7 +7,11 @@ public final class ImportResultBuilder {
     private boolean success;
     private int imported;
     private long durationMs;
-    private List<String> errors = new ArrayList<>();
+    private List<String> errors;
+
+    ImportResultBuilder() {
+        this.errors = new ArrayList<>();
+    }
 
     public ImportResultBuilder success(boolean success) { this.success = success; return this; }
     public ImportResultBuilder imported(int imported) { this.imported = imported; return this; }

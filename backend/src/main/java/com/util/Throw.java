@@ -6,7 +6,7 @@ import static com.util.Precondition.notEmpty;
 
 public final class Throw {
 
-    public static Class<IllegalArgumentException> IAE = IllegalArgumentException.class;
+    public static final Class<IllegalArgumentException> IAE = IllegalArgumentException.class;
     public static <T> T IAE(String format, Object... args) {
         notEmpty(format);
         nn(args);

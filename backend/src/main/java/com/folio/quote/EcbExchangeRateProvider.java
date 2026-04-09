@@ -1,16 +1,13 @@
 package com.folio.quote;
 
 import static java.lang.Double.parseDouble;
-
-import org.slf4j.Logger;
 import static java.lang.String.format;
 import static org.slf4j.LoggerFactory.getLogger;
+
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-import static java.lang.String.format;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Optional;
-import static java.lang.String.format;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -26,16 +23,21 @@ public final class EcbExchangeRateProvider {
     private static final double FALLBACK_EUR_USD = 0.92;
 
     private final RestTemplate restTemplate;
-    private final ConcurrentMap<String, CachedRate> cache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, CachedRate> cache;
 
     public EcbExchangeRateProvider() {
-        this.restTemplate = new RestTemplate();
+        this(new RestTemplate(), new ConcurrentHashMap<>());
+    }
+
+    EcbExchangeRateProvider(RestTemplate restTemplate, ConcurrentMap<String, CachedRate> cache) {
+        this.restTemplate = restTemplate;
+        this.cache = cache;
     }
 
     public double getUsdToEurRate() {
         CachedRate cached = cache.get("USD");
         if (cached != null && !cached.isExpired()) {
-            return cached.rate;
+            return cached.rate();
         }
 
         try {
@@ -66,4 +68,3 @@ public final class EcbExchangeRateProvider {
         return usdPrice * getUsdToEurRate();
     }
 }
-

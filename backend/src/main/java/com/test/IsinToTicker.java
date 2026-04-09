@@ -16,7 +16,7 @@ import java.util.Optional;
 import static java.util.Objects.requireNonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public final class IsinToTicker {
+final class IsinToTicker {
 
     private static final Logger LOG = getLogger(IsinToTicker.class);
     private static final String OPENFIGI_URL = "https://api.openfigi.com/v3/mapping";
@@ -25,7 +25,7 @@ public final class IsinToTicker {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
-    public IsinToTicker() {
+    IsinToTicker() {
         this(HttpClient.newHttpClient(), new ObjectMapper());
     }
 
@@ -40,7 +40,7 @@ public final class IsinToTicker {
      * @param isin an International Securities Identification Number, e.g. "US0378331005"
      * @return the ticker symbol (e.g. "AAPL") or empty if not found
      */
-    public Optional<String> tickerFor(String isin) {
+    Optional<String> tickerFor(String isin) {
         requireNonNull(isin);
         Map<String, Optional<String>> result = tickersFor(List.of(isin));
         return result.getOrDefault(isin, Optional.empty());
@@ -54,7 +54,7 @@ public final class IsinToTicker {
      * @param isins list of ISINs to resolve
      * @return ordered map of ISIN → optional ticker
      */
-    public Map<String, Optional<String>> tickersFor(List<String> isins) {
+    Map<String, Optional<String>> tickersFor(List<String> isins) {
         requireNonNull(isins);
 
         Map<String, Optional<String>> results = new LinkedHashMap<>();
