@@ -394,3 +394,73 @@ final class UserService {
 
 ---
 
+## R-002l
+
+A class must not have unused fields.
+
+**Bad:**
+
+```java
+final class UserService {
+    private final int userId;
+    private final String userName;
+
+    UserService(int userId, String userName) {
+        this.userId = userId;
+        this.userName = userName;
+    }
+ 
+    String userName() {
+        return userName;
+    }
+    // userId is not used anywhere in the class
+}
+```
+
+**Good:**
+
+```java
+final class UserService {
+    private final String userName;
+
+    UserService(String userName) {
+        this.userName = userName;
+    }
+
+    String userName() {
+        return userName;
+    }
+}
+```
+
+---
+
+## R-002m
+
+A constructor must not have unused parameters
+
+**Bad:**
+
+```java
+final class UserService {
+    private final String userName;
+
+    UserService(int userId, String userName) {
+        this.userName = userName;
+    }
+}
+```
+
+**Good:**
+
+```java
+final class UserService {
+    private final String userName;
+
+    UserService(String userName) {
+        this.userName = userName;
+    }
+}
+```
+
+---
