@@ -159,16 +159,17 @@ vi.mock('@dynatrace/strato-components/forms', () => ({
     ({ children, value, onChange, multiple, placeholder, clearable, ...props }: any) => {
       if (multiple) {
         const selectedValues: string[] = Array.isArray(value) ? value : [];
+        const effectivePlaceholder = placeholder || props.name;
         const handleMultiChange = (e: any) => {
           const selected = Array.from(e.target.selectedOptions).map((o: any) => o.value);
           onChange?.(selected.length > 0 ? selected : null);
         };
         return (
           <div>
-            {selectedValues.length === 0 && <span>{placeholder}</span>}
+            {selectedValues.length === 0 && <span>{effectivePlaceholder}</span>}
             {selectedValues.length > 0 && selectedValues.length <= 2 && <span>{selectedValues.join(', ')}</span>}
             {selectedValues.length > 2 && <span>{selectedValues.length} selected</span>}
-            <select multiple value={selectedValues} onChange={handleMultiChange} aria-label={placeholder}>
+            <select multiple value={selectedValues} onChange={handleMultiChange} aria-label={effectivePlaceholder}>
               {children}
             </select>
           </div>
@@ -181,6 +182,7 @@ vi.mock('@dynatrace/strato-components/forms', () => ({
       );
     },
     {
+      Trigger: () => null,
       Content: ({ children }: any) => <>{children}</>,
       Option: ({ value, children }: any) => <option value={value}>{children}</option>,
     },

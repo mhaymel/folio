@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithRouter } from '../test/test-utils';
 import DividendPayments from './DividendPayments';
@@ -54,9 +54,10 @@ describe('DividendPayments', () => {
     await waitFor(() => {
       expect(screen.getByText('Date')).toBeInTheDocument();
     });
-    expect(screen.getByText('ISIN')).toBeInTheDocument();
-    expect(screen.getByText('Name')).toBeInTheDocument();
-    expect(screen.getByText('Depot')).toBeInTheDocument();
+    const table = screen.getByTestId('data-table');
+    expect(within(table).getByText('ISIN')).toBeInTheDocument();
+    expect(within(table).getByText('Name')).toBeInTheDocument();
+    expect(within(table).getByText('Depot')).toBeInTheDocument();
     expect(screen.getByText('Amount (EUR)')).toBeInTheDocument();
   });
 
@@ -194,11 +195,12 @@ describe('DividendPayments', () => {
     await waitFor(() => {
       expect(screen.getByText('Date')).toBeInTheDocument();
     });
-    expect(screen.getByText('Date').getAttribute('data-alignment')).toBe('center');
-    expect(screen.getByText('ISIN').getAttribute('data-alignment')).toBe('left');
-    expect(screen.getByText('Name').getAttribute('data-alignment')).toBe('left');
-    expect(screen.getByText('Depot').getAttribute('data-alignment')).toBe('left');
-    expect(screen.getByText('Amount (EUR)').getAttribute('data-alignment')).toBe('right');
+    const table = screen.getByTestId('data-table');
+    expect(within(table).getByText('Date').getAttribute('data-alignment')).toBe('center');
+    expect(within(table).getByText('ISIN').getAttribute('data-alignment')).toBe('left');
+    expect(within(table).getByText('Name').getAttribute('data-alignment')).toBe('left');
+    expect(within(table).getByText('Depot').getAttribute('data-alignment')).toBe('left');
+    expect(within(table).getByText('Amount (EUR)').getAttribute('data-alignment')).toBe('right');
   });
 
   it('preserves filters in sessionStorage', async () => {

@@ -20,7 +20,7 @@ public record Isin(String value) {
      * Only precondition checks are allowed here per coding guidelines.
      */
     public Isin {
-        requireNonNull(value, "ISIN value must not be null");
+        requireNonNull(value);
         if (value.isBlank()) {
             throw new IllegalArgumentException("ISIN must not be blank");
         }

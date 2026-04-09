@@ -102,14 +102,19 @@ public final class IsinTickerSearch {
         if (!quotes.isArray()) return null;
 
         for (JsonNode quote : quotes) {
-            if (!quote.path("isYahooFinance").asBoolean(false)) continue;
-            JsonNode symbolNode = quote.path("symbol");
-            if (symbolNode.isMissingNode() || symbolNode.isNull()) continue;
-            LOG.debug("Yahoo search: ISIN {} → {}", isin, symbolNode.asText());
-            return new TickerSymbol(symbolNode.asText());
+            TickerSymbol ticker = extractTicker(quote, isin);
+            if (ticker != null) return ticker;
         }
 
         LOG.debug("Yahoo search: no ticker found for ISIN {}", isin);
         return null;
+    }
+
+    private TickerSymbol extractTicker(JsonNode quote, Isin isin) {
+        if (!quote.path("isYahooFinance").asBoolean(false)) return null;
+        JsonNode symbolNode = quote.path("symbol");
+        if (symbolNode.isMissingNode() || symbolNode.isNull()) return null;
+        LOG.debug("Yahoo search: ISIN {} → {}", isin, symbolNode.asText());
+        return new TickerSymbol(symbolNode.asText());
     }
 }

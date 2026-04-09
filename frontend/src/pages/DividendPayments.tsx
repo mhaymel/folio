@@ -164,7 +164,7 @@ export default function DividendPayments() {
         <LabeledInput label="Name" value={nameFilter}
           onChange={(v: string) => { setNameFilter(v); table.setPage(1); }} />
         <MultiSelect options={depotOptions} selected={depotFilter}
-          onChange={(v) => { setDepotFilter(v); table.setPage(1); }} label="Depot" />
+          onChange={(v) => { setDepotFilter(v); table.setPage(1); }} label="Depot" placeholder="All depots" />
         <TimeframeSelector value={timeframeValue} onChange={handleTimeframeChange} clearable>
           <TimeframeSelector.Presets>
             {YEAR_PRESETS.map(p => (

@@ -121,9 +121,9 @@ export default function Stocks() {
         <LabeledInput label="Name" value={nameFilter}
           onChange={(v: string) => { setNameFilter(v); table.setPage(1); }} />
         <MultiSelect options={filterOptions.countries} selected={countryFilter}
-          onChange={(v) => { setCountryFilter(v); table.setPage(1); }} label="Country" />
+          onChange={(v) => { setCountryFilter(v); table.setPage(1); }} label="Country" placeholder="All countries" />
         <MultiSelect options={filterOptions.branches} selected={branchFilter}
-          onChange={(v) => { setBranchFilter(v); table.setPage(1); }} label="Branch" />
+          onChange={(v) => { setBranchFilter(v); table.setPage(1); }} label="Branch" placeholder="All branches" />
         <Button variant="emphasized" onClick={() => { setIsinFilter(''); setTickerFilter(''); setNameFilter(''); setCountryFilter([]); setBranchFilter([]); table.setPage(1); }}>Clear</Button>
         <Button variant="emphasized" onClick={() => { table.reload(); loadFilters(); }}>Refresh</Button>
       </Flex>

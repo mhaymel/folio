@@ -2,8 +2,9 @@ package com.folio.service;
 
 import com.folio.dto.ImportResult;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+
+import static org.slf4j.LoggerFactory.getLogger;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
@@ -24,7 +25,7 @@ import java.util.stream.Stream;
 @Profile("dev")
 class StartupImporter implements ApplicationRunner {
 
-    private static final Logger log = LoggerFactory.getLogger(StartupImporter.class);
+    private static final Logger log = getLogger(StartupImporter.class);
 
     private final ImportService importService;
     private final Path samplesDir;
@@ -104,8 +105,4 @@ class StartupImporter implements ApplicationRunner {
         }
     }
 
-    @FunctionalInterface
-    private interface Importer {
-        ImportResult run(FileMultipartFile file) throws Exception;
-    }
 }

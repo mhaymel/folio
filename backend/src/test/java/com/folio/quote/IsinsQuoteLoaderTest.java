@@ -1,9 +1,13 @@
 package com.folio.quote;
 
 import com.folio.domain.Isin;
+import com.folio.quote.QuoteResult;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -21,7 +25,7 @@ final class IsinsQuoteLoaderTest {
         var loader = new IsinsQuoteLoader(List.of(source));
 
         // when
-        Map<Isin, IsinsQuoteLoader.QuoteResult> results = loader.fetchQuotes(Set.of(ISIN));
+        Map<Isin, QuoteResult> results = loader.fetchQuotes(Set.of(ISIN));
 
         // then
         assertThat(results).containsKey(ISIN);
@@ -43,7 +47,7 @@ final class IsinsQuoteLoaderTest {
         var loader = new IsinsQuoteLoader(List.of(first, second));
 
         // when
-        Map<Isin, IsinsQuoteLoader.QuoteResult> results = loader.fetchQuotes(Set.of(ISIN));
+        Map<Isin, QuoteResult> results = loader.fetchQuotes(Set.of(ISIN));
 
         // then
         assertThat(results.get(ISIN).providerName()).isEqualTo("Second");
@@ -74,7 +78,7 @@ final class IsinsQuoteLoaderTest {
         var loader = new IsinsQuoteLoader(List.of());
 
         // when
-        Map<Isin, IsinsQuoteLoader.QuoteResult> results = loader.fetchQuotes(Set.of());
+        Map<Isin, QuoteResult> results = loader.fetchQuotes(Set.of());
 
         // then
         assertThat(results).isEmpty();
@@ -90,7 +94,7 @@ final class IsinsQuoteLoaderTest {
         var loader = new IsinsQuoteLoader(List.of(failing));
 
         // when
-        Map<Isin, IsinsQuoteLoader.QuoteResult> results = loader.fetchQuotes(Set.of(ISIN));
+        Map<Isin, QuoteResult> results = loader.fetchQuotes(Set.of(ISIN));
 
         // then
         assertThat(results).isEmpty();

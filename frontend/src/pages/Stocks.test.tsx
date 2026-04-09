@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithRouter } from '../test/test-utils';
 import Stocks from './Stocks';
@@ -61,11 +61,12 @@ describe('Stocks', () => {
   it('renders all column headers without Depot', async () => {
     renderWithRouter(<Stocks />);
     await waitFor(() => {
-      expect(screen.getByText('ISIN')).toBeInTheDocument();
+      expect(within(screen.getByTestId('data-table')).getByText('ISIN')).toBeInTheDocument();
     });
-    expect(screen.getByText('Name')).toBeInTheDocument();
-    expect(screen.getByText('Country')).toBeInTheDocument();
-    expect(screen.getByText('Branch')).toBeInTheDocument();
+    const table = screen.getByTestId('data-table');
+    expect(within(table).getByText('Name')).toBeInTheDocument();
+    expect(within(table).getByText('Country')).toBeInTheDocument();
+    expect(within(table).getByText('Branch')).toBeInTheDocument();
     expect(screen.getByText('Count')).toBeInTheDocument();
     expect(screen.getByText('Avg Entry Price')).toBeInTheDocument();
     expect(screen.getByText('Current Quote')).toBeInTheDocument();
@@ -82,7 +83,7 @@ describe('Stocks', () => {
   it('renders columns in correct order (country/branch after currentQuote)', async () => {
     renderWithRouter(<Stocks />);
     await waitFor(() => {
-      expect(screen.getByText('ISIN')).toBeInTheDocument();
+      expect(within(screen.getByTestId('data-table')).getByText('ISIN')).toBeInTheDocument();
     });
     const headers = screen.getAllByRole('columnheader');
     const headerTexts = headers.map(h => h.textContent?.replace(/ [↑↓]/, ''));
@@ -201,20 +202,21 @@ describe('Stocks', () => {
   it('has correct column alignment', async () => {
     renderWithRouter(<Stocks />);
     await waitFor(() => {
-      expect(screen.getByText('ISIN')).toBeInTheDocument();
+      expect(within(screen.getByTestId('data-table')).getByText('ISIN')).toBeInTheDocument();
     });
+    const table = screen.getByTestId('data-table');
     // Text columns: left
-    expect(screen.getByText('ISIN').getAttribute('data-alignment')).toBe('left');
-    expect(screen.getByText('Name').getAttribute('data-alignment')).toBe('left');
-    expect(screen.getByText('Country').getAttribute('data-alignment')).toBe('left');
-    expect(screen.getByText('Branch').getAttribute('data-alignment')).toBe('left');
+    expect(within(table).getByText('ISIN').getAttribute('data-alignment')).toBe('left');
+    expect(within(table).getByText('Name').getAttribute('data-alignment')).toBe('left');
+    expect(within(table).getByText('Country').getAttribute('data-alignment')).toBe('left');
+    expect(within(table).getByText('Branch').getAttribute('data-alignment')).toBe('left');
     // Numeric columns: right
-    expect(screen.getByText('Count').getAttribute('data-alignment')).toBe('right');
-    expect(screen.getByText('Avg Entry Price').getAttribute('data-alignment')).toBe('right');
-    expect(screen.getByText('Current Quote').getAttribute('data-alignment')).toBe('right');
-    expect(screen.getByText('Performance (%)').getAttribute('data-alignment')).toBe('right');
-    expect(screen.getByText('Expected Dividend/Share').getAttribute('data-alignment')).toBe('right');
-    expect(screen.getByText('Est. Annual Income').getAttribute('data-alignment')).toBe('right');
+    expect(within(table).getByText('Count').getAttribute('data-alignment')).toBe('right');
+    expect(within(table).getByText('Avg Entry Price').getAttribute('data-alignment')).toBe('right');
+    expect(within(table).getByText('Current Quote').getAttribute('data-alignment')).toBe('right');
+    expect(within(table).getByText('Performance (%)').getAttribute('data-alignment')).toBe('right');
+    expect(within(table).getByText('Expected Dividend/Share').getAttribute('data-alignment')).toBe('right');
+    expect(within(table).getByText('Est. Annual Income').getAttribute('data-alignment')).toBe('right');
   });
 
   it('preserves filters in sessionStorage', async () => {
