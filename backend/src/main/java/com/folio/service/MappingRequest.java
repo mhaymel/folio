@@ -1,3 +1,10 @@
 package com.folio.service;
 
-record MappingRequest(String idType, String idValue) {}
+import static java.util.Objects.requireNonNull;
+
+record MappingRequest(String idType, String idValue) {
+    MappingRequest {
+        requireNonNull(idType);
+        requireNonNull(idValue);
+    }
+}

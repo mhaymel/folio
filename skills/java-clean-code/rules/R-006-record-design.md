@@ -129,3 +129,30 @@ var summary = new UserSummary(1L, "Alice");
 ```
 
 ---
+
+## R-006f
+
+Object parameters in records must not be null. Validate non-null constraints in the compact canonical constructor using `Objects.requireNonNull`.
+
+**Bad:**
+
+```java
+record UserSummary(Long id, String name) {
+}
+```
+
+**Good:**
+
+```java
+import static java.util.Objects.requireNonNull;
+
+record UserSummary(Long id, String name) {
+    UserSummary {
+        requireNonNull(id);
+        requireNonNull(name);
+    }
+}
+```
+
+---
+
