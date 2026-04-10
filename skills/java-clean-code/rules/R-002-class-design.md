@@ -196,6 +196,10 @@ The primary and secondary constructors may be package-private, private, or publi
 When the primary constructor only exists for internal delegation (i.e. some fields
 are internal state never set from outside), make the primary constructor `private`.
 
+**Spring note:** When a class has multiple constructors, Spring cannot auto-detect
+which one to use for dependency injection. Annotate the secondary (injection)
+constructor with `@Autowired` so Spring selects it.
+
 
 **Bad:**
 

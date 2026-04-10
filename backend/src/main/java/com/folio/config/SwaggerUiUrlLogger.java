@@ -7,6 +7,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.springdoc.core.properties.SwaggerUiConfigProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,7 @@ final class SwaggerUiUrlLogger {
         this.port = port;
     }
 
+    @Autowired
     SwaggerUiUrlLogger(SwaggerUiConfigProperties properties) {
         this(properties, null, null);
     }
