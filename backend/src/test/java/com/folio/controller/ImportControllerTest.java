@@ -24,7 +24,7 @@ final class ImportControllerTest {
 
     // branches.csv format: ISIN;Name;BranchEntity (no header row)
     @Test
-    void importBranches_validCsv_returnsSuccess() throws Exception {
+    void importBranchesValidCsvReturnsSuccess() throws Exception {
         String csv = "DE000BASF111;BASF SE;Chemicals\nUS0378331005;Apple Inc.;Technology";
         MockMultipartFile file = new MockMultipartFile("file", "branches.csv", "text/csv", csv.getBytes());
 
@@ -36,7 +36,7 @@ final class ImportControllerTest {
 
     // countries.csv format: ISIN;Name;CountryEntity (no header row)
     @Test
-    void importCountries_validCsv_returnsSuccess() throws Exception {
+    void importCountriesValidCsvReturnsSuccess() throws Exception {
         String csv = "DE000BASF111;BASF SE;Germany\nUS0378331005;Apple Inc.;USA";
         MockMultipartFile file = new MockMultipartFile("file", "countries.csv", "text/csv", csv.getBytes());
 
@@ -48,7 +48,7 @@ final class ImportControllerTest {
 
     // dividende.csv format: ISIN;Name;CurrencyEntity;DividendPerShare (no header row)
     @Test
-    void importDividends_validCsv_returnsSuccess() throws Exception {
+    void importDividendsValidCsvReturnsSuccess() throws Exception {
         String csv = "DE000BASF111;BASF SE;EUR;3,40\nUS0378331005;Apple Inc.;USD;0,96";
         MockMultipartFile file = new MockMultipartFile("file", "dividende.csv", "text/csv", csv.getBytes());
 
@@ -60,7 +60,7 @@ final class ImportControllerTest {
 
     // ticker_symbol.csv format: ISIN;TickerSymbolEntity;Name (no header row)
     @Test
-    void importTickerSymbols_validCsv_returnsSuccess() throws Exception {
+    void importTickerSymbolsValidCsvReturnsSuccess() throws Exception {
         String csv = "DE000BASF111;BAS.DE;BASF SE\nUS0378331005;AAPL;Apple Inc.";
         MockMultipartFile file = new MockMultipartFile("file", "ticker_symbol.csv", "text/csv", csv.getBytes());
 
@@ -91,7 +91,7 @@ final class ImportControllerTest {
     }
 
     @Test
-    void importZeroOrders_parsesGermanThousandsSeparator() throws Exception {
+    void importZeroOrdersParsesGermanThousandsSeparator() throws Exception {
         // 1.000 in German = 1000 (dot is thousands separator)
         String csv = ZERO_HEADER + "\n"
             + zeroOrderRow("Test Stock", "DE000BASF111", "Kauf", "5,50", "1.000");
@@ -104,7 +104,7 @@ final class ImportControllerTest {
     }
 
     @Test
-    void importZeroOrders_parsesGermanThousandsWithDecimal() throws Exception {
+    void importZeroOrdersParsesGermanThousandsWithDecimal() throws Exception {
         // 1.000,50 in German = 1000.50
         String csv = ZERO_HEADER + "\n"
             + zeroOrderRow("Test Stock", "DE000BASF111", "Kauf", "12,75", "1.000,50");
@@ -117,7 +117,7 @@ final class ImportControllerTest {
     }
 
     @Test
-    void importZeroOrders_parsesSimpleIntegerCount() throws Exception {
+    void importZeroOrdersParsesSimpleIntegerCount() throws Exception {
         String csv = ZERO_HEADER + "\n"
             + zeroOrderRow("Test Stock", "DE000BASF111", "Kauf", "29,53", "1");
         MockMultipartFile file = new MockMultipartFile("file", "ZERO-orders.csv", "text/csv", csv.getBytes());
@@ -129,7 +129,7 @@ final class ImportControllerTest {
     }
 
     @Test
-    void importZeroOrders_skipsNonExecutedRows() throws Exception {
+    void importZeroOrdersSkipsNonExecutedRows() throws Exception {
         // Row with status "gestrichen" should be skipped
         String csv = ZERO_HEADER + "\n"
             + "Test;DE000BASF111;WKN;1;;gestrichen;Limit;;;01.01.2025;10:00:00;31.12.2025;Kauf;-100;;;;;;;0;;";
@@ -142,7 +142,7 @@ final class ImportControllerTest {
     }
 
     @Test
-    void importBranches_emptyCsv_returnsZeroImported() throws Exception {
+    void importBranchesEmptyCsvReturnsZeroImported() throws Exception {
         String csv = "";
         MockMultipartFile file = new MockMultipartFile("file", "branches.csv", "text/csv", csv.getBytes());
 
@@ -153,7 +153,7 @@ final class ImportControllerTest {
     }
 
     @Test
-    void importBranches_invalidFormat_returnsSuccessWithZeroImported() throws Exception {
+    void importBranchesInvalidFormatReturnsSuccessWithZeroImported() throws Exception {
         // Only 2 fields per row, needs 3 — rows are silently skipped
         String csv = "DE000BASF111;Chemicals";
         MockMultipartFile file = new MockMultipartFile("file", "branches.csv", "text/csv", csv.getBytes());

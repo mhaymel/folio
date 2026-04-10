@@ -7,6 +7,7 @@ import com.folio.repository.DepotRepository;
 import com.folio.service.ExportService;
 import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
+import com.folio.service.SortRequest;
 import com.folio.dto.ExportColumn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -63,6 +64,6 @@ public final class DepotController {
 
     private List<DepotEntity> sorted(String sortField, String sortDir) {
         List<DepotEntity> data = depotRepo.findAllByOrderByNameAsc();
-        return SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
+        return SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
     }
 }

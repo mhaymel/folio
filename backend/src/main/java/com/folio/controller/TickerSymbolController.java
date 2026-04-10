@@ -6,6 +6,7 @@ import com.folio.dto.TickerSymbolDto;
 import com.folio.service.ExportService;
 import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
+import com.folio.service.SortRequest;
 import com.folio.dto.ExportColumn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -54,7 +55,9 @@ public class TickerSymbolController {
             @RequestParam(required = false, defaultValue = "asc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
-        List<TickerSymbolDto> data = filterAndSort(loadAll(), isin, tickerSymbol, name, sortField, sortDir);
+        List<TickerSymbolDto> data = filterAndSort(loadAll(),
+            new TickerSymbolFilter(isin, tickerSymbol, name),
+            new SortRequest(sortField, sortDir));
         return ResponseEntity.ok(PaginationHelper.paginate(data, page, pageSize));
     }
 
@@ -68,7 +71,9 @@ public class TickerSymbolController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        List<TickerSymbolDto> data = filterAndSort(loadAll(), isin, tickerSymbol, name, sortField, sortDir);
+        List<TickerSymbolDto> data = filterAndSort(loadAll(),
+            new TickerSymbolFilter(isin, tickerSymbol, name),
+            new SortRequest(sortField, sortDir));
         List<ExportColumn<TickerSymbolDto>> columns = List.of(
                 new ExportColumn<>("ISIN", TickerSymbolDto::getIsin),
                 new ExportColumn<>("Ticker Symbol", TickerSymbolDto::getTickerSymbol),
@@ -77,22 +82,22 @@ public class TickerSymbolController {
         return exportService.export(new ExportRequest<>(data, columns, format, "ticker-symbols"));
     }
 
-    private static List<TickerSymbolDto> filterAndSort(List<TickerSymbolDto> data, String isin, String tickerSymbol,
-                                                        String name, String sortField, String sortDir) {
-        if (isin != null && !isin.isBlank()) {
-            String lower = isin.toLowerCase();
+    private static List<TickerSymbolDto> filterAndSort(List<TickerSymbolDto> data, TickerSymbolFilter filter,
+                                                        SortRequest sort) {
+        if (filter.isin() != null && !filter.isin().isBlank()) {
+            String lower = filter.isin().toLowerCase();
             data = data.stream().filter(d -> d.getIsin() != null && d.getIsin().value().toLowerCase().contains(lower)).toList();
         }
-        if (tickerSymbol != null && !tickerSymbol.isBlank()) {
-            String lower = tickerSymbol.toLowerCase();
+        if (filter.tickerSymbol() != null && !filter.tickerSymbol().isBlank()) {
+            String lower = filter.tickerSymbol().toLowerCase();
             data = data.stream().filter(d -> d.getTickerSymbol() != null && d.getTickerSymbol().toLowerCase().contains(lower)).toList();
         }
-        if (name != null && !name.isBlank()) {
-            String lower = name.toLowerCase();
+        if (filter.name() != null && !filter.name().isBlank()) {
+            String lower = filter.name().toLowerCase();
             data = data.stream().filter(d -> d.getName() != null && d.getName().toLowerCase().contains(lower)).toList();
         }
-        if (sortField != null && !sortField.isBlank()) {
-            data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
+        if (sort.sortField() != null && !sort.sortField().isBlank()) {
+            data = SortHelper.sort(data, sort, SORT_FIELDS);
         }
         return data;
     }

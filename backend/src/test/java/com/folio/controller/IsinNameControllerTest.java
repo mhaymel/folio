@@ -20,7 +20,7 @@ final class IsinNameControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getIsinNames_returnsPaginatedResponse() throws Exception {
+    void getIsinNamesReturnsPaginatedResponse() throws Exception {
         mockMvc.perform(get("/api/isin-names"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items").isArray())
@@ -29,7 +29,7 @@ final class IsinNameControllerTest {
     }
 
     @Test
-    void getIsinNames_supportsSortParams() throws Exception {
+    void getIsinNamesSupportsSortParams() throws Exception {
         mockMvc.perform(get("/api/isin-names")
                 .param("sortField", "isin")
                 .param("sortDir", "desc"))
@@ -38,7 +38,7 @@ final class IsinNameControllerTest {
     }
 
     @Test
-    void getIsinNames_supportsPagination() throws Exception {
+    void getIsinNamesSupportsPagination() throws Exception {
         mockMvc.perform(get("/api/isin-names")
                 .param("page", "1")
                 .param("pageSize", "20"))
@@ -47,14 +47,14 @@ final class IsinNameControllerTest {
     }
 
     @Test
-    void exportIsinNames_csv_returnsFile() throws Exception {
+    void exportIsinNamesCsvReturnsFile() throws Exception {
         mockMvc.perform(get("/api/isin-names/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("isin-names.csv")));
     }
 
     @Test
-    void exportIsinNames_withSort_returnsFile() throws Exception {
+    void exportIsinNamesWithSortReturnsFile() throws Exception {
         mockMvc.perform(get("/api/isin-names/export")
                 .param("format", "csv")
                 .param("sortField", "isin")

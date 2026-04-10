@@ -316,7 +316,8 @@ final class UserService {
 
 ## R-002k
 
-Classes should not have more than three non-static fields. Introduce new classes or records to group related fields together.
+Classes must not have more than three non-static fields. 
+Introduce new classes or records to group related fields together.
 
 **Bad:**
 

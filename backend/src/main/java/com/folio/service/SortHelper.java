@@ -9,12 +9,12 @@ public final class SortHelper {
 
     private SortHelper() {}
 
-    public static <T> List<T> sort(List<T> items, String sortField, String sortDir,
+    public static <T> List<T> sort(List<T> items, SortRequest sort,
                                    Map<String, Comparator<T>> fieldMap) {
-        if (sortField == null || sortField.isBlank()) return items;
-        Comparator<T> cmp = fieldMap.get(sortField);
+        if (sort.sortField() == null || sort.sortField().isBlank()) return items;
+        Comparator<T> cmp = fieldMap.get(sort.sortField());
         if (cmp == null) return items;
-        if ("desc".equalsIgnoreCase(sortDir)) cmp = cmp.reversed();
+        if ("desc".equalsIgnoreCase(sort.sortDir())) cmp = cmp.reversed();
         return items.stream().sorted(cmp).toList();
     }
 

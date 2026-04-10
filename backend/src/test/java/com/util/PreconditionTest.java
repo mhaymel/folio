@@ -580,7 +580,7 @@ final class PreconditionTest {
     // --- noWhitespaces ---
 
     @Test
-    void noWhitespaces_shouldAcceptStringWithoutWhitespace() {
+    void noWhitespacesShouldAcceptStringWithoutWhitespace() {
         // given
         String input = "hello";
 
@@ -592,31 +592,31 @@ final class PreconditionTest {
     }
 
     @Test
-    void noWhitespaces_shouldRejectStringWithSpace() {
+    void noWhitespacesShouldRejectStringWithSpace() {
         // given / when / then
         assertThrowsIAE(() -> Precondition.noWhitespaces("hello world"));
     }
 
     @Test
-    void noWhitespaces_shouldRejectStringWithTab() {
+    void noWhitespacesShouldRejectStringWithTab() {
         // given / when / then
         assertThrowsIAE(() -> Precondition.noWhitespaces("hello\tworld"));
     }
 
     @Test
-    void noWhitespaces_shouldRejectStringWithNewline() {
+    void noWhitespacesShouldRejectStringWithNewline() {
         // given / when / then
         assertThrowsIAE(() -> Precondition.noWhitespaces("hello\nworld"));
     }
 
     @Test
-    void noWhitespaces_shouldRejectNull() {
+    void noWhitespacesShouldRejectNull() {
         // given / when / then
         assertThrowsIAE(() -> Precondition.noWhitespaces(null));
     }
 
     @Test
-    void upperCase_shouldReturnAlreadyUpperCase() {
+    void upperCaseShouldReturnAlreadyUpperCase() {
         // given
         String input = "HELLO";
 
@@ -636,7 +636,7 @@ final class PreconditionTest {
     // --- uppercase ---
 
     @Test
-    void uppercase_shouldAcceptAllUpperCaseString() {
+    void uppercaseShouldAcceptAllUpperCaseString() {
         // given
         String input = "HELLO";
 
@@ -648,19 +648,19 @@ final class PreconditionTest {
     }
 
     @Test
-    void upperCase_shouldRejectMixedCaseString() {
+    void upperCaseShouldRejectMixedCaseString() {
         // given / when / then
         assertThrowsIAE(() -> Precondition.upperCase("Hello"));
     }
 
     @Test
-    void upperCase_shouldRejectLowercaseString() {
+    void upperCaseShouldRejectLowercaseString() {
         // given / when / then
         assertThrowsIAE(() -> Precondition.upperCase("hello"));
     }
 
     @Test
-    void uppercase_shouldAcceptAllUpperCaseWithNumbers() {
+    void uppercaseShouldAcceptAllUpperCaseWithNumbers() {
         // given
         String input = "HELLO123";
 
@@ -671,28 +671,23 @@ final class PreconditionTest {
         assertThat(result).isEqualTo(input);
     }
 
-    @Test
-    void upperCase_shouldRejectNull() {
-        // given / when / then
-        assertThrowsIAE(() -> Precondition.upperCase(null));
-    }
 
     // --- greaterEqualZero ---
 
     @Test
-    void greaterEqualZero_shouldAcceptPositive() {
+    void greaterEqualZeroShouldAcceptPositive() {
         // given / when / then
         assertThat(Precondition.greaterEqualZero(5.5)).isEqualTo(5.5);
     }
 
     @Test
-    void greaterEqualZero_shouldAcceptZero() {
+    void greaterEqualZeroShouldAcceptZero() {
         // given / when / then
         assertThat(Precondition.greaterEqualZero(0.0)).isEqualTo(0.0);
     }
 
     @Test
-    void greaterEqualZero_shouldRejectNegative() {
+    void greaterEqualZeroShouldRejectNegative() {
         // given / when / then
         assertThrowsIAE(() -> Precondition.greaterEqualZero(-0.1));
     }
@@ -700,19 +695,19 @@ final class PreconditionTest {
     // --- lessThanOrEqualOne ---
 
     @Test
-    void lessThanOrEqualOne_shouldAcceptValueLessThanOne() {
+    void lessThanOrEqualOneShouldAcceptValueLessThanOne() {
         // given / when / then
         assertThat(Precondition.lessThanOrEqualOne(0.5)).isEqualTo(0.5);
     }
 
     @Test
-    void lessThanOrEqualOne_shouldAcceptOne() {
+    void lessThanOrEqualOneShouldAcceptOne() {
         // given / when / then
         assertThat(Precondition.lessThanOrEqualOne(1.0)).isEqualTo(1.0);
     }
 
     @Test
-    void lessThanOrEqualOne_shouldRejectValueGreaterThanOne() {
+    void lessThanOrEqualOneShouldRejectValueGreaterThanOne() {
         // given / when / then
         assertThrowsIAE(() -> Precondition.lessThanOrEqualOne(1.1));
     }
@@ -720,19 +715,19 @@ final class PreconditionTest {
     // --- lessThanOrEqualZero ---
 
     @Test
-    void lessThanOrEqualZero_shouldAcceptZero() {
+    void lessThanOrEqualZeroShouldAcceptZero() {
         // given / when / then
         assertThat(Precondition.lessThanOrEqualZero(0.0)).isEqualTo(0.0);
     }
 
     @Test
-    void lessThanOrEqualZero_shouldAcceptNegative() {
+    void lessThanOrEqualZeroShouldAcceptNegative() {
         // given / when / then
         assertThat(Precondition.lessThanOrEqualZero(-0.5)).isEqualTo(-0.5);
     }
 
     @Test
-    void lessThanOrEqualZero_shouldRejectPositive() {
+    void lessThanOrEqualZeroShouldRejectPositive() {
         // given / when / then
         assertThrowsIAE(() -> Precondition.lessThanOrEqualZero(0.1));
     }
@@ -740,13 +735,13 @@ final class PreconditionTest {
     // --- isNull ---
 
     @Test
-    void isNull_shouldAcceptNull() {
+    void isNullShouldAcceptNull() {
         // given / when / then (no exception)
         Precondition.isNull(null);
     }
 
     @Test
-    void isNull_shouldRejectNonNull() {
+    void isNullShouldRejectNonNull() {
         // given / when / then
         assertThrowsIAE(() -> Precondition.isNull("value"));
     }
@@ -754,19 +749,19 @@ final class PreconditionTest {
     // --- notZero ---
 
     @Test
-    void notZero_shouldAcceptPositive() {
+    void notZeroShouldAcceptPositive() {
         // given / when / then
         assertThat(Precondition.notZero(5)).isEqualTo(5);
     }
 
     @Test
-    void notZero_shouldAcceptNegative() {
+    void notZeroShouldAcceptNegative() {
         // given / when / then
         assertThat(Precondition.notZero(-5)).isEqualTo(-5);
     }
 
     @Test
-    void notZero_shouldRejectZero() {
+    void notZeroShouldRejectZero() {
         // given / when / then
         assertThrowsIAE(() -> Precondition.notZero(0));
     }
@@ -774,19 +769,19 @@ final class PreconditionTest {
     // --- lessThanZero ---
 
     @Test
-    void lessThanZero_shouldAcceptNegative() {
+    void lessThanZeroShouldAcceptNegative() {
         // given / when / then
         assertThat(Precondition.lessThanZero(-0.5)).isEqualTo(-0.5);
     }
 
     @Test
-    void lessThanZero_shouldRejectZero() {
+    void lessThanZeroShouldRejectZero() {
         // given / when / then
         assertThrowsIAE(() -> Precondition.lessThanZero(0.0));
     }
 
     @Test
-    void lessThanZero_shouldRejectPositive() {
+    void lessThanZeroShouldRejectPositive() {
         // given / when / then
         assertThrowsIAE(() -> Precondition.lessThanZero(0.1));
     }

@@ -120,12 +120,12 @@ class PortfolioServiceTest {
     // =========================================================================
 
     @Test
-    void getStocks_emptyPortfolio_returnsEmptyList() {
+    void getStocksEmptyPortfolioReturnsEmptyList() {
         assertThat(portfolioService.getStocks()).isEmpty();
     }
 
     @Test
-    void getStocks_singlePositionInOneDepot() {
+    void getStocksSinglePositionInOneDepot() {
         IsinEntity basf = createIsin("DE000BASF111");
         createIsinName(basf, "BASF SE");
         createTransaction(basf, depotDeGiro, 10, 50.0);
@@ -142,7 +142,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getStocks_sameIsinInTwoDepots_returnsTwoRows() {
+    void getStocksSameIsinInTwoDepotsReturnsTwoRows() {
         IsinEntity apple = createIsin("US0378331005");
         createIsinName(apple, "Apple Inc.");
         createTransaction(apple, depotDeGiro, 5, 150.0);
@@ -157,7 +157,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getStocks_soldPosition_excluded() {
+    void getStocksSoldPositionExcluded() {
         IsinEntity basf = createIsin("DE000BASF111");
         createTransaction(basf, depotDeGiro, 10, 50.0);   // buy
         createTransaction(basf, depotDeGiro, -10, 55.0);   // sell
@@ -166,7 +166,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getStocks_avgEntryPrice_calculatedCorrectly() {
+    void getStocksAvgEntryPriceCalculatedCorrectly() {
         IsinEntity isin = createIsin("IE00B1XNT000");
         createTransaction(isin, depotDeGiro, 10, 100.0);  // cost = 1000
         createTransaction(isin, depotDeGiro, 10, 200.0);  // cost = 2000
@@ -178,7 +178,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getStocks_withQuote_performanceCalculated() {
+    void getStocksWithQuotePerformanceCalculated() {
         IsinEntity isin = createIsin("IE00B1XNT000");
         createTransaction(isin, depotDeGiro, 10, 100.0);
         createQuote(isin, 120.0);
@@ -190,7 +190,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getStocks_withDividend_estimatedAnnualIncomeCalculated() {
+    void getStocksWithDividendEstimatedAnnualIncomeCalculated() {
         IsinEntity isin = createIsin("DE000BASF111");
         createTransaction(isin, depotDeGiro, 10, 50.0);
         createDividend(isin, 3.40);
@@ -205,7 +205,7 @@ class PortfolioServiceTest {
     // =========================================================================
 
     @Test
-    void getAggregatedStocks_sameIsinInTwoDepots_returnsOneRow() {
+    void getAggregatedStocksSameIsinInTwoDepotsReturnsOneRow() {
         IsinEntity apple = createIsin("US0378331005");
         createIsinName(apple, "Apple Inc.");
         createTransaction(apple, depotDeGiro, 5, 150.0);
@@ -228,7 +228,7 @@ class PortfolioServiceTest {
     // =========================================================================
 
     @Test
-    void getDashboard_emptyPortfolio_returnsZeros() {
+    void getDashboardEmptyPortfolioReturnsZeros() {
         DashboardDto d = portfolioService.getDashboard();
 
         assertThat(d.getStockCount()).isEqualTo(0);
@@ -240,7 +240,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getDashboard_sameStockInDifferentDepots_countedOnce() {
+    void getDashboardSameStockInDifferentDepotsCountedOnce() {
         // This is the key requirement from the spec:
         //   "Stock count: number of distinct ISINs with SUM(count) > 0 across all
         //    depots (a product held in two depots counts as one)."
@@ -257,7 +257,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getDashboard_twoDistinctStocksInSameDepot_countedAsTwoStocks() {
+    void getDashboardTwoDistinctStocksInSameDepotCountedAsTwoStocks() {
         IsinEntity basf = createIsin("DE000BASF111");
         IsinEntity apple = createIsin("US0378331005");
         createTransaction(basf, depotDeGiro, 10, 50.0);
@@ -269,7 +269,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getDashboard_twoDistinctStocksEachInTwoDepots_countedAsTwoStocks() {
+    void getDashboardTwoDistinctStocksEachInTwoDepotsCountedAsTwoStocks() {
         // 2 distinct ISINs × 2 depots = 4 stock rows, but only 2 distinct ISINs
         IsinEntity basf = createIsin("DE000BASF111");
         IsinEntity apple = createIsin("US0378331005");
@@ -284,7 +284,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getDashboard_soldStockNotCounted() {
+    void getDashboardSoldStockNotCounted() {
         IsinEntity basf = createIsin("DE000BASF111");
         IsinEntity apple = createIsin("US0378331005");
         createTransaction(basf, depotDeGiro, 10, 50.0);
@@ -297,7 +297,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getDashboard_totalPortfolioValue() {
+    void getDashboardTotalPortfolioValue() {
         IsinEntity basf = createIsin("DE000BASF111");
         IsinEntity apple = createIsin("US0378331005");
         createTransaction(basf, depotDeGiro, 10, 50.0);    // invested 500
@@ -310,7 +310,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getDashboard_dividendRatio() {
+    void getDashboardDividendRatio() {
         IsinEntity basf = createIsin("DE000BASF111");
         createTransaction(basf, depotDeGiro, 10, 50.0);   // invested 500
         createDividend(basf, 3.40);                         // annual income = 34
@@ -322,7 +322,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getDashboard_top5Holdings_orderedByInvestedAmount() {
+    void getDashboardTop5HoldingsOrderedByInvestedAmount() {
         // Create 6 stocks with different invested amounts
         String[] isins = {"IE00B1XNT001", "IE00B1XNT002", "IE00B1XNT003",
                           "IE00B1XNT004", "IE00B1XNT005", "IE00B1XNT006"};
@@ -346,7 +346,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getDashboard_top5DividendSources() {
+    void getDashboardTop5DividendSources() {
         IsinEntity basf = createIsin("DE000BASF111");
         IsinEntity apple = createIsin("US0378331005");
         createIsinName(basf, "BASF SE");
@@ -365,7 +365,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getDashboard_lastQuoteFetchAt_presentWhenSettingExists() {
+    void getDashboardLastQuoteFetchAtPresentWhenSettingExists() {
         SettingEntity s = new SettingEntity();
         s.setKey("quote.last.fetch.timestamp");
         s.setValue("2026-03-27T10:00:00");
@@ -381,7 +381,7 @@ class PortfolioServiceTest {
     // =========================================================================
 
     @Test
-    void getCountryDiversification_emptyPortfolio() {
+    void getCountryDiversificationEmptyPortfolio() {
         DiversificationDto d = portfolioService.getCountryDiversification();
 
         assertThat(d.getEntries()).isEmpty();
@@ -389,7 +389,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getCountryDiversification_withData() {
+    void getCountryDiversificationWithData() {
         IsinEntity basf = createIsin("DE000BASF111");
         IsinEntity apple = createIsin("US0378331005");
         createTransaction(basf, depotDeGiro, 10, 50.0);   // invested 500
@@ -432,7 +432,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getBranchDiversification_withData() {
+    void getBranchDiversificationWithData() {
         IsinEntity basf = createIsin("DE000BASF111");
         IsinEntity apple = createIsin("US0378331005");
         createTransaction(basf, depotDeGiro, 10, 50.0);   // invested 500
@@ -456,7 +456,7 @@ class PortfolioServiceTest {
     // =========================================================================
 
     @Test
-    void getTransactions_noFilter_returnsAll() {
+    void getTransactionsNoFilterReturnsAll() {
         IsinEntity basf = createIsin("DE000BASF111");
         createIsinName(basf, "BASF SE");
         createTransaction(basf, depotDeGiro, 10, 50.0);
@@ -468,7 +468,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getTransactions_filterByDepot() {
+    void getTransactionsFilterByDepot() {
         IsinEntity basf = createIsin("DE000BASF111");
         createTransaction(basf, depotDeGiro, 10, 50.0);
         createTransaction(basf, depotZero, 5, 55.0);
@@ -481,7 +481,7 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void getTransactions_filterByName() {
+    void getTransactionsFilterByName() {
         IsinEntity basf = createIsin("DE000BASF111");
         IsinEntity apple = createIsin("US0378331005");
         createIsinName(basf, "BASF SE");

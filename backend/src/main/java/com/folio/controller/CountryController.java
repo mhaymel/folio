@@ -7,6 +7,7 @@ import com.folio.repository.CountryRepository;
 import com.folio.service.ExportService;
 import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
+import com.folio.service.SortRequest;
 import com.folio.dto.ExportColumn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -63,6 +64,6 @@ public final class CountryController {
 
     private List<CountryEntity> sorted(String sortField, String sortDir) {
         List<CountryEntity> data = countryRepo.findAllByOrderByNameAsc();
-        return SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
+        return SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
     }
 }

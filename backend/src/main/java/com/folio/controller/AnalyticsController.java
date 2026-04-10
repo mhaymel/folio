@@ -7,6 +7,7 @@ import com.folio.dto.PaginatedResponseDto;
 import com.folio.service.ExportService;
 import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
+import com.folio.service.SortRequest;
 import com.folio.dto.ExportColumn;
 import com.folio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,7 +52,7 @@ public final class AnalyticsController {
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
         List<DiversificationEntry> entries = portfolioService.getCountryDiversification().getEntries();
-        entries = SortHelper.sort(entries, sortField, sortDir, SORT_FIELDS);
+        entries = SortHelper.sort(entries, new SortRequest(sortField, sortDir), SORT_FIELDS);
         return ResponseEntity.ok(PaginationHelper.paginate(entries, page, pageSize));
     }
 
@@ -63,7 +64,7 @@ public final class AnalyticsController {
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
         List<DiversificationEntry> entries = portfolioService.getBranchDiversification().getEntries();
-        entries = SortHelper.sort(entries, sortField, sortDir, SORT_FIELDS);
+        entries = SortHelper.sort(entries, new SortRequest(sortField, sortDir), SORT_FIELDS);
         return ResponseEntity.ok(PaginationHelper.paginate(entries, page, pageSize));
     }
 
@@ -81,7 +82,7 @@ public final class AnalyticsController {
 
         List<DiversificationEntry> data = dto.getEntries();
         if (sortField != null && !sortField.isBlank()) {
-            data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
+            data = SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
         }
 
         String label = "countries".equals(type) ? "CountryEntity" : "BranchEntity";

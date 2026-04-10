@@ -20,7 +20,7 @@ final class StocksControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getStocks_returnsPaginatedEmptyListWhenNoPositions() throws Exception {
+    void getStocksReturnsPaginatedEmptyListWhenNoPositions() throws Exception {
         mockMvc.perform(get("/api/stocks"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items", is(empty())))
@@ -29,7 +29,7 @@ final class StocksControllerTest {
     }
 
     @Test
-    void getStocks_supportsSortParams() throws Exception {
+    void getStocksSupportsSortParams() throws Exception {
         mockMvc.perform(get("/api/stocks")
                 .param("sortField", "name")
                 .param("sortDir", "desc"))
@@ -38,7 +38,7 @@ final class StocksControllerTest {
     }
 
     @Test
-    void getStocks_supportsFilterParams() throws Exception {
+    void getStocksSupportsFilterParams() throws Exception {
         mockMvc.perform(get("/api/stocks")
                 .param("country", "Germany")
                 .param("branch", "Technology"))
@@ -47,7 +47,7 @@ final class StocksControllerTest {
     }
 
     @Test
-    void getStocks_supportsPaginationParams() throws Exception {
+    void getStocksSupportsPaginationParams() throws Exception {
         mockMvc.perform(get("/api/stocks")
                 .param("page", "1")
                 .param("pageSize", "20"))
@@ -56,7 +56,7 @@ final class StocksControllerTest {
     }
 
     @Test
-    void getStockFilters_returnsCountriesAndBranches() throws Exception {
+    void getStockFiltersReturnsCountriesAndBranches() throws Exception {
         mockMvc.perform(get("/api/stocks/filters"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.countries").isArray())
@@ -65,28 +65,28 @@ final class StocksControllerTest {
     }
 
     @Test
-    void getStockFilters_returnsEmptyDepotsArray() throws Exception {
+    void getStockFiltersReturnsEmptyDepotsArray() throws Exception {
         mockMvc.perform(get("/api/stocks/filters"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.depots", is(empty())));
     }
 
     @Test
-    void exportStocks_csv_returnsFile() throws Exception {
+    void exportStocksCsvReturnsFile() throws Exception {
         mockMvc.perform(get("/api/stocks/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("stocks.csv")));
     }
 
     @Test
-    void exportStocks_excel_returnsFile() throws Exception {
+    void exportStocksExcelReturnsFile() throws Exception {
         mockMvc.perform(get("/api/stocks/export").param("format", "xlsx"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("stocks.xlsx")));
     }
 
     @Test
-    void exportStocks_withCountryFilter_returnsFile() throws Exception {
+    void exportStocksWithCountryFilterReturnsFile() throws Exception {
         mockMvc.perform(get("/api/stocks/export")
                 .param("format", "csv")
                 .param("country", "Germany"))
@@ -95,7 +95,7 @@ final class StocksControllerTest {
     }
 
     @Test
-    void exportStocks_withSorting_returnsFile() throws Exception {
+    void exportStocksWithSortingReturnsFile() throws Exception {
         mockMvc.perform(get("/api/stocks/export")
                 .param("format", "csv")
                 .param("sortField", "isin")

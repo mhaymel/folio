@@ -33,7 +33,7 @@ final class YahooQuotesControllerTest {
     // --- GET /with-quote ---
 
     @Test
-    void getWithQuote_returnsEmptyListWhenNoQuotes() throws Exception {
+    void getWithQuoteReturnsEmptyListWhenNoQuotes() throws Exception {
         mockMvc.perform(get("/api/yahoo-quotes/with-quote"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items", is(empty())))
@@ -42,7 +42,7 @@ final class YahooQuotesControllerTest {
     }
 
     @Test
-    void getWithQuote_supportsSortParams() throws Exception {
+    void getWithQuoteSupportsSortParams() throws Exception {
         mockMvc.perform(get("/api/yahoo-quotes/with-quote")
                 .param("sortField", "price")
                 .param("sortDir", "desc"))
@@ -51,7 +51,7 @@ final class YahooQuotesControllerTest {
     }
 
     @Test
-    void getWithQuote_supportsPagination() throws Exception {
+    void getWithQuoteSupportsPagination() throws Exception {
         mockMvc.perform(get("/api/yahoo-quotes/with-quote")
                 .param("page", "1")
                 .param("pageSize", "20"))
@@ -62,7 +62,7 @@ final class YahooQuotesControllerTest {
     // --- GET /without-quote ---
 
     @Test
-    void getWithoutQuote_returnsEmptyListWhenNoHeldIsins() throws Exception {
+    void getWithoutQuoteReturnsEmptyListWhenNoHeldIsins() throws Exception {
         mockMvc.perform(get("/api/yahoo-quotes/without-quote"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items", is(empty())))
@@ -71,7 +71,7 @@ final class YahooQuotesControllerTest {
     }
 
     @Test
-    void getWithoutQuote_supportsSortParams() throws Exception {
+    void getWithoutQuoteSupportsSortParams() throws Exception {
         mockMvc.perform(get("/api/yahoo-quotes/without-quote")
                 .param("sortField", "name")
                 .param("sortDir", "asc"))
@@ -82,7 +82,7 @@ final class YahooQuotesControllerTest {
     // --- POST /fetch ---
 
     @Test
-    void fetch_returnsZeroWhenNoHeldIsins() throws Exception {
+    void fetchReturnsZeroWhenNoHeldIsins() throws Exception {
         mockMvc.perform(post("/api/yahoo-quotes/fetch"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.total", is(0)))
@@ -92,7 +92,7 @@ final class YahooQuotesControllerTest {
     }
 
     @Test
-    void fetch_doesNotCallYahooWhenNoHeldIsins() throws Exception {
+    void fetchDoesNotCallYahooWhenNoHeldIsins() throws Exception {
         when(quoteFetcher.fetchQuote(any(TickerSymbol.class))).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/yahoo-quotes/fetch"))
@@ -103,21 +103,21 @@ final class YahooQuotesControllerTest {
     // --- Export ---
 
     @Test
-    void exportWithQuote_csv_returnsFile() throws Exception {
+    void exportWithQuoteCsvReturnsFile() throws Exception {
         mockMvc.perform(get("/api/yahoo-quotes/with-quote/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("quotes-with-quote.csv")));
     }
 
     @Test
-    void exportWithoutQuote_csv_returnsFile() throws Exception {
+    void exportWithoutQuoteCsvReturnsFile() throws Exception {
         mockMvc.perform(get("/api/yahoo-quotes/without-quote/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("quotes-without-quote.csv")));
     }
 
     @Test
-    void exportWithQuote_withSort_returnsFile() throws Exception {
+    void exportWithQuoteWithSortReturnsFile() throws Exception {
         mockMvc.perform(get("/api/yahoo-quotes/with-quote/export")
                 .param("format", "csv")
                 .param("sortField", "price")

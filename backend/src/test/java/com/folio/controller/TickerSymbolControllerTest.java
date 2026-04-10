@@ -20,7 +20,7 @@ final class TickerSymbolControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getTickerSymbols_returnsPaginatedResponse() throws Exception {
+    void getTickerSymbolsReturnsPaginatedResponse() throws Exception {
         mockMvc.perform(get("/api/ticker-symbols"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items").isArray())
@@ -29,7 +29,7 @@ final class TickerSymbolControllerTest {
     }
 
     @Test
-    void getTickerSymbols_supportsSortParams() throws Exception {
+    void getTickerSymbolsSupportsSortParams() throws Exception {
         mockMvc.perform(get("/api/ticker-symbols")
                 .param("sortField", "tickerSymbol")
                 .param("sortDir", "desc"))
@@ -38,7 +38,7 @@ final class TickerSymbolControllerTest {
     }
 
     @Test
-    void getTickerSymbols_supportsPagination() throws Exception {
+    void getTickerSymbolsSupportsPagination() throws Exception {
         mockMvc.perform(get("/api/ticker-symbols")
                 .param("page", "1")
                 .param("pageSize", "50"))
@@ -47,14 +47,14 @@ final class TickerSymbolControllerTest {
     }
 
     @Test
-    void exportTickerSymbols_csv_returnsFile() throws Exception {
+    void exportTickerSymbolsCsvReturnsFile() throws Exception {
         mockMvc.perform(get("/api/ticker-symbols/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("ticker-symbols.csv")));
     }
 
     @Test
-    void exportTickerSymbols_withSort_returnsFile() throws Exception {
+    void exportTickerSymbolsWithSortReturnsFile() throws Exception {
         mockMvc.perform(get("/api/ticker-symbols/export")
                 .param("format", "csv")
                 .param("sortField", "tickerSymbol")

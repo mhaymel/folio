@@ -9,6 +9,7 @@ import com.folio.dto.StockPaginatedResponseDto;
 import com.folio.service.ExportService;
 import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
+import com.folio.service.SortRequest;
 import com.folio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -66,7 +67,9 @@ public final class StocksController {
             @RequestParam(required = false, defaultValue = "asc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
-        List<StockDto> data = filterAndSort(portfolioService.getAggregatedStocks(), isin, tickerSymbol, name, country, branch, sortField, sortDir);
+        List<StockDto> data = filterAndSort(portfolioService.getAggregatedStocks(),
+            new StockFilter(isin, tickerSymbol, name, null, country, branch),
+            new SortRequest(sortField, sortDir));
         double sumCount = data.stream().mapToDouble(StockDto::getCount).sum();
         PaginatedResponseDto<StockDto> paginated = PaginationHelper.paginate(data, page, pageSize);
         return ResponseEntity.ok(new StockPaginatedResponseDto(
@@ -98,7 +101,9 @@ public final class StocksController {
             @RequestParam(required = false) String branch,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        List<StockDto> data = filterAndSort(portfolioService.getAggregatedStocks(), isin, tickerSymbol, name, country, branch, sortField, sortDir);
+        List<StockDto> data = filterAndSort(portfolioService.getAggregatedStocks(),
+            new StockFilter(isin, tickerSymbol, name, null, country, branch),
+            new SortRequest(sortField, sortDir));
 
         List<ExportColumn<StockDto>> columns = List.of(
                 new ExportColumn<>("ISIN", StockDto::getIsin),
@@ -125,31 +130,30 @@ public final class StocksController {
             .collect(Collectors.toSet());
     }
 
-    private static List<StockDto> filterAndSort(List<StockDto> data, String isin, String tickerSymbol,
-                                                 String name, String country, String branch,
-                                                 String sortField, String sortDir) {
-        if (isin != null && !isin.isBlank()) {
-            String lower = isin.toLowerCase();
+    private static List<StockDto> filterAndSort(List<StockDto> data, StockFilter filter,
+                                                 SortRequest sort) {
+        if (filter.isin() != null && !filter.isin().isBlank()) {
+            String lower = filter.isin().toLowerCase();
             data = data.stream().filter(s -> s.getIsin() != null && s.getIsin().value().toLowerCase().contains(lower)).toList();
         }
-        if (tickerSymbol != null && !tickerSymbol.isBlank()) {
-            String lower = tickerSymbol.toLowerCase();
+        if (filter.tickerSymbol() != null && !filter.tickerSymbol().isBlank()) {
+            String lower = filter.tickerSymbol().toLowerCase();
             data = data.stream().filter(s -> s.getTickerSymbol() != null && s.getTickerSymbol().toLowerCase().contains(lower)).toList();
         }
-        if (name != null && !name.isBlank()) {
-            String lower = name.toLowerCase();
+        if (filter.name() != null && !filter.name().isBlank()) {
+            String lower = filter.name().toLowerCase();
             data = data.stream().filter(s -> s.getName() != null && s.getName().toLowerCase().contains(lower)).toList();
         }
-        Set<String> countries = splitMultiValue(country);
+        Set<String> countries = splitMultiValue(filter.country());
         if (!countries.isEmpty()) {
             data = data.stream().filter(s -> countries.contains(s.getCountry())).toList();
         }
-        Set<String> branches = splitMultiValue(branch);
+        Set<String> branches = splitMultiValue(filter.branch());
         if (!branches.isEmpty()) {
             data = data.stream().filter(s -> branches.contains(s.getBranch())).toList();
         }
-        if (sortField != null && !sortField.isBlank()) {
-            data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
+        if (sort.sortField() != null && !sort.sortField().isBlank()) {
+            data = SortHelper.sort(data, sort, SORT_FIELDS);
         }
         return data;
     }

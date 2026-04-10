@@ -39,15 +39,13 @@ public class YahooIsinController {
 
     private final EntityManager em;
     private final IsinTickerSearch isinTickerSearch;
-    private final IsinRepository isinRepository;
-    private final TickerSymbolRepository tickerSymbolRepository;
+    private final YahooIsinRepositories repos;
 
     public YahooIsinController(EntityManager em, IsinTickerSearch isinTickerSearch,
                                IsinRepository isinRepository, TickerSymbolRepository tickerSymbolRepository) {
         this.em = requireNonNull(em);
         this.isinTickerSearch = requireNonNull(isinTickerSearch);
-        this.isinRepository = requireNonNull(isinRepository);
-        this.tickerSymbolRepository = requireNonNull(tickerSymbolRepository);
+        this.repos = new YahooIsinRepositories(requireNonNull(isinRepository), requireNonNull(tickerSymbolRepository));
     }
 
     @PostMapping("/fetch")
@@ -104,12 +102,12 @@ public class YahooIsinController {
     }
 
     private YahooIsinSaveResult saveItem(YahooIsinWithTickerItem item) {
-        Optional<IsinEntity> isinEntityOpt = isinRepository.findByIsin(item.isin());
+        Optional<IsinEntity> isinEntityOpt = repos.isinRepository().findByIsin(item.isin());
         if (isinEntityOpt.isEmpty()) return new YahooIsinSaveResult(0, 0);
         IsinEntity isinEntity = isinEntityOpt.get();
 
-        TickerSymbolEntity tickerSymbol = tickerSymbolRepository.findBySymbol(item.tickerSymbol())
-            .orElseGet(() -> tickerSymbolRepository.save(new TickerSymbolEntity(null, item.tickerSymbol())));
+        TickerSymbolEntity tickerSymbol = repos.tickerSymbolRepository().findBySymbol(item.tickerSymbol())
+            .orElseGet(() -> repos.tickerSymbolRepository().save(new TickerSymbolEntity(null, item.tickerSymbol())));
 
         Long exactMatch = (Long) em.createNativeQuery(
                 "SELECT COUNT(*) FROM isin_ticker WHERE isin_id = :isinId AND ticker_symbol_id = :tsId")

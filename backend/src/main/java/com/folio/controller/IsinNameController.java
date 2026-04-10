@@ -6,6 +6,7 @@ import com.folio.dto.PaginatedResponseDto;
 import com.folio.service.ExportService;
 import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
+import com.folio.service.SortRequest;
 import com.folio.dto.ExportColumn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,7 +51,7 @@ public class IsinNameController {
             @RequestParam(required = false, defaultValue = "asc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
-        List<IsinNameDto> data = SortHelper.sort(loadAll(), sortField, sortDir, SORT_FIELDS);
+        List<IsinNameDto> data = SortHelper.sort(loadAll(), new SortRequest(sortField, sortDir), SORT_FIELDS);
         return ResponseEntity.ok(PaginationHelper.paginate(data, page, pageSize));
     }
 
@@ -63,7 +64,7 @@ public class IsinNameController {
             @RequestParam(defaultValue = "asc") String sortDir) {
         List<IsinNameDto> data = loadAll();
         if (sortField != null && !sortField.isBlank()) {
-            data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
+            data = SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
         }
         List<ExportColumn<IsinNameDto>> columns = List.of(
                 new ExportColumn<>("ISIN", IsinNameDto::getIsin),

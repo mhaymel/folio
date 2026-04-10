@@ -21,7 +21,7 @@ final class QuoteControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getSettings_returnsDefaultSettings() throws Exception {
+    void getSettingsReturnsDefaultSettings() throws Exception {
         mockMvc.perform(get("/api/quotes/settings"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.enabled", is(false)))
@@ -30,7 +30,7 @@ final class QuoteControllerTest {
     }
 
     @Test
-    void updateEnabled_togglesQuoteFetching() throws Exception {
+    void updateEnabledTogglesQuoteFetching() throws Exception {
         mockMvc.perform(put("/api/quotes/settings/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"enabled\": true}"))
@@ -50,7 +50,7 @@ final class QuoteControllerTest {
     }
 
     @Test
-    void updateInterval_changesInterval() throws Exception {
+    void updateIntervalChangesInterval() throws Exception {
         mockMvc.perform(put("/api/quotes/settings/interval")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"intervalMinutes\": 30}"))
@@ -69,7 +69,7 @@ final class QuoteControllerTest {
     }
 
     @Test
-    void updateInterval_rejectsZeroOrNegative() throws Exception {
+    void updateIntervalRejectsZeroOrNegative() throws Exception {
         mockMvc.perform(put("/api/quotes/settings/interval")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"intervalMinutes\": 0}"))
@@ -82,7 +82,7 @@ final class QuoteControllerTest {
     }
 
     @Test
-    void updateEnabled_rejectsMissingField() throws Exception {
+    void updateEnabledRejectsMissingField() throws Exception {
         mockMvc.perform(put("/api/quotes/settings/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
@@ -90,7 +90,7 @@ final class QuoteControllerTest {
     }
 
     @Test
-    void triggerFetch_returnsCompletedStatus() throws Exception {
+    void triggerFetchReturnsCompletedStatus() throws Exception {
         // With no held ISINs, should return 0 fetched
         mockMvc.perform(post("/api/quotes/fetch"))
             .andExpect(status().isOk())

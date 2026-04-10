@@ -22,7 +22,7 @@ final class ReferenceDataControllerTest {
     // --- Depots ---
 
     @Test
-    void getDepots_returnsPaginatedResponse() throws Exception {
+    void getDepotsReturnsPaginatedResponse() throws Exception {
         mockMvc.perform(get("/api/depots").param("pageSize", "-1"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items", hasSize(2)))
@@ -33,7 +33,7 @@ final class ReferenceDataControllerTest {
     }
 
     @Test
-    void getDepots_defaultPagination_returnsPage1() throws Exception {
+    void getDepotsDefaultPaginationReturnsPage1() throws Exception {
         mockMvc.perform(get("/api/depots"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.page", is(1)))
@@ -41,7 +41,7 @@ final class ReferenceDataControllerTest {
     }
 
     @Test
-    void getDepots_sortDesc_reversesSortOrder() throws Exception {
+    void getDepotsSortDescReversesSortOrder() throws Exception {
         mockMvc.perform(get("/api/depots").param("sortDir", "desc").param("pageSize", "-1"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items[0].name", is("ZERO")))
@@ -49,14 +49,14 @@ final class ReferenceDataControllerTest {
     }
 
     @Test
-    void exportDepots_csv_returnsDownloadableFile() throws Exception {
+    void exportDepotsCsvReturnsDownloadableFile() throws Exception {
         mockMvc.perform(get("/api/depots/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("depots.csv")));
     }
 
     @Test
-    void exportDepots_excel_returnsXlsx() throws Exception {
+    void exportDepotsExcelReturnsXlsx() throws Exception {
         mockMvc.perform(get("/api/depots/export").param("format", "xlsx"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("depots.xlsx")));
@@ -65,7 +65,7 @@ final class ReferenceDataControllerTest {
     // --- Currencies ---
 
     @Test
-    void getCurrencies_returnsAllCurrenciesSorted() throws Exception {
+    void getCurrenciesReturnsAllCurrenciesSorted() throws Exception {
         mockMvc.perform(get("/api/currencies").param("pageSize", "-1"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items", hasSize(30)))
@@ -74,14 +74,14 @@ final class ReferenceDataControllerTest {
     }
 
     @Test
-    void getCurrencies_sortDesc_returnsReversed() throws Exception {
+    void getCurrenciesSortDescReturnsReversed() throws Exception {
         mockMvc.perform(get("/api/currencies").param("sortDir", "desc").param("pageSize", "-1"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items[0].name", is("ZAR")));
     }
 
     @Test
-    void getCurrencies_pagination_slicesCorrectly() throws Exception {
+    void getCurrenciesPaginationSlicesCorrectly() throws Exception {
         mockMvc.perform(get("/api/currencies").param("page", "1").param("pageSize", "10"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items", hasSize(10)))
@@ -90,7 +90,7 @@ final class ReferenceDataControllerTest {
     }
 
     @Test
-    void exportCurrencies_csv_returnsDownloadableFile() throws Exception {
+    void exportCurrenciesCsvReturnsDownloadableFile() throws Exception {
         mockMvc.perform(get("/api/currencies/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("currencies.csv")));
@@ -99,7 +99,7 @@ final class ReferenceDataControllerTest {
     // --- Countries ---
 
     @Test
-    void getCountries_returnsPaginatedJsonArray() throws Exception {
+    void getCountriesReturnsPaginatedJsonArray() throws Exception {
         mockMvc.perform(get("/api/countries"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items").isArray())
@@ -107,14 +107,14 @@ final class ReferenceDataControllerTest {
     }
 
     @Test
-    void getCountries_invalidSortField_fallsBackToDefault() throws Exception {
+    void getCountriesInvalidSortFieldFallsBackToDefault() throws Exception {
         mockMvc.perform(get("/api/countries").param("sortField", "invalid").param("pageSize", "-1"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items").isArray());
     }
 
     @Test
-    void exportCountries_csv_returnsFile() throws Exception {
+    void exportCountriesCsvReturnsFile() throws Exception {
         mockMvc.perform(get("/api/countries/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("countries.csv")));
@@ -123,7 +123,7 @@ final class ReferenceDataControllerTest {
     // --- Branches ---
 
     @Test
-    void getBranches_returnsPaginatedJsonArray() throws Exception {
+    void getBranchesReturnsPaginatedJsonArray() throws Exception {
         mockMvc.perform(get("/api/branches"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items").isArray())
@@ -131,14 +131,14 @@ final class ReferenceDataControllerTest {
     }
 
     @Test
-    void exportBranches_csv_returnsFile() throws Exception {
+    void exportBranchesCsvReturnsFile() throws Exception {
         mockMvc.perform(get("/api/branches/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("branches.csv")));
     }
 
     @Test
-    void exportBranches_withSortDesc_returnsFile() throws Exception {
+    void exportBranchesWithSortDescReturnsFile() throws Exception {
         mockMvc.perform(get("/api/branches/export")
                 .param("format", "csv")
                 .param("sortField", "name")
@@ -150,7 +150,7 @@ final class ReferenceDataControllerTest {
     // --- Pagination edge cases ---
 
     @Test
-    void getDepots_outOfRangePage_returnsEmptyItems() throws Exception {
+    void getDepotsOutOfRangePageReturnsEmptyItems() throws Exception {
         mockMvc.perform(get("/api/depots").param("page", "999").param("pageSize", "10"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items", is(empty())))
@@ -158,7 +158,7 @@ final class ReferenceDataControllerTest {
     }
 
     @Test
-    void getDepots_pageSizeMinusOne_returnsAll() throws Exception {
+    void getDepotsPageSizeMinusOneReturnsAll() throws Exception {
         mockMvc.perform(get("/api/depots").param("pageSize", "-1"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items", hasSize(2)))
@@ -167,7 +167,7 @@ final class ReferenceDataControllerTest {
     }
 
     @Test
-    void getDepots_invalidPageSize_fallsBackToTen() throws Exception {
+    void getDepotsInvalidPageSizeFallsBackToTen() throws Exception {
         mockMvc.perform(get("/api/depots").param("pageSize", "7"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.pageSize", is(10)));

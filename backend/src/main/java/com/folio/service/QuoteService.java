@@ -9,6 +9,7 @@ import com.folio.quote.QuoteResult;
 import com.folio.repository.QuoteRepositories;
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -33,20 +34,20 @@ public final class QuoteService {
     private static final Logger log = getLogger(QuoteService.class);
 
     private final IsinsQuoteLoader quoteLoader;
-    private final QuoteRepositories repos;
-    private final EntityManager em;
-    private final TransactionTemplate tx;
-    private final AtomicBoolean fetchInProgress;
-    private final AtomicLong lastScheduledFetch;
+    private final QuoteDataAccess dataAccess;
+    private final FetchState fetchState;
 
+    private QuoteService(IsinsQuoteLoader quoteLoader, QuoteDataAccess dataAccess, FetchState fetchState) {
+        this.quoteLoader = requireNonNull(quoteLoader);
+        this.dataAccess = requireNonNull(dataAccess);
+        this.fetchState = requireNonNull(fetchState);
+    }
+
+    @Autowired
     public QuoteService(IsinsQuoteLoader quoteLoader, QuoteRepositories repos, EntityManager em,
                         TransactionTemplate tx) {
-        this.quoteLoader = requireNonNull(quoteLoader);
-        this.repos = requireNonNull(repos);
-        this.em = requireNonNull(em);
-        this.tx = requireNonNull(tx);
-        this.fetchInProgress = new AtomicBoolean(false);
-        this.lastScheduledFetch = new AtomicLong(0);
+        this(quoteLoader, new QuoteDataAccess(repos, em, tx),
+             new FetchState(new AtomicBoolean(false), new AtomicLong(0)));
     }
 
     /**
@@ -61,7 +62,7 @@ public final class QuoteService {
 
         int intervalMinutes = getIntervalMinutes();
         long intervalMs = intervalMinutes * 60_000L;
-        long elapsed = System.currentTimeMillis() - lastScheduledFetch.get();
+        long elapsed = System.currentTimeMillis() - fetchState.lastScheduledFetch().get();
 
         if (elapsed < intervalMs) {
             return; // not yet time
@@ -80,14 +81,14 @@ public final class QuoteService {
      * open, which would block concurrent writes to the {@code isin} table.</p>
      */
     public int triggerFetch() {
-        if (!fetchInProgress.compareAndSet(false, true)) {
+        if (!fetchState.inProgress().compareAndSet(false, true)) {
             log.info("Quote fetch already in progress, skipping");
             return 0;
         }
 
         try {
             // 1. Short read-only transaction: collect held ISINs
-            Set<Isin> heldIsins = tx.execute(status -> getHeldIsins());
+            Set<Isin> heldIsins = dataAccess.tx().execute(status -> getHeldIsins());
             if (heldIsins == null || heldIsins.isEmpty()) {
                 log.info("No held ISINs to fetch quotes for");
                 return 0;
@@ -98,7 +99,7 @@ public final class QuoteService {
             Map<Isin, QuoteResult> results = quoteLoader.fetchQuotes(heldIsins);
 
             // 3. Short write transaction: persist all fetched quotes
-            Integer upserted = tx.execute(status -> {
+            Integer upserted = dataAccess.tx().execute(status -> {
                 int count = 0;
                 for (var entry : results.entrySet()) {
                     Isin isin = entry.getKey();
@@ -114,17 +115,17 @@ public final class QuoteService {
                 return count;
             });
 
-            lastScheduledFetch.set(System.currentTimeMillis());
+            fetchState.lastScheduledFetch().set(System.currentTimeMillis());
 
             log.info("Quote fetch complete: {}/{} ISINs updated", upserted, heldIsins.size());
             return upserted != null ? upserted : 0;
         } finally {
-            fetchInProgress.set(false);
+            fetchState.inProgress().set(false);
         }
     }
 
     private Set<Isin> getHeldIsins() {
-        List<String> isins = em.createQuery(
+        List<String> isins = dataAccess.em().createQuery(
             "SELECT t.isin.isin FROM TransactionEntity t GROUP BY t.isin.isin HAVING SUM(t.count) > 0",
             String.class
         ).getResultList();
@@ -134,41 +135,41 @@ public final class QuoteService {
     }
 
     private void upsertQuote(String isinCode, double price, String providerName) {
-        Integer isinId = (Integer) em.createQuery("SELECT i.id FROM IsinEntity i WHERE i.isin = :code")
+        Integer isinId = (Integer) dataAccess.em().createQuery("SELECT i.id FROM IsinEntity i WHERE i.isin = :code")
             .setParameter("code", isinCode)
             .getSingleResult();
 
-        QuoteProviderEntity provider = repos.provider().findByName(providerName)
-            .orElseGet(() -> repos.provider().save(QuoteProviderEntity.builder().name(providerName).build()));
+        QuoteProviderEntity provider = dataAccess.repos().provider().findByName(providerName)
+            .orElseGet(() -> dataAccess.repos().provider().save(QuoteProviderEntity.builder().name(providerName).build()));
 
-        Optional<IsinQuoteEntity> existing = repos.isinQuote().findByIsinId(isinId);
+        Optional<IsinQuoteEntity> existing = dataAccess.repos().isinQuote().findByIsinId(isinId);
         if (existing.isPresent()) {
             IsinQuoteEntity quote = existing.get();
             quote.setValue(price);
             quote.setQuoteProvider(provider);
             quote.setFetchedAt(LocalDateTime.now());
-            repos.isinQuote().save(quote);
+            dataAccess.repos().isinQuote().save(quote);
         } else {
-            com.folio.model.IsinEntity isin = em.find(com.folio.model.IsinEntity.class, isinId);
+            com.folio.model.IsinEntity isin = dataAccess.em().find(com.folio.model.IsinEntity.class, isinId);
             IsinQuoteEntity quote = IsinQuoteEntity.builder()
                 .isin(isin)
                 .quoteProvider(provider)
                 .value(price)
                 .fetchedAt(LocalDateTime.now())
                 .build();
-            repos.isinQuote().save(quote);
+            dataAccess.repos().isinQuote().save(quote);
         }
     }
 
     private void updateLastFetchTimestamp() {
-        SettingEntity setting = repos.setting().findByKey("quote.last.fetch.timestamp")
+        SettingEntity setting = dataAccess.repos().setting().findByKey("quote.last.fetch.timestamp")
             .orElseGet(() -> SettingEntity.builder().key("quote.last.fetch.timestamp").value("").build());
         setting.setValue(LocalDateTime.now().toString());
-        repos.setting().save(setting);
+        dataAccess.repos().setting().save(setting);
     }
 
     private int getIntervalMinutes() {
-        return repos.setting().findByKey("quote.fetch.interval.minutes")
+        return dataAccess.repos().setting().findByKey("quote.fetch.interval.minutes")
             .map(s -> {
                 try { return parseInt(s.getValue()); }
                 catch (Exception e) { return 60; }
@@ -177,7 +178,7 @@ public final class QuoteService {
     }
 
     private boolean isEnabled() {
-        return repos.setting().findByKey("quote.fetch.enabled")
+        return dataAccess.repos().setting().findByKey("quote.fetch.enabled")
             .map(s -> Boolean.parseBoolean(s.getValue()))
             .orElse(false);
     }

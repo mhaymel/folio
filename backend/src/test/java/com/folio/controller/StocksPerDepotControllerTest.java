@@ -20,7 +20,7 @@ final class StocksPerDepotControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getStocksPerDepot_returnsPaginatedEmptyListWhenNoPositions() throws Exception {
+    void getStocksPerDepotReturnsPaginatedEmptyListWhenNoPositions() throws Exception {
         mockMvc.perform(get("/api/stocks-per-depot"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items", is(empty())))
@@ -29,7 +29,7 @@ final class StocksPerDepotControllerTest {
     }
 
     @Test
-    void getStocksPerDepot_supportsSortParams() throws Exception {
+    void getStocksPerDepotSupportsSortParams() throws Exception {
         mockMvc.perform(get("/api/stocks-per-depot")
                 .param("sortField", "name")
                 .param("sortDir", "desc"))
@@ -38,7 +38,7 @@ final class StocksPerDepotControllerTest {
     }
 
     @Test
-    void getStocksPerDepot_supportsFilterParams() throws Exception {
+    void getStocksPerDepotSupportsFilterParams() throws Exception {
         mockMvc.perform(get("/api/stocks-per-depot")
                 .param("country", "Germany")
                 .param("branch", "Technology"))
@@ -47,7 +47,7 @@ final class StocksPerDepotControllerTest {
     }
 
     @Test
-    void getStocksPerDepot_supportsPaginationParams() throws Exception {
+    void getStocksPerDepotSupportsPaginationParams() throws Exception {
         mockMvc.perform(get("/api/stocks-per-depot")
                 .param("page", "1")
                 .param("pageSize", "20"))
@@ -56,7 +56,7 @@ final class StocksPerDepotControllerTest {
     }
 
     @Test
-    void getStocksPerDepot_supportsDepotFilter() throws Exception {
+    void getStocksPerDepotSupportsDepotFilter() throws Exception {
         mockMvc.perform(get("/api/stocks-per-depot")
                 .param("depot", "DeGiro"))
             .andExpect(status().isOk())
@@ -64,7 +64,7 @@ final class StocksPerDepotControllerTest {
     }
 
     @Test
-    void getStockFilters_returnsCountriesBranchesAndDepots() throws Exception {
+    void getStockFiltersReturnsCountriesBranchesAndDepots() throws Exception {
         mockMvc.perform(get("/api/stocks-per-depot/filters"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.countries").isArray())
@@ -73,21 +73,21 @@ final class StocksPerDepotControllerTest {
     }
 
     @Test
-    void exportStocksPerDepot_csv_returnsFile() throws Exception {
+    void exportStocksPerDepotCsvReturnsFile() throws Exception {
         mockMvc.perform(get("/api/stocks-per-depot/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("stocks-per-depot.csv")));
     }
 
     @Test
-    void exportStocksPerDepot_excel_returnsFile() throws Exception {
+    void exportStocksPerDepotExcelReturnsFile() throws Exception {
         mockMvc.perform(get("/api/stocks-per-depot/export").param("format", "xlsx"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("stocks-per-depot.xlsx")));
     }
 
     @Test
-    void exportStocksPerDepot_withCountryFilter_returnsFile() throws Exception {
+    void exportStocksPerDepotWithCountryFilterReturnsFile() throws Exception {
         mockMvc.perform(get("/api/stocks-per-depot/export")
                 .param("format", "csv")
                 .param("country", "Germany"))
@@ -96,7 +96,7 @@ final class StocksPerDepotControllerTest {
     }
 
     @Test
-    void exportStocksPerDepot_withBranchFilter_returnsFile() throws Exception {
+    void exportStocksPerDepotWithBranchFilterReturnsFile() throws Exception {
         mockMvc.perform(get("/api/stocks-per-depot/export")
                 .param("format", "csv")
                 .param("branch", "Technology"))
@@ -105,7 +105,7 @@ final class StocksPerDepotControllerTest {
     }
 
     @Test
-    void exportStocksPerDepot_withSorting_returnsFile() throws Exception {
+    void exportStocksPerDepotWithSortingReturnsFile() throws Exception {
         mockMvc.perform(get("/api/stocks-per-depot/export")
                 .param("format", "csv")
                 .param("sortField", "isin")

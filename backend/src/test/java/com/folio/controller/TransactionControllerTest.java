@@ -20,7 +20,7 @@ final class TransactionControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getTransactions_returnsEnvelopeWithEmptyItems() throws Exception {
+    void getTransactionsReturnsEnvelopeWithEmptyItems() throws Exception {
         mockMvc.perform(get("/api/transactions"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items", is(empty())))
@@ -32,7 +32,7 @@ final class TransactionControllerTest {
     }
 
     @Test
-    void getTransactions_supportsOptionalFilters() throws Exception {
+    void getTransactionsSupportsOptionalFilters() throws Exception {
         mockMvc.perform(get("/api/transactions")
                 .param("isin", "DE000BASF111")
                 .param("depot", "DeGiro"))
@@ -41,7 +41,7 @@ final class TransactionControllerTest {
     }
 
     @Test
-    void getTransactions_supportsNameFilter() throws Exception {
+    void getTransactionsSupportsNameFilter() throws Exception {
         mockMvc.perform(get("/api/transactions")
                 .param("name", "Apple"))
             .andExpect(status().isOk())
@@ -49,7 +49,7 @@ final class TransactionControllerTest {
     }
 
     @Test
-    void getTransactions_supportsDateFilters() throws Exception {
+    void getTransactionsSupportsDateFilters() throws Exception {
         mockMvc.perform(get("/api/transactions")
                 .param("fromDate", "2025-01-01T00:00:00")
                 .param("toDate", "2026-12-31T23:59:59"))
@@ -58,7 +58,7 @@ final class TransactionControllerTest {
     }
 
     @Test
-    void getTransactions_supportsSortAndPagination() throws Exception {
+    void getTransactionsSupportsSortAndPagination() throws Exception {
         mockMvc.perform(get("/api/transactions")
                 .param("sortField", "date")
                 .param("sortDir", "asc")
@@ -70,7 +70,7 @@ final class TransactionControllerTest {
     }
 
     @Test
-    void getTransactions_pageSizeMinusOne_returnsAll() throws Exception {
+    void getTransactionsPageSizeMinusOneReturnsAll() throws Exception {
         mockMvc.perform(get("/api/transactions").param("pageSize", "-1"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.pageSize", is(-1)))
@@ -78,28 +78,28 @@ final class TransactionControllerTest {
     }
 
     @Test
-    void getTransactionFilters_returnsDepots() throws Exception {
+    void getTransactionFiltersReturnsDepots() throws Exception {
         mockMvc.perform(get("/api/transactions/filters"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.depots").isArray());
     }
 
     @Test
-    void exportTransactions_csv_returnsFile() throws Exception {
+    void exportTransactionsCsvReturnsFile() throws Exception {
         mockMvc.perform(get("/api/transactions/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("transactions.csv")));
     }
 
     @Test
-    void exportTransactions_excel_returnsFile() throws Exception {
+    void exportTransactionsExcelReturnsFile() throws Exception {
         mockMvc.perform(get("/api/transactions/export").param("format", "xlsx"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("transactions.xlsx")));
     }
 
     @Test
-    void exportTransactions_withSortAndFilter_returnsFile() throws Exception {
+    void exportTransactionsWithSortAndFilterReturnsFile() throws Exception {
         mockMvc.perform(get("/api/transactions/export")
                 .param("format", "csv")
                 .param("sortField", "date")
@@ -110,7 +110,7 @@ final class TransactionControllerTest {
     }
 
     @Test
-    void exportTransactions_defaultSortIsDesc() throws Exception {
+    void exportTransactionsDefaultSortIsDesc() throws Exception {
         mockMvc.perform(get("/api/transactions/export").param("format", "csv"))
             .andExpect(status().isOk());
     }

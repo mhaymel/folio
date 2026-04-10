@@ -20,6 +20,7 @@ import com.folio.parser.ParsedTransaction;
 import com.folio.repository.ImportRepositories;
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,10 +68,15 @@ public class ImportService {
     private final ImportRepositories repos;
     private final EntityManager em;
 
-    public ImportService(ImportRepositories repos, EntityManager em) {
-        this.importLock = new ReentrantLock();
+    private ImportService(ReentrantLock importLock, ImportRepositories repos, EntityManager em) {
+        this.importLock = requireNonNull(importLock);
         this.repos = requireNonNull(repos);
         this.em = requireNonNull(em);
+    }
+
+    @Autowired
+    public ImportService(ImportRepositories repos, EntityManager em) {
+        this(new ReentrantLock(), repos, em);
     }
 
     // -- Formatting --

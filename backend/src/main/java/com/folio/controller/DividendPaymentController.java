@@ -11,6 +11,7 @@ import com.folio.service.DividendPaymentService;
 import com.folio.service.ExportService;
 import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
+import com.folio.service.SortRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -64,7 +65,7 @@ public final class DividendPaymentController {
         List<DividendPaymentDto> data = dividendPaymentService.getDividendPayments(
             new DividendPaymentFilter(isin, name, depot, fromDate, toDate));
 
-        data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
+        data = SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
 
         double sumValue = data.stream().mapToDouble(d -> d.getValue() != null ? d.getValue() : 0).sum();
 
@@ -102,7 +103,7 @@ public final class DividendPaymentController {
             new DividendPaymentFilter(isin, name, depot, fromDate, toDate));
 
         if (sortField != null && !sortField.isBlank()) {
-            data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
+            data = SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
         }
 
         List<ExportColumn<DividendPaymentDto>> columns = List.of(

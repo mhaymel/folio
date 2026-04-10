@@ -20,7 +20,7 @@ final class DashboardControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getDashboard_returnsExpectedStructure() throws Exception {
+    void getDashboardReturnsExpectedStructure() throws Exception {
         mockMvc.perform(get("/api/dashboard"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.totalPortfolioValue").isNumber())
@@ -31,7 +31,7 @@ final class DashboardControllerTest {
     }
 
     @Test
-    void getDashboard_emptyPortfolio_returnsZeros() throws Exception {
+    void getDashboardEmptyPortfolioReturnsZeros() throws Exception {
         mockMvc.perform(get("/api/dashboard"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.totalPortfolioValue", is(0.0)))
@@ -41,28 +41,28 @@ final class DashboardControllerTest {
     }
 
     @Test
-    void getDashboard_lastQuoteFetchAt_nullWhenNoFetch() throws Exception {
+    void getDashboardLastQuoteFetchAtNullWhenNoFetch() throws Exception {
         mockMvc.perform(get("/api/dashboard"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.lastQuoteFetchAt").doesNotExist());
     }
 
     @Test
-    void exportHoldings_csv_returnsFile() throws Exception {
+    void exportHoldingsCsvReturnsFile() throws Exception {
         mockMvc.perform(get("/api/dashboard/holdings/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("top5-holdings.csv")));
     }
 
     @Test
-    void exportHoldings_excel_returnsFile() throws Exception {
+    void exportHoldingsExcelReturnsFile() throws Exception {
         mockMvc.perform(get("/api/dashboard/holdings/export").param("format", "xlsx"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("top5-holdings.xlsx")));
     }
 
     @Test
-    void exportDividends_csv_returnsFile() throws Exception {
+    void exportDividendsCsvReturnsFile() throws Exception {
         mockMvc.perform(get("/api/dashboard/dividends/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("top5-dividends.csv")));

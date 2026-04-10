@@ -11,6 +11,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Fetches the EUR/USD exchange rate from the ECB XML feed.
  * Falls back to a static rate on failure. Caches for 1 hour.
@@ -30,8 +32,8 @@ public final class EcbExchangeRateProvider {
     }
 
     EcbExchangeRateProvider(RestTemplate restTemplate, ConcurrentMap<String, CachedRate> cache) {
-        this.restTemplate = restTemplate;
-        this.cache = cache;
+        this.restTemplate = requireNonNull(restTemplate);
+        this.cache = requireNonNull(cache);
     }
 
     public double getUsdToEurRate() {

@@ -10,6 +10,7 @@ import com.folio.dto.TransactionPaginatedResponseDto;
 import com.folio.service.ExportService;
 import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
+import com.folio.service.SortRequest;
 import com.folio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -68,7 +69,7 @@ public final class TransactionController {
         List<TransactionDto> data = portfolioService.getTransactions(
             new TransactionFilter(isin, tickerSymbol, name, depot, fromDate, toDate));
 
-        data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
+        data = SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
 
         long filteredCount = data.size();
         double sumCount = data.stream().mapToDouble(t -> t.getCount() != null ? t.getCount() : 0).sum();
@@ -107,7 +108,7 @@ public final class TransactionController {
             new TransactionFilter(isin, tickerSymbol, name, depot, null, null));
 
         if (sortField != null && !sortField.isBlank()) {
-            data = SortHelper.sort(data, sortField, sortDir, SORT_FIELDS);
+            data = SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
         }
 
         List<ExportColumn<TransactionDto>> columns = List.of(

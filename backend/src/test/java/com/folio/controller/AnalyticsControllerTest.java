@@ -20,7 +20,7 @@ final class AnalyticsControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getCountryDiversification_returnsPaginatedResponse() throws Exception {
+    void getCountryDiversificationReturnsPaginatedResponse() throws Exception {
         mockMvc.perform(get("/api/analytics/countries"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items").isArray())
@@ -29,7 +29,7 @@ final class AnalyticsControllerTest {
     }
 
     @Test
-    void getBranchDiversification_returnsPaginatedResponse() throws Exception {
+    void getBranchDiversificationReturnsPaginatedResponse() throws Exception {
         mockMvc.perform(get("/api/analytics/branches"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items").isArray())
@@ -37,7 +37,7 @@ final class AnalyticsControllerTest {
     }
 
     @Test
-    void getCountryDiversification_supportsSortParams() throws Exception {
+    void getCountryDiversificationSupportsSortParams() throws Exception {
         mockMvc.perform(get("/api/analytics/countries")
                 .param("sortField", "name")
                 .param("sortDir", "asc"))
@@ -46,7 +46,7 @@ final class AnalyticsControllerTest {
     }
 
     @Test
-    void getCountryDiversification_supportsPagination() throws Exception {
+    void getCountryDiversificationSupportsPagination() throws Exception {
         mockMvc.perform(get("/api/analytics/countries")
                 .param("page", "1")
                 .param("pageSize", "20"))
@@ -55,28 +55,28 @@ final class AnalyticsControllerTest {
     }
 
     @Test
-    void exportCountryDiversification_csv_returnsFile() throws Exception {
+    void exportCountryDiversificationCsvReturnsFile() throws Exception {
         mockMvc.perform(get("/api/analytics/countries/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("countries-diversification.csv")));
     }
 
     @Test
-    void exportBranchDiversification_csv_returnsFile() throws Exception {
+    void exportBranchDiversificationCsvReturnsFile() throws Exception {
         mockMvc.perform(get("/api/analytics/branches/export").param("format", "csv"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("branches-diversification.csv")));
     }
 
     @Test
-    void exportDiversification_excel_returnsFile() throws Exception {
+    void exportDiversificationExcelReturnsFile() throws Exception {
         mockMvc.perform(get("/api/analytics/countries/export").param("format", "xlsx"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("countries-diversification.xlsx")));
     }
 
     @Test
-    void exportDiversification_withSort_returnsFile() throws Exception {
+    void exportDiversificationWithSortReturnsFile() throws Exception {
         mockMvc.perform(get("/api/analytics/countries/export")
                 .param("format", "csv")
                 .param("sortField", "investedAmount")
