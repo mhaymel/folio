@@ -17,9 +17,6 @@ public final class RequestLoggingFilter implements Filter {
 
     private static final Logger log = getLogger(RequestLoggingFilter.class);
 
-    public RequestLoggingFilter() {
-        log.info("RequestLoggingFilter()");
-    }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)

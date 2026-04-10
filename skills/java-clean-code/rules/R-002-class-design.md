@@ -2,7 +2,9 @@
 
 ## R-002a
 
-Classes must be declared as `final`.
+Classes must be declared as `final` — this prevents unintended subclassing and makes the design explicit.
+
+**Exception:** classes that Spring needs to CGLIB-proxy must **not** be `final`. This includes classes annotated with `@Configuration`, `@SpringBootApplication`, and any Spring bean whose methods are annotated with `@Transactional` (or other AOP-proxied annotations such as `@Cacheable`, `@Async`, etc.).
 
 **Bad:**
 
@@ -189,8 +191,10 @@ constructor by using `this(...)`.
 They must not initialize fields or contain field-initialization logic. 
 Their purpose is to provide default values for omitted parameters.
 
-The primary constructor should declare one parameter for each non-static field.
+The primary constructor must declare one parameter for each non-static field.
 The primary and secondary constructors may be package-private, private, or public.
+When the primary constructor only exists for internal delegation (i.e. some fields
+are internal state never set from outside), make the primary constructor `private`.
 
 
 **Bad:**
@@ -223,7 +227,7 @@ final class UserService {
     private String userName;
     private String password;
 
-    UserService(int userId, String userName, String password) { // primary constructor
+    private UserService(int userId, String userName, String password) { // primary constructor (private — userName/password are internal state)
         this.userId = userId;
         this.userName = userName;
         this.password = password;
@@ -339,7 +343,7 @@ final class UserService {
 
 ## R-002l
 
-Inner classes (static and non-static) must not be used. Use top-level classes instead.
+Inner classes (static and non-static) must not be used. Extract every nested type to its own top-level file. For the Builder pattern, use `<Type>Builder` as the class name (e.g. `IsinBuilder`).
 
 **Bad:**
 
@@ -477,3 +481,123 @@ final class UserService {
 ```
 
 ---
+
+## R-002p
+
+Do not inherit from concrete classes. Only extend interfaces (or implement them).
+
+**Bad:**
+
+```java
+final class AdminUser extends User {
+}
+```
+
+**Good:**
+
+```java
+interface Identifiable {
+    long getId();
+}
+
+final class AdminUser implements Identifiable {
+    @Override
+    public long getId() {
+        return id;
+    }
+}
+```
+
+---
+
+## R-002q
+
+Methods must have at most 3 parameters; prefer 0 or 1. If more are needed, introduce a parameter object or rethink the design.
+
+**Bad:**
+
+```java
+final class OrderService {
+    void createOrder(String product, int quantity, BigDecimal price, String currency) {
+    }
+}
+```
+
+**Good:**
+
+```java
+record OrderRequest(String product, int quantity, BigDecimal price) {
+}
+
+final class OrderService {
+    void createOrder(OrderRequest request) {
+    }
+}
+```
+
+---
+
+## R-002r
+
+Do not use underscores in method names. Use `lowerCamelCase` exclusively. This applies to all methods, including unit test methods.
+
+**Bad:**
+
+```java
+final class UserValidatorTest {
+    void should_accept_non_empty_array() {
+    }
+}
+```
+
+**Good:**
+
+```java
+final class UserValidatorTest {
+    void shouldAcceptNonEmptyArray() {
+    }
+}
+```
+
+---
+
+## R-002s
+
+Do not use `continue` or `break` in loops. Extract the loop body to a private method and use `return` instead of `continue`. Do not invert the condition; do not add nesting.
+
+**Bad:**
+
+```java
+final class OrderProcessor {
+    void processOrders(List<Order> orders) {
+        for (Order order : orders) {
+            if (order.isCancelled()) {
+                continue;
+            }
+            ship(order);
+        }
+    }
+}
+```
+
+**Good:**
+
+```java
+final class OrderProcessor {
+    void processOrders(List<Order> orders) {
+        for (Order order : orders) {
+            processOrder(order);
+        }
+    }
+
+    private void processOrder(Order order) {
+        if (order.isCancelled()) {
+            return;
+        }
+        ship(order);
+    }
+}
+```
+
+---
+

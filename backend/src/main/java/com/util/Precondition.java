@@ -11,7 +11,6 @@ import static com.util.Throw.IAE;
 
 public final class Precondition {
 
-    public static final Class<IllegalArgumentException> IAE = IllegalArgumentException.class;
 
     public static byte[] notEmpty(byte[] bytes) {
         return (nn(bytes).length > 0)
@@ -84,11 +83,11 @@ public final class Precondition {
                 : IAE("value %s must be greater than or equal 0.", i);
     }
 
-	public static double greaterThanOrEqualZero(double d) {
-		return (d >= 0d)
-				? d
-				: IAE("value %s must be greater than or equal 0.", d);
-	}
+    public static double greaterThanOrEqualZero(double d) {
+        return (d >= 0d)
+                ? d
+                : IAE("value %s must be greater than or equal 0.", d);
+    }
 
     public static <T> List<T> noDuplicates(List<T> list) {
         return (list.size() == new HashSet<>(list).size())
@@ -175,11 +174,11 @@ public final class Precondition {
                 : IAE("value must be less than 0.0 or equal 0.0 but is %s", value);
     }
 
-	public static double lessThanOrEqualZero(double value) {
-		return (value <= 0.0d)
-				? value
-				: IAE("value must not be greater than 1.0 but is %s", value);
-	}
+    public static double lessThanOrEqualZero(double value) {
+        return (value <= 0.0d)
+                ? value
+                : IAE("value must not be greater than 1.0 but is %s", value);
+    }
 
     public static <T> void isNull(T t) {
         if (t != null)

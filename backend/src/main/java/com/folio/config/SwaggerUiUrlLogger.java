@@ -12,7 +12,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 @Component
-public final class SwaggerUiUrlLogger {
+final class SwaggerUiUrlLogger {
 
     private static final Logger log = getLogger(SwaggerUiUrlLogger.class);
 
@@ -20,20 +20,24 @@ public final class SwaggerUiUrlLogger {
     private String path;
     private Integer port;
 
-    public SwaggerUiUrlLogger(SwaggerUiConfigProperties properties) {
-        this.path = null;
-        this.port = null;
+    private SwaggerUiUrlLogger(SwaggerUiConfigProperties properties, String path, Integer port) {
         this.properties = requireNonNull(properties);
+        this.path = path;
+        this.port = port;
+    }
+
+    SwaggerUiUrlLogger(SwaggerUiConfigProperties properties) {
+        this(properties, null, null);
     }
 
     @PostConstruct
-    public void readPath() {
+    void readPath() {
         path = properties.getPath();
         logSwaggerUiUrl();
     }
 
     @EventListener
-    public void onApplicationEvent(WebServerInitializedEvent event) {
+    void onApplicationEvent(WebServerInitializedEvent event) {
         port = event.getWebServer().getPort();
         logSwaggerUiUrl();
     }
@@ -45,4 +49,3 @@ public final class SwaggerUiUrlLogger {
         log.info("swagger-ui can be found here: http://localhost:{}{}", port, path);
     }
 }
-

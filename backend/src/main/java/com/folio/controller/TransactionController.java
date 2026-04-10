@@ -1,6 +1,12 @@
 package com.folio.controller;
 
-import com.folio.dto.*;
+import com.folio.dto.ExportColumn;
+import com.folio.dto.ExportRequest;
+import com.folio.dto.PaginatedResponseDto;
+import com.folio.dto.TransactionDto;
+import com.folio.dto.TransactionFilter;
+import com.folio.dto.TransactionFiltersDto;
+import com.folio.dto.TransactionPaginatedResponseDto;
 import com.folio.service.ExportService;
 import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
@@ -9,10 +15,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +30,6 @@ import java.util.Map;
 @Tag(name = "Transactions", description = "TransactionEntity data endpoints")
 public final class TransactionController {
 
-    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     private static final Map<String, Comparator<TransactionDto>> SORT_FIELDS = Map.of(
         "date", SortHelper.comparing(TransactionDto::getRawDate),

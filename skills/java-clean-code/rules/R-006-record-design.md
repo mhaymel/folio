@@ -97,3 +97,35 @@ final record UserService {
 ```
 
 ---
+
+## R-006e
+
+Records do not need builders; use the canonical constructor directly.
+
+**Bad:**
+
+```java
+record UserSummary(long id, String name) {
+}
+
+final class UserSummaryBuilder {
+    private long id;
+    private String name;
+
+    UserSummaryBuilder id(long id) { this.id = id; return this; }
+    UserSummaryBuilder name(String name) { this.name = name; return this; }
+    UserSummary build() { return new UserSummary(id, name); }
+}
+```
+
+**Good:**
+
+```java
+record UserSummary(long id, String name) {
+}
+
+// usage:
+var summary = new UserSummary(1L, "Alice");
+```
+
+---
