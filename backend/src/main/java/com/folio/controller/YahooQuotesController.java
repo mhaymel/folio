@@ -60,9 +60,9 @@ public class YahooQuotesController {
     );
 
     private static final Map<String, Comparator<YahooQuoteWithoutQuoteDto>> WITHOUT_QUOTE_SORT = Map.of(
-        "isin", SortHelper.text(d -> d.getIsin() == null ? null : d.getIsin().value()),
-        "name", SortHelper.text(YahooQuoteWithoutQuoteDto::getName),
-        "tickerSymbol", SortHelper.text(YahooQuoteWithoutQuoteDto::getTickerSymbol)
+        "isin", SortHelper.text(d -> d.isin().value()),
+        "name", SortHelper.text(YahooQuoteWithoutQuoteDto::name),
+        "tickerSymbol", SortHelper.text(YahooQuoteWithoutQuoteDto::tickerSymbol)
     );
 
     private final YahooQuoteDataAccess dataAccess;
@@ -179,9 +179,9 @@ public class YahooQuotesController {
             data = SortHelper.sort(data, new SortRequest(sortField, sortDir), WITHOUT_QUOTE_SORT);
         }
         List<ExportColumn<YahooQuoteWithoutQuoteDto>> columns = List.of(
-            new ExportColumn<>("ISIN", YahooQuoteWithoutQuoteDto::getIsin),
-            new ExportColumn<>("Name", YahooQuoteWithoutQuoteDto::getName),
-            new ExportColumn<>("Ticker", YahooQuoteWithoutQuoteDto::getTickerSymbol)
+            new ExportColumn<>("ISIN", YahooQuoteWithoutQuoteDto::isin),
+            new ExportColumn<>("Name", YahooQuoteWithoutQuoteDto::name),
+            new ExportColumn<>("Ticker", YahooQuoteWithoutQuoteDto::tickerSymbol)
         );
         return exportService.export(new ExportRequest<>(data, columns, format, "quotes-without-quote"));
     }
@@ -199,9 +199,9 @@ public class YahooQuotesController {
     private List<YahooQuoteWithoutQuoteDto> filterWithoutQuote(List<YahooQuoteWithoutQuoteDto> data,
             YahooQuoteFilter filter) {
         return data.stream()
-            .filter(d -> matches(d.getIsin() != null ? d.getIsin().value() : null, filter.isin()))
-            .filter(d -> matches(d.getName(), filter.name()))
-            .filter(d -> matches(d.getTickerSymbol(), filter.ticker()))
+            .filter(d -> matches(d.isin().value(), filter.isin()))
+            .filter(d -> matches(d.name(), filter.name()))
+            .filter(d -> matches(d.tickerSymbol(), filter.ticker()))
             .toList();
     }
 
@@ -327,11 +327,10 @@ public class YahooQuotesController {
             """).getResultList();
 
         return rows.stream()
-            .map(r -> YahooQuoteWithoutQuoteDto.builder()
-                .isin(new Isin((String) r[0]))
-                .name((String) r[1])
-                .tickerSymbol((String) r[2])
-                .build())
+            .map(r -> new YahooQuoteWithoutQuoteDto(
+                    new Isin((String) r[0]),
+                    (String) r[1],
+                    (String) r[2]))
             .toList();
     }
 }
