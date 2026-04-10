@@ -49,6 +49,8 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import static java.util.Objects.requireNonNull;
+
 @Service
 public class ImportService {
 
@@ -67,8 +69,8 @@ public class ImportService {
 
     public ImportService(ImportRepositories repos, EntityManager em) {
         this.importLock = new ReentrantLock();
-        this.repos = repos;
-        this.em = em;
+        this.repos = requireNonNull(repos);
+        this.em = requireNonNull(em);
     }
 
     // -- Formatting --

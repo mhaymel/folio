@@ -20,6 +20,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/currencies")
 @Tag(name = "Currencies", description = "CurrencyEntity reference data")
@@ -33,8 +35,8 @@ public final class CurrencyController {
     private final ExportService exportService;
 
     public CurrencyController(CurrencyRepository currencyRepo, ExportService exportService) {
-        this.currencyRepo = currencyRepo;
-        this.exportService = exportService;
+        this.currencyRepo = requireNonNull(currencyRepo);
+        this.exportService = requireNonNull(exportService);
     }
 
     @GetMapping

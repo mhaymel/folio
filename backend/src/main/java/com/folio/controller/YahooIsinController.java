@@ -30,6 +30,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/yahoo-ticker-for-isin")
 @Tag(name = "Yahoo Ticker for ISIN", description = "Resolve ticker symbols from Yahoo Finance for all known ISINs")
@@ -42,10 +44,10 @@ public class YahooIsinController {
 
     public YahooIsinController(EntityManager em, IsinTickerSearch isinTickerSearch,
                                IsinRepository isinRepository, TickerSymbolRepository tickerSymbolRepository) {
-        this.em = em;
-        this.isinTickerSearch = isinTickerSearch;
-        this.isinRepository = isinRepository;
-        this.tickerSymbolRepository = tickerSymbolRepository;
+        this.em = requireNonNull(em);
+        this.isinTickerSearch = requireNonNull(isinTickerSearch);
+        this.isinRepository = requireNonNull(isinRepository);
+        this.tickerSymbolRepository = requireNonNull(tickerSymbolRepository);
     }
 
     @PostMapping("/fetch")

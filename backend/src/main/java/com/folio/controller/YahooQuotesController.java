@@ -38,6 +38,8 @@ import java.util.Optional;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/yahoo-quotes")
 @Tag(name = "Yahoo Quotes", description = "Yahoo Finance quote status for held portfolio ISINs")
@@ -72,11 +74,11 @@ public class YahooQuotesController {
                                   IsinRepository isinRepository,
                                   QuoteRepositories quoteRepos,
                                   QuoteFetcher quoteFetcher) {
-        this.em = em;
-        this.exportService = exportService;
-        this.isinRepository = isinRepository;
-        this.quoteRepos = quoteRepos;
-        this.quoteFetcher = quoteFetcher;
+        this.em = requireNonNull(em);
+        this.exportService = requireNonNull(exportService);
+        this.isinRepository = requireNonNull(isinRepository);
+        this.quoteRepos = requireNonNull(quoteRepos);
+        this.quoteFetcher = requireNonNull(quoteFetcher);
     }
 
     @PostMapping("/fetch")

@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.requireNonNull;
+
 @Service
 public class PortfolioService {
 
@@ -31,8 +33,8 @@ public class PortfolioService {
     private final SettingRepository settingRepo;
 
     public PortfolioService(EntityManager em, SettingRepository settingRepo) {
-        this.em = em;
-        this.settingRepo = settingRepo;
+        this.em = requireNonNull(em);
+        this.settingRepo = requireNonNull(settingRepo);
     }
 
     @Transactional(readOnly = true)

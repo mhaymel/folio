@@ -25,6 +25,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/dividend-payments")
 @Tag(name = "DividendEntity Payments", description = "DividendEntity payment endpoints")
@@ -42,8 +44,8 @@ public final class DividendPaymentController {
     private final ExportService exportService;
 
     public DividendPaymentController(DividendPaymentService dividendPaymentService, ExportService exportService) {
-        this.dividendPaymentService = dividendPaymentService;
-        this.exportService = exportService;
+        this.dividendPaymentService = requireNonNull(dividendPaymentService);
+        this.exportService = requireNonNull(exportService);
     }
 
     @GetMapping

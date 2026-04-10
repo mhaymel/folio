@@ -22,6 +22,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/isin-names")
 @Tag(name = "ISIN Names", description = "ISIN to stock name mappings")
@@ -36,8 +38,8 @@ public class IsinNameController {
     private final ExportService exportService;
 
     public IsinNameController(EntityManager em, ExportService exportService) {
-        this.em = em;
-        this.exportService = exportService;
+        this.em = requireNonNull(em);
+        this.exportService = requireNonNull(exportService);
     }
 
     @GetMapping

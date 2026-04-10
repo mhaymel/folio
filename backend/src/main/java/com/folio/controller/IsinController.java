@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/isins")
 @Tag(name = "ISINs", description = "All ISINs known to the system")
@@ -42,8 +44,8 @@ public class IsinController {
     private final ExportService exportService;
 
     public IsinController(EntityManager em, ExportService exportService) {
-        this.em = em;
-        this.exportService = exportService;
+        this.em = requireNonNull(em);
+        this.exportService = requireNonNull(exportService);
     }
 
     @GetMapping

@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/stocks-per-depot")
 @Tag(name = "Stocks per DepotEntity", description = "Portfolio positions grouped by depot")
@@ -49,8 +51,8 @@ public final class StocksPerDepotController {
     private final ExportService exportService;
 
     public StocksPerDepotController(PortfolioService portfolioService, ExportService exportService) {
-        this.portfolioService = portfolioService;
-        this.exportService = exportService;
+        this.portfolioService = requireNonNull(portfolioService);
+        this.exportService = requireNonNull(exportService);
     }
 
     @GetMapping

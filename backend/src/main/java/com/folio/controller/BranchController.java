@@ -20,6 +20,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/branches")
 @Tag(name = "Branches", description = "BranchEntity reference data")
@@ -33,8 +35,8 @@ public final class BranchController {
     private final ExportService exportService;
 
     public BranchController(BranchRepository branchRepo, ExportService exportService) {
-        this.branchRepo = branchRepo;
-        this.exportService = exportService;
+        this.branchRepo = requireNonNull(branchRepo);
+        this.exportService = requireNonNull(exportService);
     }
 
     @GetMapping

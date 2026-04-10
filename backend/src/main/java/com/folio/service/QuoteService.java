@@ -25,6 +25,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import static java.lang.Integer.parseInt;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import static java.util.Objects.requireNonNull;
+
 @Service
 public final class QuoteService {
 
@@ -39,10 +41,10 @@ public final class QuoteService {
 
     public QuoteService(IsinsQuoteLoader quoteLoader, QuoteRepositories repos, EntityManager em,
                         TransactionTemplate tx) {
-        this.quoteLoader = quoteLoader;
-        this.repos = repos;
-        this.em = em;
-        this.tx = tx;
+        this.quoteLoader = requireNonNull(quoteLoader);
+        this.repos = requireNonNull(repos);
+        this.em = requireNonNull(em);
+        this.tx = requireNonNull(tx);
         this.fetchInProgress = new AtomicBoolean(false);
         this.lastScheduledFetch = new AtomicLong(0);
     }

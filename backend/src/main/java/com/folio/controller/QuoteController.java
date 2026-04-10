@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/quotes")
 @Tag(name = "Quotes", description = "Quote fetch management")
@@ -30,8 +32,8 @@ public final class QuoteController {
     private final QuoteService quoteService;
 
     public QuoteController(SettingRepository settingRepo, QuoteService quoteService) {
-        this.settingRepo = settingRepo;
-        this.quoteService = quoteService;
+        this.settingRepo = requireNonNull(settingRepo);
+        this.quoteService = requireNonNull(quoteService);
     }
 
     @GetMapping("/settings")

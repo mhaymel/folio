@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/import")
 @Tag(name = "Import", description = "CSV file import endpoints")
@@ -20,7 +22,7 @@ public final class ImportController {
     private final ImportService importService;
 
     public ImportController(ImportService importService) {
-        this.importService = importService;
+        this.importService = requireNonNull(importService);
     }
 
     @PostMapping(value = "/degiro/transactions", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

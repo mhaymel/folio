@@ -22,6 +22,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/ticker-symbols")
 @Tag(name = "Ticker Symbols", description = "ISIN to ticker symbol mappings")
@@ -37,8 +39,8 @@ public class TickerSymbolController {
     private final ExportService exportService;
 
     public TickerSymbolController(EntityManager em, ExportService exportService) {
-        this.em = em;
-        this.exportService = exportService;
+        this.em = requireNonNull(em);
+        this.exportService = requireNonNull(exportService);
     }
 
     @GetMapping

@@ -15,6 +15,8 @@ import java.util.Set;
 import static java.lang.String.format;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Cascade fallback quote loader. Tries each source in order;
  * ISINs successfully resolved are removed before the next source is attempted.
@@ -30,7 +32,7 @@ public final class IsinsQuoteLoader {
      * Sources are injected in @Order priority (1=first, 10=last).
      */
     public IsinsQuoteLoader(List<QuoteSource> sources) {
-        this.sources = sources;
+        this.sources = requireNonNull(sources);
     }
 
     /**

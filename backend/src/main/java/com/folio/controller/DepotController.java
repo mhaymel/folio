@@ -20,6 +20,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/depots")
 @Tag(name = "Depots", description = "DepotEntity reference data")
@@ -33,8 +35,8 @@ public final class DepotController {
     private final ExportService exportService;
 
     public DepotController(DepotRepository depotRepo, ExportService exportService) {
-        this.depotRepo = depotRepo;
-        this.exportService = exportService;
+        this.depotRepo = requireNonNull(depotRepo);
+        this.exportService = requireNonNull(exportService);
     }
 
     @GetMapping

@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/dashboard")
 @Tag(name = "Dashboard", description = "Portfolio dashboard summary")
@@ -26,8 +28,8 @@ public final class DashboardController {
     private final ExportService exportService;
 
     public DashboardController(PortfolioService portfolioService, ExportService exportService) {
-        this.portfolioService = portfolioService;
-        this.exportService = exportService;
+        this.portfolioService = requireNonNull(portfolioService);
+        this.exportService = requireNonNull(exportService);
     }
 
     @GetMapping

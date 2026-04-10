@@ -25,6 +25,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/transactions")
 @Tag(name = "Transactions", description = "TransactionEntity data endpoints")
@@ -45,8 +47,8 @@ public final class TransactionController {
     private final ExportService exportService;
 
     public TransactionController(PortfolioService portfolioService, ExportService exportService) {
-        this.portfolioService = portfolioService;
-        this.exportService = exportService;
+        this.portfolioService = requireNonNull(portfolioService);
+        this.exportService = requireNonNull(exportService);
     }
 
     @GetMapping
