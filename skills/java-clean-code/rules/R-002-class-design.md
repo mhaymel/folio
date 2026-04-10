@@ -1,4 +1,4 @@
-## Class Design Rules
+# Class Design Rules
 
 ## R-002a
 
@@ -28,7 +28,7 @@ final class UserService {
 
 ## R-002b
 
-Classes must be package-private. Make classes public only if they must be accessed outside of the package.
+Classes must be package-private. Make classes public only if they must be accessed outside the package.
 
 **Bad:**
 
@@ -54,12 +54,12 @@ Classes must not be abstract. Use interfaces and composition instead.
 
 ```java
 abstract class DataProcessor {
-    public abstract void process(Data data);
+    abstract void process(Data data);
 }
 
-final class UserDataProcessor extends Processor {
+final class UserDataProcessor extends DataProcessor {
     @Override
-    public void process(Data data) {
+    void process(Data data) {
         // implementation
     }
 }
@@ -84,7 +84,7 @@ final class UserDataProcessor implements Processor {
 
 ## R-002d
 
-Methods must be package-private by default. Make methods public only if they must be accessed outside.
+Methods must be package-private by default. Make methods public only if they must be accessed outside the package.
 
 **Bad:**
 
@@ -107,7 +107,8 @@ final class UserService {
 ---
 
 ## R-002e
-Non-static fields must be private
+
+Non-static fields must be private.
 
 **Bad:**
 
@@ -127,9 +128,11 @@ final class UserService {
 }
 ```
 
+---
+
 ## R-002f
 
-Prefer final fields in classes wherever possible
+Prefer final fields wherever possible.
 
 **Bad:**
 
@@ -153,7 +156,7 @@ final class UserService {
 
 ## R-002g
 
-Prefer immutable classes wherever possible
+Prefer immutable classes wherever possible.
 
 **Bad:**
 
@@ -179,7 +182,17 @@ final class UserService {
 
 ## R-002h
 
-Classes should have only one primary constructor. The primary initialize all fields. There can be more than one secondary constructor, but they must delegate to the primary constructor. Fields must not be initialized in secondary constructors.
+Classes must have one primary constructor that initializes all non-static fields.
+
+Secondary constructors are allowed, but they must delegate to the primary 
+constructor by using `this(...)`.
+They must not initialize fields or contain field-initialization logic. 
+Their purpose is to provide default values for omitted parameters.
+
+The primary constructor should declare one parameter for each non-static field.
+The primary and secondary constructors may be package-private, private, or public.
+
+
 **Bad:**
 
 ```java
@@ -196,7 +209,7 @@ final class UserService {
 
     UserService(int userId) {
         this.userId = userId;
-        this.userName = "User1;
+        this.userName = "User1";
         this.password = "Password1";
     }
 }
@@ -210,7 +223,7 @@ final class UserService {
     private String userName;
     private String password;
 
-    UserService(int userId, String userName, String password) { //primary constructor
+    UserService(int userId, String userName, String password) { // primary constructor
         this.userId = userId;
         this.userName = userName;
         this.password = password;
@@ -244,7 +257,7 @@ final class UserService {
     private int userId;
     private final List<String> users;
 
-    UserService(int userId, List<String> users) { //primary constructor
+    UserService(int userId, List<String> users) { // primary constructor
         this.userId = userId;
         this.users = users;
     }
@@ -253,9 +266,9 @@ final class UserService {
 
 ---
 
-## R-002h
+## R-002j
 
-Constructors must be code free, except for precondition checks.
+Constructors must be free of code except for precondition checks.
 
 **Bad:**
 
@@ -293,7 +306,7 @@ final class UserService {
 
 ---
 
-## R-002i
+## R-002k
 
 Classes should not have more than three non-static fields. Introduce new classes or records to group related fields together.
 
@@ -324,7 +337,7 @@ final class UserService {
 
 ---
 
-## R-002j
+## R-002l
 
 Inner classes (static and non-static) must not be used. Use top-level classes instead.
 
@@ -363,9 +376,9 @@ final class UserService {
 
 ---
 
-## R-002k
+## R-002m
 
-enums must not be declared as inner types. Declare enums at the top level. 
+Enums must not be declared as inner types. Declare enums at the top level.
 
 **Bad:**
 
@@ -394,7 +407,7 @@ final class UserService {
 
 ---
 
-## R-002l
+## R-002n
 
 A class must not have unused fields.
 
@@ -435,9 +448,9 @@ final class UserService {
 
 ---
 
-## R-002m
+## R-002o
 
-A constructor must not have unused parameters
+A constructor must not have unused parameters.
 
 **Bad:**
 
