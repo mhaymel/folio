@@ -156,3 +156,56 @@ record UserSummary(Long id, String name) {
 
 ---
 
+## R-006g
+
+All components of a record must themselves be immutable. 
+Using mutable types such as `List`, `Map`, `Set`, `Date`, or arrays breaks 
+the immutability guarantee of the record. 
+Use unmodifiable or immutable alternatives instead, and defensively copy 
+in the compact canonical constructor.
+
+> **Note:** This rule applies recursively. `List.copyOf()` makes the list 
+> itself unmodifiable, but if the elements inside it are mutable objects, 
+> those elements can still be mutated. Every component, and every element 
+> within a component, must be immutable (e.g. `List<String>` is safe 
+> because `String` is immutable; `List<Date>` is not).
+
+**Bad:**
+
+```java
+record Portfolio(String name, List<String> stocks) {
+}
+```
+
+**Good:**
+
+```java
+record Portfolio(String name, List<String> stocks) {
+    Portfolio {
+        requireNonNull(name);
+        requireNonNull(stocks);
+        stocks = List.copyOf(stocks);
+    }
+}
+```
+
+**Bad:**
+
+```java
+record Snapshot(String label, Date takenAt) {
+}
+```
+
+**Good:**
+
+```java
+record Snapshot(String label, Instant takenAt) {
+    Snapshot {
+        requireNonNull(label);
+        requireNonNull(takenAt);
+    }
+}
+```
+
+---
+
