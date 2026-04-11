@@ -190,6 +190,7 @@ Secondary constructors are allowed, but they must delegate to the primary
 constructor by using `this(...)`.
 They must not initialize fields or contain field-initialization logic. 
 Their purpose is to provide default values for omitted parameters.
+A secondary constructor must not have more parameters than the primary constructor.
 
 The primary constructor must declare one parameter for each non-static field.
 The primary and secondary constructors may be package-private, private, or public.

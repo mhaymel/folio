@@ -10,43 +10,27 @@ import static java.util.Objects.requireNonNull;
 @Component
 public final class ImportRepositories {
 
-    private final IsinRepository isinRepo;
-    private final IsinNameRepository isinNameRepo;
-    private final DepotRepository depotRepo;
-    private final CurrencyRepository currencyRepo;
-    private final TransactionRepository transactionRepo;
-    private final DividendRepository dividendRepo;
-    private final DividendPaymentRepository dividendPaymentRepo;
-    private final CountryRepository countryRepo;
-    private final BranchRepository branchRepo;
-    private final TickerSymbolRepository tickerSymbolRepo;
+    private final IsinImportRepositories isinRepos;
+    private final TradeImportRepositories tradeRepos;
+    private final ReferenceImportRepositories referenceRepos;
 
-    public ImportRepositories(IsinRepository isinRepo, IsinNameRepository isinNameRepo,
-                              DepotRepository depotRepo, CurrencyRepository currencyRepo,
-                              TransactionRepository transactionRepo, DividendRepository dividendRepo,
-                              DividendPaymentRepository dividendPaymentRepo, CountryRepository countryRepo,
-                              BranchRepository branchRepo, TickerSymbolRepository tickerSymbolRepo) {
-        this.isinRepo = requireNonNull(isinRepo);
-        this.isinNameRepo = requireNonNull(isinNameRepo);
-        this.depotRepo = requireNonNull(depotRepo);
-        this.currencyRepo = requireNonNull(currencyRepo);
-        this.transactionRepo = requireNonNull(transactionRepo);
-        this.dividendRepo = requireNonNull(dividendRepo);
-        this.dividendPaymentRepo = requireNonNull(dividendPaymentRepo);
-        this.countryRepo = requireNonNull(countryRepo);
-        this.branchRepo = requireNonNull(branchRepo);
-        this.tickerSymbolRepo = requireNonNull(tickerSymbolRepo);
+    public ImportRepositories(IsinImportRepositories isinRepos, TradeImportRepositories tradeRepos,
+                              ReferenceImportRepositories referenceRepos) {
+        this.isinRepos = requireNonNull(isinRepos);
+        this.tradeRepos = requireNonNull(tradeRepos);
+        this.referenceRepos = requireNonNull(referenceRepos);
     }
 
-    public IsinRepository isin() { return isinRepo; }
-    public IsinNameRepository isinName() { return isinNameRepo; }
-    public DepotRepository depot() { return depotRepo; }
-    public CurrencyRepository currency() { return currencyRepo; }
-    public TransactionRepository transaction() { return transactionRepo; }
-    public DividendRepository dividend() { return dividendRepo; }
-    public DividendPaymentRepository dividendPayment() { return dividendPaymentRepo; }
-    public CountryRepository country() { return countryRepo; }
-    public BranchRepository branch() { return branchRepo; }
-    public TickerSymbolRepository tickerSymbol() { return tickerSymbolRepo; }
+
+    public IsinRepository isin() { return isinRepos.isin(); }
+    public IsinNameRepository isinName() { return isinRepos.isinName(); }
+    public DepotRepository depot() { return tradeRepos.depot(); }
+    public CurrencyRepository currency() { return referenceRepos.currency(); }
+    public TransactionRepository transaction() { return tradeRepos.transaction(); }
+    public DividendRepository dividend() { return tradeRepos.dividend(); }
+    public DividendPaymentRepository dividendPayment() { return tradeRepos.dividendPayment(); }
+    public CountryRepository country() { return referenceRepos.country(); }
+    public BranchRepository branch() { return referenceRepos.branch(); }
+    public TickerSymbolRepository tickerSymbol() { return isinRepos.tickerSymbol(); }
 }
 
