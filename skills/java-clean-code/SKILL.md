@@ -39,8 +39,10 @@ Rules are organized by category in the `rules/` folder:
 Follow these steps **in order** when applying clean code rules:
 
 1. **Load all rule files.** Use the `read_file` tool to load every file listed above. Do not rely on memory or summaries.
-2. **Identify applicable rule files.** Determine which rule files apply to the code under review (e.g. R-001/R-002 for classes, R-005/R-006 for records, R-007 for enums, R-008 for imports, R-009 for preconditions).
-3. **Walk through every sub-rule.** For each applicable rule file, check **every** sub-rule (a, b, c, …) against the code. Do not skip any.
-4. **Report each sub-rule result.** For each sub-rule, state whether it passes or is violated.
-5. **Fix all violations.** Apply changes for every violation found.
-6. **Verify completeness.** After fixing, re-read the file and confirm no sub-rule was missed.
+2. **Collect all Java source files.** Use `file_search` with `**/*.java` to find every Java file under `src/main/java`. Do **not** limit this to a subset — every file must be checked.
+3. **Read every Java file.** Use `read_file` on each file. Do not skip any file.
+4. **Check every file against every applicable sub-rule.** For each Java file determine its type (class, record, enum, interface) and check **every** sub-rule (a, b, c, …) from every applicable rule file. All rule files R-008 and R-009 apply to all types. Do not skip any sub-rule.
+5. **Report violations per file.** For each file, list every sub-rule that is violated. If a file passes all rules, state that explicitly. Present the results as a table: File | Violation | Sub-rule.
+6. **Fix all violations.** Apply changes for every violation found. After fixing a file, use `get_errors` to verify it compiles.
+7. **Compile and run tests.** Run `gradlew :backend:compileJava` and `gradlew :backend:test`. All must pass.
+8. **Verify completeness.** Re-read every file that was modified and confirm no sub-rule was missed. If a fix introduced a new violation (e.g. a new class was created), check that new file against all rules too.

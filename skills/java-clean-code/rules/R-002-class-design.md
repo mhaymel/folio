@@ -184,23 +184,43 @@ final class UserService {
 
 ## R-002h
 
-Classes must have one primary constructor that initializes all non-static fields.
+Classes must have one primary constructor that initializes all non-static fields. The primary constructor must declare one parameter for each non-static field.
 
-Secondary constructors are allowed, but they must delegate to the primary 
-constructor by using `this(...)`.
-They must not initialize fields or contain field-initialization logic. 
-Their purpose is to provide default values for omitted parameters.
-A secondary constructor must not have more parameters than the primary constructor.
+**Bad:**
 
-The primary constructor must declare one parameter for each non-static field.
-The primary and secondary constructors may be package-private, private, or public.
-When the primary constructor only exists for internal delegation (i.e. some fields
-are internal state never set from outside), make the primary constructor `private`.
+```java
+final class UserService {
+    private final int userId;
+    private String userName;
 
-**Spring note:** When a class has multiple constructors, Spring cannot auto-detect
-which one to use for dependency injection. Annotate the secondary (injection)
-constructor with `@Autowired` so Spring selects it.
+    UserService(String userName) {
+        this.userId = 0;
+        this.userName = userName;
+    }
+}
+```
 
+**Good:**
+
+```java
+final class UserService {
+    private final int userId;
+    private String userName;
+
+    UserService(int userId, String userName) {
+        this.userId = userId;
+        this.userName = userName;
+    }
+}
+```
+
+---
+
+## R-002h2
+
+Secondary constructors must delegate to the primary constructor by using `this(...)`. They must not initialize fields or contain field-initialization logic. Their purpose is to provide default values for omitted parameters.
+
+**Spring note:** When a class has multiple constructors, Spring cannot auto-detect which one to use for dependency injection. Annotate the secondary (injection) constructor with `@Autowired` so Spring selects it.
 
 **Bad:**
 
@@ -232,7 +252,7 @@ final class UserService {
     private String userName;
     private String password;
 
-    private UserService(int userId, String userName, String password) { // primary constructor (private — userName/password are internal state)
+    private UserService(int userId, String userName, String password) {
         this.userId = userId;
         this.userName = userName;
         this.password = password;
@@ -240,6 +260,82 @@ final class UserService {
 
     UserService(int userId) {
         this(userId, "User1", "Password1");
+    }
+}
+```
+
+---
+
+## R-002h3
+
+A secondary constructor must not have more parameters than the primary constructor.
+
+**Bad:**
+
+```java
+final class UserService {
+    private final String userName;
+
+    private UserService(String userName) {
+        this.userName = userName;
+    }
+
+    UserService(String userName, String password) { // more params than primary
+        this(userName);
+    }
+}
+```
+
+**Good:**
+
+```java
+final class UserService {
+    private final String userName;
+
+    UserService(String userName) {
+        this.userName = userName;
+    }
+}
+```
+
+---
+
+## R-002h4
+
+When the primary constructor only exists for internal delegation (i.e. some fields are internal state never set from outside), make the primary constructor `private`.
+
+**Bad:**
+
+```java
+final class UserService {
+    private final int userId;
+    private String userName;
+
+    UserService(int userId, String userName) { // exposes internal state
+        this.userId = userId;
+        this.userName = userName;
+    }
+
+    UserService(int userId) {
+        this(userId, "User1");
+    }
+}
+```
+
+**Good:**
+
+```java
+final class UserService {
+    private final int userId;
+    private String userName;
+
+    private UserService(int userId, String userName) { // private — userName is internal state
+        this.userId = userId;
+        this.userName = userName;
+    }
+
+    UserService(int userId) {
+        this(userId, "User1");
     }
 }
 ```
