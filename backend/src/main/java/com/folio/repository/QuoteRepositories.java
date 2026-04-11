@@ -2,6 +2,8 @@ package com.folio.repository;
 
 import org.springframework.stereotype.Component;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Bundles repositories needed by QuoteService to keep its constructor within the 3-parameter limit.
  */
@@ -14,9 +16,9 @@ public final class QuoteRepositories {
 
     public QuoteRepositories(IsinQuoteRepository isinQuoteRepo, QuoteProviderRepository providerRepo,
                              SettingRepository settingRepo) {
-        this.isinQuoteRepo = isinQuoteRepo;
-        this.providerRepo = providerRepo;
-        this.settingRepo = settingRepo;
+        this.isinQuoteRepo = requireNonNull(isinQuoteRepo);
+        this.providerRepo = requireNonNull(providerRepo);
+        this.settingRepo = requireNonNull(settingRepo);
     }
 
     public IsinQuoteRepository isinQuote() { return isinQuoteRepo; }

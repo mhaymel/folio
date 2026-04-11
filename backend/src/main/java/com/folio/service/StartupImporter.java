@@ -17,6 +17,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Imports sample data from {@code docs/samples/} on startup in dev mode.
  * Runs exactly once per application start.
@@ -32,7 +34,7 @@ class StartupImporter implements ApplicationRunner {
 
     StartupImporter(ImportService importService,
                     @Value("${folio.startup-import.samples-dir:docs/samples}") String samplesDir) {
-        this.importService = importService;
+        this.importService = requireNonNull(importService);
         this.samplesDir = resolveDir(samplesDir);
     }
 

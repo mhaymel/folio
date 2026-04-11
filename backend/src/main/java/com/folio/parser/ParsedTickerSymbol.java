@@ -1,3 +1,11 @@
 package com.folio.parser;
 
-public record ParsedTickerSymbol(String isinCode, String symbol, String name) {}
+import static java.util.Objects.requireNonNull;
+
+public record ParsedTickerSymbol(String isinCode, String symbol, String name) {
+    public ParsedTickerSymbol {
+        requireNonNull(isinCode);
+        requireNonNull(symbol);
+        requireNonNull(name);
+    }
+}

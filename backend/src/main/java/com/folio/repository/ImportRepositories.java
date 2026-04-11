@@ -2,6 +2,8 @@ package com.folio.repository;
 
 import org.springframework.stereotype.Component;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Bundles all repositories needed by ImportService to keep its constructor within the 3-parameter limit.
  */
@@ -24,16 +26,16 @@ public final class ImportRepositories {
                               TransactionRepository transactionRepo, DividendRepository dividendRepo,
                               DividendPaymentRepository dividendPaymentRepo, CountryRepository countryRepo,
                               BranchRepository branchRepo, TickerSymbolRepository tickerSymbolRepo) {
-        this.isinRepo = isinRepo;
-        this.isinNameRepo = isinNameRepo;
-        this.depotRepo = depotRepo;
-        this.currencyRepo = currencyRepo;
-        this.transactionRepo = transactionRepo;
-        this.dividendRepo = dividendRepo;
-        this.dividendPaymentRepo = dividendPaymentRepo;
-        this.countryRepo = countryRepo;
-        this.branchRepo = branchRepo;
-        this.tickerSymbolRepo = tickerSymbolRepo;
+        this.isinRepo = requireNonNull(isinRepo);
+        this.isinNameRepo = requireNonNull(isinNameRepo);
+        this.depotRepo = requireNonNull(depotRepo);
+        this.currencyRepo = requireNonNull(currencyRepo);
+        this.transactionRepo = requireNonNull(transactionRepo);
+        this.dividendRepo = requireNonNull(dividendRepo);
+        this.dividendPaymentRepo = requireNonNull(dividendPaymentRepo);
+        this.countryRepo = requireNonNull(countryRepo);
+        this.branchRepo = requireNonNull(branchRepo);
+        this.tickerSymbolRepo = requireNonNull(tickerSymbolRepo);
     }
 
     public IsinRepository isin() { return isinRepo; }

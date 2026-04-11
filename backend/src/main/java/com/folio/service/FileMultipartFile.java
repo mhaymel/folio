@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Adapts a filesystem {@link Path} to the {@link MultipartFile} interface
  * so that the {@link ImportService} methods can be called with local files.
@@ -18,7 +20,7 @@ final class FileMultipartFile implements MultipartFile {
     private final Path path;
 
     FileMultipartFile(Path path) {
-        this.path = path;
+        this.path = requireNonNull(path);
     }
 
     @Override public String getName() { return path.getFileName().toString(); }

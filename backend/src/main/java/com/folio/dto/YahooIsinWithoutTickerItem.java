@@ -1,3 +1,10 @@
 package com.folio.dto;
 
-public record YahooIsinWithoutTickerItem(String isin, String name) {}
+import static java.util.Objects.requireNonNull;
+
+public record YahooIsinWithoutTickerItem(String isin, String name) {
+    public YahooIsinWithoutTickerItem {
+        requireNonNull(isin);
+        requireNonNull(name);
+    }
+}
