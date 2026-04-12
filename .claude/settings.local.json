@@ -68,7 +68,12 @@
       "Bash(grep -E \"public class.*[^l]$|class.*[^l]$\")",
       "Bash(./mvnw compile:*)",
       "Bash(grep -v \"//.*continue\\\\|//.*break\")",
-      "Bash(mvn compile:*)"
+      "Bash(mvn compile:*)",
+      "Bash(./gradlew :backend:test --tests \"com.folio.service.PortfolioServiceTest\" --tests \"com.folio.dto.DashboardDtoTest\")",
+      "Bash(./gradlew :backend:compileJava :backend:compileTestJava)",
+      "Bash(./gradlew :backend:test --tests \"com.folio.dto.StockDtoTest\" --tests \"com.folio.service.PortfolioServiceTest\" --tests \"com.folio.controller.*\")",
+      "Bash(./gradlew :backend:test --tests \"com.folio.dto.StockDtoTest\")",
+      "Bash(./gradlew :backend:test --tests \"com.folio.dto.StockDtoTest.shouldRejectNullClassification\")"
     ]
   }
 }

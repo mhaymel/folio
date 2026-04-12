@@ -34,17 +34,17 @@ import static java.util.Objects.requireNonNull;
 public final class StocksController {
 
     private static final Map<String, Comparator<StockDto>> SORT_FIELDS = Map.ofEntries(
-        Map.entry("isin", SortHelper.text(s -> s.getIsin() == null ? null : s.getIsin().value())),
-        Map.entry("tickerSymbol", SortHelper.text(StockDto::getTickerSymbol)),
-        Map.entry("name", SortHelper.text(StockDto::getName)),
-        Map.entry("country", SortHelper.text(StockDto::getCountry)),
-        Map.entry("branch", SortHelper.text(StockDto::getBranch)),
-        Map.entry("count", SortHelper.number(StockDto::getCount)),
-        Map.entry("avgEntryPrice", SortHelper.number(StockDto::getAvgEntryPrice)),
-        Map.entry("currentQuote", SortHelper.number(StockDto::getCurrentQuote)),
-        Map.entry("performancePercent", SortHelper.number(StockDto::getPerformancePercent)),
-        Map.entry("dividendPerShare", SortHelper.number(StockDto::getDividendPerShare)),
-        Map.entry("estimatedAnnualIncome", SortHelper.number(StockDto::getEstimatedAnnualIncome))
+        Map.entry("isin", SortHelper.text(s -> s.security().isin() == null ? null : s.security().isin().value())),
+        Map.entry("tickerSymbol", SortHelper.text(s -> s.security().tickerSymbol())),
+        Map.entry("name", SortHelper.text(s -> s.security().name())),
+        Map.entry("country", SortHelper.text(s -> s.classification().country())),
+        Map.entry("branch", SortHelper.text(s -> s.classification().branch())),
+        Map.entry("count", SortHelper.number(s -> s.metrics().position().count())),
+        Map.entry("avgEntryPrice", SortHelper.number(s -> s.metrics().position().avgEntryPrice())),
+        Map.entry("currentQuote", SortHelper.number(s -> s.metrics().position().currentQuote())),
+        Map.entry("performancePercent", SortHelper.number(s -> s.metrics().performance().performancePercent())),
+        Map.entry("dividendPerShare", SortHelper.number(s -> s.metrics().performance().dividendPerShare())),
+        Map.entry("estimatedAnnualIncome", SortHelper.number(s -> s.metrics().performance().estimatedAnnualIncome()))
     );
 
     private final PortfolioService portfolioService;
@@ -70,7 +70,7 @@ public final class StocksController {
         List<StockDto> data = filterAndSort(portfolioService.getAggregatedStocks(),
             new StockFilter(isin, tickerSymbol, name, null, country, branch),
             new SortRequest(sortField, sortDir));
-        double sumCount = data.stream().mapToDouble(StockDto::getCount).sum();
+        double sumCount = data.stream().mapToDouble(s -> s.metrics().position().count()).sum();
         PaginatedResponseDto<StockDto> paginated = PaginationHelper.paginate(data, page, pageSize);
         return ResponseEntity.ok(new StockPaginatedResponseDto(
             paginated.getItems(), paginated.getPage(), paginated.getPageSize(),
@@ -82,10 +82,10 @@ public final class StocksController {
     public ResponseEntity<StockFiltersDto> getStockFilters() {
         List<StockDto> stocks = portfolioService.getAggregatedStocks();
         List<String> countries = stocks.stream()
-            .map(StockDto::getCountry).filter(c -> c != null && !c.isBlank())
+            .map(s -> s.classification().country()).filter(c -> c != null && !c.isBlank())
             .distinct().sorted().toList();
         List<String> branches = stocks.stream()
-            .map(StockDto::getBranch).filter(b -> b != null && !b.isBlank())
+            .map(s -> s.classification().branch()).filter(b -> b != null && !b.isBlank())
             .distinct().sorted().toList();
         return ResponseEntity.ok(new StockFiltersDto(countries, branches, List.of()));
     }
@@ -106,17 +106,17 @@ public final class StocksController {
             new SortRequest(sortField, sortDir));
 
         List<ExportColumn<StockDto>> columns = List.of(
-                new ExportColumn<>("ISIN", StockDto::getIsin),
-                new ExportColumn<>("Ticker", StockDto::getTickerSymbol),
-                new ExportColumn<>("Name", StockDto::getName),
-                new ExportColumn<>("CountryEntity", StockDto::getCountry),
-                new ExportColumn<>("BranchEntity", StockDto::getBranch),
-                new ExportColumn<>("Count", StockDto::getCount),
-                new ExportColumn<>("Avg Price", StockDto::getAvgEntryPrice),
-                new ExportColumn<>("Quote", StockDto::getCurrentQuote),
-                new ExportColumn<>("Perf %", StockDto::getPerformancePercent),
-                new ExportColumn<>("Div/Share", StockDto::getDividendPerShare),
-                new ExportColumn<>("Est. Income", StockDto::getEstimatedAnnualIncome)
+                new ExportColumn<>("ISIN", s -> s.security().isin()),
+                new ExportColumn<>("Ticker", s -> s.security().tickerSymbol()),
+                new ExportColumn<>("Name", s -> s.security().name()),
+                new ExportColumn<>("CountryEntity", s -> s.classification().country()),
+                new ExportColumn<>("BranchEntity", s -> s.classification().branch()),
+                new ExportColumn<>("Count", s -> s.metrics().position().count()),
+                new ExportColumn<>("Avg Price", s -> s.metrics().position().avgEntryPrice()),
+                new ExportColumn<>("Quote", s -> s.metrics().position().currentQuote()),
+                new ExportColumn<>("Perf %", s -> s.metrics().performance().performancePercent()),
+                new ExportColumn<>("Div/Share", s -> s.metrics().performance().dividendPerShare()),
+                new ExportColumn<>("Est. Income", s -> s.metrics().performance().estimatedAnnualIncome())
         );
 
         return exportService.export(new ExportRequest<>(data, columns, format, "stocks"));
@@ -134,23 +134,23 @@ public final class StocksController {
                                                  SortRequest sort) {
         if (filter.isin() != null && !filter.isin().isBlank()) {
             String lower = filter.isin().toLowerCase();
-            data = data.stream().filter(s -> s.getIsin() != null && s.getIsin().value().toLowerCase().contains(lower)).toList();
+            data = data.stream().filter(s -> s.security().isin() != null && s.security().isin().value().toLowerCase().contains(lower)).toList();
         }
         if (filter.tickerSymbol() != null && !filter.tickerSymbol().isBlank()) {
             String lower = filter.tickerSymbol().toLowerCase();
-            data = data.stream().filter(s -> s.getTickerSymbol() != null && s.getTickerSymbol().toLowerCase().contains(lower)).toList();
+            data = data.stream().filter(s -> s.security().tickerSymbol() != null && s.security().tickerSymbol().toLowerCase().contains(lower)).toList();
         }
         if (filter.name() != null && !filter.name().isBlank()) {
             String lower = filter.name().toLowerCase();
-            data = data.stream().filter(s -> s.getName() != null && s.getName().toLowerCase().contains(lower)).toList();
+            data = data.stream().filter(s -> s.security().name() != null && s.security().name().toLowerCase().contains(lower)).toList();
         }
         Set<String> countries = splitMultiValue(filter.country());
         if (!countries.isEmpty()) {
-            data = data.stream().filter(s -> countries.contains(s.getCountry())).toList();
+            data = data.stream().filter(s -> countries.contains(s.classification().country())).toList();
         }
         Set<String> branches = splitMultiValue(filter.branch());
         if (!branches.isEmpty()) {
-            data = data.stream().filter(s -> branches.contains(s.getBranch())).toList();
+            data = data.stream().filter(s -> branches.contains(s.classification().branch())).toList();
         }
         if (sort.sortField() != null && !sort.sortField().isBlank()) {
             data = SortHelper.sort(data, sort, SORT_FIELDS);

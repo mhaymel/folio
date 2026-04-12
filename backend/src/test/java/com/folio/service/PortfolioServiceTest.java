@@ -135,11 +135,11 @@ class PortfolioServiceTest {
 
         assertThat(stocks).hasSize(1);
         StockDto s = stocks.get(0);
-        assertThat(s.getIsin()).isEqualTo(new Isin("DE000BASF111"));
-        assertThat(s.getName()).isEqualTo("BASF SE");
-        assertThat(s.getDepot()).isEqualTo("DeGiro");
-        assertThat(s.getCount()).isEqualTo(10.0);
-        assertThat(s.getAvgEntryPrice()).isEqualTo(50.0);
+        assertThat(s.security().isin()).isEqualTo(new Isin("DE000BASF111"));
+        assertThat(s.security().name()).isEqualTo("BASF SE");
+        assertThat(s.classification().depot()).isEqualTo("DeGiro");
+        assertThat(s.metrics().position().count()).isEqualTo(10.0);
+        assertThat(s.metrics().position().avgEntryPrice()).isEqualTo(50.0);
     }
 
     @Test
@@ -152,9 +152,9 @@ class PortfolioServiceTest {
         List<StockDto> stocks = portfolioService.getStocks();
 
         assertThat(stocks).hasSize(2);
-        assertThat(stocks).extracting(StockDto::getDepot)
+        assertThat(stocks).extracting(s -> s.classification().depot())
                 .containsExactlyInAnyOrder("DeGiro", "ZERO");
-        assertThat(stocks).allMatch(s -> new Isin("US0378331005").equals(s.getIsin()));
+        assertThat(stocks).allMatch(s -> new Isin("US0378331005").equals(s.security().isin()));
     }
 
     @Test
@@ -174,8 +174,8 @@ class PortfolioServiceTest {
 
         StockDto s = portfolioService.getStocks().get(0);
         // total 20 shares, total cost 3000, avg = 150
-        assertThat(s.getCount()).isEqualTo(20.0);
-        assertThat(s.getAvgEntryPrice()).isCloseTo(150.0, within(0.001));
+        assertThat(s.metrics().position().count()).isEqualTo(20.0);
+        assertThat(s.metrics().position().avgEntryPrice()).isCloseTo(150.0, within(0.001));
     }
 
     @Test
@@ -185,9 +185,9 @@ class PortfolioServiceTest {
         createQuote(isin, 120.0);
 
         StockDto s = portfolioService.getStocks().get(0);
-        assertThat(s.getCurrentQuote()).isEqualTo(120.0);
+        assertThat(s.metrics().position().currentQuote()).isEqualTo(120.0);
         // performance = (120 - 100) / 100 * 100 = 20%
-        assertThat(s.getPerformancePercent()).isCloseTo(20.0, within(0.001));
+        assertThat(s.metrics().performance().performancePercent()).isCloseTo(20.0, within(0.001));
     }
 
     @Test
@@ -197,8 +197,8 @@ class PortfolioServiceTest {
         createDividend(isin, 3.40);
 
         StockDto s = portfolioService.getStocks().get(0);
-        assertThat(s.getDividendPerShare()).isEqualTo(3.40);
-        assertThat(s.getEstimatedAnnualIncome()).isCloseTo(34.0, within(0.001));
+        assertThat(s.metrics().performance().dividendPerShare()).isEqualTo(3.40);
+        assertThat(s.metrics().performance().estimatedAnnualIncome()).isCloseTo(34.0, within(0.001));
     }
 
     // =========================================================================
@@ -216,12 +216,12 @@ class PortfolioServiceTest {
 
         assertThat(stocks).hasSize(1);
         StockDto s = stocks.get(0);
-        assertThat(s.getIsin()).isEqualTo(new Isin("US0378331005"));
-        assertThat(s.getCount()).isEqualTo(8.0);
+        assertThat(s.security().isin()).isEqualTo(new Isin("US0378331005"));
+        assertThat(s.metrics().position().count()).isEqualTo(8.0);
         // total cost = 5*150 + 3*160 = 750 + 480 = 1230, avg = 1230 / 8 = 153.75
-        assertThat(s.getAvgEntryPrice()).isCloseTo(153.75, within(0.001));
+        assertThat(s.metrics().position().avgEntryPrice()).isCloseTo(153.75, within(0.001));
         // depot is null for aggregated stocks
-        assertThat(s.getDepot()).isNull();
+        assertThat(s.classification().depot()).isNull();
     }
 
     // =========================================================================

@@ -149,29 +149,29 @@ public class PortfolioService {
         List<StockDto> stocks = getStocks();
 
         double totalValue = stocks.stream()
-            .mapToDouble(s -> s.getCount() * s.getAvgEntryPrice())
+            .mapToDouble(s -> s.metrics().position().count() * s.metrics().position().avgEntryPrice())
             .sum();
 
-        int stockCount = (int) stocks.stream().map(StockDto::getIsin).distinct().count();
+        int stockCount = (int) stocks.stream().map(s -> s.security().isin()).distinct().count();
 
         double totalDividendIncome = stocks.stream()
-            .filter(s -> s.getEstimatedAnnualIncome() != null)
-            .mapToDouble(StockDto::getEstimatedAnnualIncome)
+            .filter(s -> s.metrics().performance().estimatedAnnualIncome() != null)
+            .mapToDouble(s -> s.metrics().performance().estimatedAnnualIncome())
             .sum();
 
         double dividendRatio = totalValue > 0 ? (totalDividendIncome / totalValue) * 100 : 0;
 
         List<HoldingDto> top5Holdings = stocks.stream()
-            .sorted(Comparator.comparingDouble((StockDto s) -> s.getCount() * s.getAvgEntryPrice()).reversed())
+            .sorted(Comparator.comparingDouble((StockDto s) -> s.metrics().position().count() * s.metrics().position().avgEntryPrice()).reversed())
             .limit(5)
-            .map(s -> new HoldingDto(s.getIsin(), s.getName(), s.getCount() * s.getAvgEntryPrice()))
+            .map(s -> new HoldingDto(s.security().isin(), s.security().name(), s.metrics().position().count() * s.metrics().position().avgEntryPrice()))
             .toList();
 
         List<DividendSourceDto> top5Dividends = stocks.stream()
-            .filter(s -> s.getEstimatedAnnualIncome() != null && s.getEstimatedAnnualIncome() > 0)
-            .sorted(Comparator.comparingDouble(StockDto::getEstimatedAnnualIncome).reversed())
+            .filter(s -> s.metrics().performance().estimatedAnnualIncome() != null && s.metrics().performance().estimatedAnnualIncome() > 0)
+            .sorted(Comparator.comparingDouble((StockDto s) -> s.metrics().performance().estimatedAnnualIncome()).reversed())
             .limit(5)
-            .map(s -> new DividendSourceDto(s.getIsin(), s.getName() != null ? s.getName() : s.getIsin().value(), s.getEstimatedAnnualIncome()))
+            .map(s -> new DividendSourceDto(s.security().isin(), s.security().name() != null ? s.security().name() : s.security().isin().value(), s.metrics().performance().estimatedAnnualIncome()))
             .toList();
 
         LocalDateTime lastFetch = settingRepo.findByKey("quote.last.fetch.timestamp")

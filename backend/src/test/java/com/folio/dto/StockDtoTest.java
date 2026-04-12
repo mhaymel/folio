@@ -4,11 +4,12 @@ import com.folio.domain.Isin;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 final class StockDtoTest {
 
     @Test
-    void shouldBuildViaBuilder() {
+    void shouldBuildViaConstructor() {
         // given
         Isin isin = new Isin("IE00B4L5Y983");
 
@@ -21,19 +22,27 @@ final class StockDtoTest {
                     new StockPerformance(10.0, 1.5, 150.0)));
 
         // then
-        assertThat(dto.getIsin()).isEqualTo(isin);
-        assertThat(dto.getCount()).isEqualTo(100.0);
-        assertThat(dto.getPerformancePercent()).isEqualTo(10.0);
-        assertThat(dto.getEstimatedAnnualIncome()).isEqualTo(150.0);
+        assertThat(dto.security().isin()).isEqualTo(isin);
+        assertThat(dto.metrics().position().count()).isEqualTo(100.0);
+        assertThat(dto.metrics().performance().performancePercent()).isEqualTo(10.0);
+        assertThat(dto.metrics().performance().estimatedAnnualIncome()).isEqualTo(150.0);
     }
 
     @Test
-    void shouldCreateEmptyDtoViaNoArgConstructor() {
-        // given / when
-        var dto = new StockDto();
+    void shouldRejectNullSecurity() {
+        assertThatNullPointerException().isThrownBy(() ->
+                new StockDto(null, new StockClassification(null, null, null), new StockMetrics(new StockPosition(null, null, null), new StockPerformance(null, null, null))));
+    }
 
-        // then
-        assertThat(dto.getIsin()).isNull();
-        assertThat(dto.getCount()).isNull();
+    @Test
+    void shouldRejectNullClassification() {
+        assertThatNullPointerException().isThrownBy(() ->
+                new StockDto(new SecurityIdentity(new Isin("IE00B4L5Y983"), null, null), null, new StockMetrics(new StockPosition(null, null, null), new StockPerformance(null, null, null))));
+    }
+
+    @Test
+    void shouldRejectNullMetrics() {
+        assertThatNullPointerException().isThrownBy(() ->
+                new StockDto(new SecurityIdentity(new Isin("IE00B4L5Y983"), null, null), new StockClassification(null, null, null), null));
     }
 }
