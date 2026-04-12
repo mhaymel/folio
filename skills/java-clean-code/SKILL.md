@@ -31,6 +31,8 @@ Rules are organized by category in the `rules/` folder:
 - `R-007-enum-naming.md`
 - `R-008-imports.md`
 - `R-009-programming-by-contract.md`
+- `R-010-method.md`
+- `R-011-tiny-type.md`
 
 ---
 

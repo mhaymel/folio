@@ -81,3 +81,24 @@ final class Application { }
 final class Database { }
 final class XMLParser { }
 ```
+
+---
+
+## R-001e
+
+Do not use underscores in class names. Use `CamelCase` exclusively.
+
+**Bad:**
+
+```java
+final class Order_Processor { }
+final class User_Repository { }
+```
+
+**Good:**
+
+```java
+final class OrderProcessor { }
+final class UserRepository { }
+```
+

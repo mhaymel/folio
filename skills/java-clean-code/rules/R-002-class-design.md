@@ -1,4 +1,4 @@
-# Class Design Rules
+i# Class Design Rules
 
 ## R-002a
 
@@ -745,6 +745,53 @@ final class UserService {
 
 // usage:
 var service = new UserService(1, "Alice");
+```
+
+---
+
+## R-002x
+
+Avoid primitive obsession in fields and constructor parameters. When a field represents a domain concept, use a dedicated tiny type (record) instead of a raw primitive (`String`, `int`, `long`, `BigDecimal`, etc.). This makes the code self-documenting, prevents accidental misuse (e.g. swapping two `String` fields), and pushes validation into the type itself.
+
+**Bad:**
+
+```java
+final class Portfolio {
+    private final String isin;
+    private final String name;
+    private final BigDecimal marketValue;
+
+    Portfolio(String isin, String name, BigDecimal marketValue) {
+        this.isin = isin;
+        this.name = name;
+        this.marketValue = marketValue;
+    }
+}
+```
+
+**Good:**
+
+```java
+record Isin(String value) {
+}
+
+record PortfolioName(String value) {
+}
+
+record Money(BigDecimal amount, Currency currency) {
+}
+
+final class Portfolio {
+    private final Isin isin;
+    private final PortfolioName name;
+    private final Money marketValue;
+
+    Portfolio(Isin isin, PortfolioName name, Money marketValue) {
+        this.isin = isin;
+        this.name = name;
+        this.marketValue = marketValue;
+    }
+}
 ```
 
 ---
