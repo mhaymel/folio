@@ -6,6 +6,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Groups value fields (currency, value) for a dividend payment entity.
  */
@@ -21,8 +23,8 @@ public final class DividendPaymentEntityValues {
     public DividendPaymentEntityValues() {}
 
     public DividendPaymentEntityValues(CurrencyEntity currency, Double value) {
-        this.currency = currency;
-        this.value = value;
+        this.currency = requireNonNull(currency);
+        this.value = requireNonNull(value);
     }
 
     public CurrencyEntity getCurrency() { return currency; }

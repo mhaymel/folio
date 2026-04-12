@@ -9,6 +9,8 @@ import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
 
+import static java.util.Objects.requireNonNull;
+
 @Entity
 @Table(name = "\"transaction\"")
 public final class TransactionEntity {
@@ -29,8 +31,8 @@ public final class TransactionEntity {
 
     public TransactionEntity(Integer id, TransactionContext context, TransactionValues values) {
         this.id = id;
-        this.context = context;
-        this.values = values;
+        this.context = requireNonNull(context);
+        this.values = requireNonNull(values);
     }
 
     public Integer getId() { return id; }

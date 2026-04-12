@@ -5,6 +5,8 @@ import jakarta.persistence.Embeddable;
 
 import java.time.LocalDateTime;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Groups quote data fields (value, fetchedAt, currency) for an ISIN quote entity.
  */
@@ -22,8 +24,8 @@ public final class IsinQuoteData {
     public IsinQuoteData() {}
 
     public IsinQuoteData(Double value, LocalDateTime fetchedAt, String currency) {
-        this.value = value;
-        this.fetchedAt = fetchedAt;
+        this.value = requireNonNull(value);
+        this.fetchedAt = requireNonNull(fetchedAt);
         this.currency = currency;
     }
 

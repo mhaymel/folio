@@ -25,7 +25,7 @@ import static java.util.Objects.requireNonNull;
  */
 @Component
 @Profile("dev")
-class StartupImporter implements ApplicationRunner {
+final class StartupImporter implements ApplicationRunner {
 
     private static final Logger log = getLogger(StartupImporter.class);
 

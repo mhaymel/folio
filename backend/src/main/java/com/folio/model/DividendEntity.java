@@ -8,6 +8,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import static java.util.Objects.requireNonNull;
+
 @Entity
 @Table(name = "dividend")
 public final class DividendEntity {
@@ -27,8 +29,8 @@ public final class DividendEntity {
 
     public DividendEntity(Integer id, DividendReference reference, Double dividendPerShare) {
         this.id = id;
-        this.reference = reference;
-        this.dividendPerShare = dividendPerShare;
+        this.reference = requireNonNull(reference);
+        this.dividendPerShare = requireNonNull(dividendPerShare);
     }
 
     public Integer getId() { return id; }

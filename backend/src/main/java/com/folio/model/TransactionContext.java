@@ -8,6 +8,8 @@ import jakarta.persistence.Embeddable;
 
 import java.time.LocalDateTime;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Groups context fields (date, isin, depot) for a transaction entity.
  */
@@ -27,9 +29,9 @@ public final class TransactionContext {
     public TransactionContext() {}
 
     public TransactionContext(LocalDateTime date, IsinEntity isin, DepotEntity depot) {
-        this.date = date;
-        this.isin = isin;
-        this.depot = depot;
+        this.date = requireNonNull(date);
+        this.isin = requireNonNull(isin);
+        this.depot = requireNonNull(depot);
     }
 
     public LocalDateTime getDate() { return date; }

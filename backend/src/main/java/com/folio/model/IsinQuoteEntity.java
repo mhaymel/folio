@@ -9,6 +9,8 @@ import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
 
+import static java.util.Objects.requireNonNull;
+
 @Entity
 @Table(name = "isin_quote")
 public final class IsinQuoteEntity {
@@ -29,8 +31,8 @@ public final class IsinQuoteEntity {
 
     public IsinQuoteEntity(Integer id, IsinQuoteSource source, IsinQuoteData data) {
         this.id = id;
-        this.source = source;
-        this.data = data;
+        this.source = requireNonNull(source);
+        this.data = requireNonNull(data);
     }
 
     public Integer getId() { return id; }

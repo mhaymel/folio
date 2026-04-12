@@ -5,6 +5,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Groups reference fields (isin, currency) for a dividend entity.
  */
@@ -21,8 +23,8 @@ public final class DividendReference {
     public DividendReference() {}
 
     public DividendReference(IsinEntity isin, CurrencyEntity currency) {
-        this.isin = isin;
-        this.currency = currency;
+        this.isin = requireNonNull(isin);
+        this.currency = requireNonNull(currency);
     }
 
     public IsinEntity getIsin() { return isin; }

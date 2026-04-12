@@ -6,6 +6,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Groups source reference fields (isin, quoteProvider) for an ISIN quote entity.
  */
@@ -22,8 +24,8 @@ public final class IsinQuoteSource {
     public IsinQuoteSource() {}
 
     public IsinQuoteSource(IsinEntity isin, QuoteProviderEntity quoteProvider) {
-        this.isin = isin;
-        this.quoteProvider = quoteProvider;
+        this.isin = requireNonNull(isin);
+        this.quoteProvider = requireNonNull(quoteProvider);
     }
 
     public IsinEntity getIsin() { return isin; }

@@ -7,6 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import static java.util.Objects.requireNonNull;
+
 @Entity
 @Table(name = "isin")
 public final class IsinEntity {
@@ -21,7 +23,7 @@ public final class IsinEntity {
 
     public IsinEntity(Integer id, String isin) {
         this.id = id;
-        this.isin = isin;
+        this.isin = requireNonNull(isin);
     }
 
     public Integer getId() { return id; }

@@ -9,6 +9,8 @@ import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
 
+import static java.util.Objects.requireNonNull;
+
 @Entity
 @Table(name = "dividend_payment")
 public final class DividendPaymentEntity {
@@ -29,8 +31,8 @@ public final class DividendPaymentEntity {
 
     public DividendPaymentEntity(Integer id, DividendPaymentContext context, DividendPaymentEntityValues paymentValues) {
         this.id = id;
-        this.context = context;
-        this.paymentValues = paymentValues;
+        this.context = requireNonNull(context);
+        this.paymentValues = requireNonNull(paymentValues);
     }
 
     public Integer getId() { return id; }

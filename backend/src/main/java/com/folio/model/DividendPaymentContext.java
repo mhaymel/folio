@@ -8,6 +8,8 @@ import jakarta.persistence.ManyToOne;
 
 import java.time.LocalDateTime;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Groups context fields (timestamp, isin, depot) for a dividend payment entity.
  */
@@ -27,9 +29,9 @@ public final class DividendPaymentContext {
     public DividendPaymentContext() {}
 
     public DividendPaymentContext(LocalDateTime timestamp, IsinEntity isin, DepotEntity depot) {
-        this.timestamp = timestamp;
-        this.isin = isin;
-        this.depot = depot;
+        this.timestamp = requireNonNull(timestamp);
+        this.isin = requireNonNull(isin);
+        this.depot = requireNonNull(depot);
     }
 
     public LocalDateTime getTimestamp() { return timestamp; }

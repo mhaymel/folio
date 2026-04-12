@@ -7,6 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import static java.util.Objects.requireNonNull;
+
 @Entity
 @Table(name = "country")
 public final class CountryEntity {
@@ -21,7 +23,7 @@ public final class CountryEntity {
 
     public CountryEntity(Integer id, String name) {
         this.id = id;
-        this.name = name;
+        this.name = requireNonNull(name);
     }
 
     public Integer getId() { return id; }

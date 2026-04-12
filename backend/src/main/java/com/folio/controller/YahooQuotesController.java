@@ -37,6 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import static java.util.Objects.requireNonNull;
@@ -326,8 +327,8 @@ public class YahooQuotesController {
         return rows.stream()
             .map(r -> new YahooQuoteWithoutQuoteDto(
                     new Isin((String) r[0]),
-                    (String) r[1],
-                    (String) r[2]))
+                    ofNullable((String) r[1]).orElse((String) r[0]),
+                    ofNullable((String) r[2]).orElse((String) r[0])))
             .toList();
     }
 }

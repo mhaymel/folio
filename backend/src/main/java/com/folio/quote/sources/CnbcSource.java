@@ -10,6 +10,7 @@ import com.folio.quote.QuoteSource;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 
+import static java.util.Objects.requireNonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -46,7 +47,7 @@ public final class CnbcSource implements QuoteSource {
     private Map<String, String> config;
 
     public CnbcSource(EcbExchangeRateProvider ecb) {
-        this.ecb = ecb;
+        this.ecb = requireNonNull(ecb);
     }
 
     @PostConstruct

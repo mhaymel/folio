@@ -11,6 +11,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
+import static java.util.Objects.requireNonNull;
+
 @Entity
 @Table(name = "isin_name", uniqueConstraints = @UniqueConstraint(columnNames = {"isin_id", "name"}))
 public final class IsinNameEntity {
@@ -29,8 +31,8 @@ public final class IsinNameEntity {
 
     public IsinNameEntity(Integer id, IsinEntity isin, String name) {
         this.id = id;
-        this.isin = isin;
-        this.name = name;
+        this.isin = requireNonNull(isin);
+        this.name = requireNonNull(name);
     }
 
     public Integer getId() { return id; }

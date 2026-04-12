@@ -3,6 +3,8 @@ package com.folio.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Groups trade value fields (count, sharePrice) for a transaction entity.
  */
@@ -17,8 +19,8 @@ public final class TransactionValues {
     public TransactionValues() {}
 
     public TransactionValues(Double count, Double sharePrice) {
-        this.count = count;
-        this.sharePrice = sharePrice;
+        this.count = requireNonNull(count);
+        this.sharePrice = requireNonNull(sharePrice);
     }
 
     public Double getCount() { return count; }

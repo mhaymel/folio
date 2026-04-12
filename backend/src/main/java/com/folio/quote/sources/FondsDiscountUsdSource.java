@@ -7,6 +7,7 @@ import com.folio.quote.QuoteFetchHelper;
 import com.folio.quote.QuoteSource;
 import org.slf4j.Logger;
 
+import static java.util.Objects.requireNonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -37,7 +38,7 @@ public final class FondsDiscountUsdSource implements QuoteSource {
     private final EcbExchangeRateProvider ecb;
 
     public FondsDiscountUsdSource(EcbExchangeRateProvider ecb) {
-        this.ecb = ecb;
+        this.ecb = requireNonNull(ecb);
     }
 
     @Override

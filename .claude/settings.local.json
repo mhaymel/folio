@@ -73,7 +73,8 @@
       "Bash(./gradlew :backend:compileJava :backend:compileTestJava)",
       "Bash(./gradlew :backend:test --tests \"com.folio.dto.StockDtoTest\" --tests \"com.folio.service.PortfolioServiceTest\" --tests \"com.folio.controller.*\")",
       "Bash(./gradlew :backend:test --tests \"com.folio.dto.StockDtoTest\")",
-      "Bash(./gradlew :backend:test --tests \"com.folio.dto.StockDtoTest.shouldRejectNullClassification\")"
+      "Bash(./gradlew :backend:test --tests \"com.folio.dto.StockDtoTest.shouldRejectNullClassification\")",
+      "Bash(./gradlew :backend:test --tests \"AnalyticsControllerTest.getCountryDiversificationSupportsPagination\")"
     ]
   }
 }

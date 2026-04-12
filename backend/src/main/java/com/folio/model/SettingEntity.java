@@ -7,6 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import static java.util.Objects.requireNonNull;
+
 @Entity
 @Table(name = "settings")
 public final class SettingEntity {
@@ -24,8 +26,8 @@ public final class SettingEntity {
 
     public SettingEntity(Integer id, String key, String value) {
         this.id = id;
-        this.key = key;
-        this.value = value;
+        this.key = requireNonNull(key);
+        this.value = requireNonNull(value);
     }
 
     public Integer getId() { return id; }

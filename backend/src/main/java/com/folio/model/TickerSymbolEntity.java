@@ -7,6 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import static java.util.Objects.requireNonNull;
+
 @Entity
 @Table(name = "ticker_symbol")
 public final class TickerSymbolEntity {
@@ -21,7 +23,7 @@ public final class TickerSymbolEntity {
 
     public TickerSymbolEntity(Integer id, String symbol) {
         this.id = id;
-        this.symbol = symbol;
+        this.symbol = requireNonNull(symbol);
     }
 
     public Integer getId() { return id; }
