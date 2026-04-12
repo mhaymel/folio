@@ -216,7 +216,7 @@ final class UserService {
 
 ---
 
-## R-002h2
+## R-002i
 
 Secondary constructors must delegate to the primary constructor by using `this(...)`. They must not initialize fields or contain field-initialization logic. Their purpose is to provide default values for omitted parameters.
 
@@ -266,7 +266,7 @@ final class UserService {
 
 ---
 
-## R-002h3
+## R-002j
 
 A secondary constructor must not have more parameters than the primary constructor.
 
@@ -300,7 +300,7 @@ final class UserService {
 
 ---
 
-## R-002h4
+## R-002k
 
 When the primary constructor only exists for internal delegation (i.e. some fields are internal state never set from outside), make the primary constructor `private`.
 
@@ -342,7 +342,7 @@ final class UserService {
 
 ---
 
-## R-002i
+## R-002l
 
 Fields must not be initialized at the point of declaration.
 
@@ -371,7 +371,7 @@ final class UserService {
 
 ---
 
-## R-002j
+## R-002m
 
 Constructors must be free of code except for precondition checks.
 
@@ -411,7 +411,7 @@ final class UserService {
 
 ---
 
-## R-002k
+## R-002n
 
 Classes must not have more than three non-static fields. 
 Introduce new classes or records to group related fields together.
@@ -443,9 +443,9 @@ final class UserService {
 
 ---
 
-## R-002l
+## R-002o
 
-Inner classes (static and non-static) must not be used. Extract every nested type to its own top-level file. For the Builder pattern, use `<Type>Builder` as the class name (e.g. `IsinBuilder`).
+Inner classes (static and non-static) must not be used. Extract every nested type to its own top-level file.
 
 **Bad:**
 
@@ -482,7 +482,7 @@ final class UserService {
 
 ---
 
-## R-002m
+## R-002p
 
 Enums must not be declared as inner types. Declare enums at the top level.
 
@@ -513,7 +513,7 @@ final class UserService {
 
 ---
 
-## R-002n
+## R-002q
 
 A class must not have unused fields.
 
@@ -554,7 +554,7 @@ final class UserService {
 
 ---
 
-## R-002o
+## R-002r
 
 A constructor must not have unused parameters.
 
@@ -584,7 +584,7 @@ final class UserService {
 
 ---
 
-## R-002p
+## R-002s
 
 Do not inherit from concrete classes. Only extend interfaces (or implement them).
 
@@ -612,7 +612,7 @@ final class AdminUser implements Identifiable {
 
 ---
 
-## R-002q
+## R-002t
 
 Methods must have at most 3 parameters; prefer 0 or 1. If more are needed, introduce a parameter object or rethink the design.
 
@@ -639,7 +639,7 @@ final class OrderService {
 
 ---
 
-## R-002r
+## R-002u
 
 Do not use underscores in method names. Use `lowerCamelCase` exclusively. This applies to all methods, including unit test methods.
 
@@ -663,7 +663,7 @@ final class UserValidatorTest {
 
 ---
 
-## R-002s
+## R-002v
 
 Do not use `continue` or `break` in loops. Extract the loop body to a private method and use `return` instead of `continue`. Do not invert the condition; do not add nesting.
 
@@ -703,3 +703,48 @@ final class OrderProcessor {
 
 ---
 
+## R-002w
+
+Builders are forbidden. Use the constructor directly.
+
+**Bad:**
+
+```java
+final class UserService {
+    private final int userId;
+    private final String userName;
+
+    UserService(int userId, String userName) {
+        this.userId = userId;
+        this.userName = userName;
+    }
+}
+
+final class UserServiceBuilder {
+    private int userId;
+    private String userName;
+
+    UserServiceBuilder userId(int userId) { this.userId = userId; return this; }
+    UserServiceBuilder userName(String userName) { this.userName = userName; return this; }
+    UserService build() { return new UserService(userId, userName); }
+}
+```
+
+**Good:**
+
+```java
+final class UserService {
+    private final int userId;
+    private final String userName;
+
+    UserService(int userId, String userName) {
+        this.userId = userId;
+        this.userName = userName;
+    }
+}
+
+// usage:
+var service = new UserService(1, "Alice");
+```
+
+---

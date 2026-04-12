@@ -13,12 +13,12 @@ final class StockDtoTest {
         Isin isin = new Isin("IE00B4L5Y983");
 
         // when
-        var dto = StockDto.builder()
-                .isin(isin).name("ETF").country("Ireland").branch("Tech")
-                .count(100.0).avgEntryPrice(50.0)
-                .currentQuote(55.0).performancePercent(10.0)
-                .dividendPerShare(1.5).estimatedAnnualIncome(150.0)
-                .build();
+        var dto = new StockDto(
+                new SecurityIdentity(isin, null, "ETF"),
+                new StockClassification("Ireland", "Tech", null),
+                new StockMetrics(
+                    new StockPosition(100.0, 50.0, 55.0),
+                    new StockPerformance(10.0, 1.5, 150.0)));
 
         // then
         assertThat(dto.getIsin()).isEqualTo(isin);

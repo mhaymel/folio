@@ -18,5 +18,4 @@ public final class IsinNameDto {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public static IsinNameDtoBuilder builder() { return new IsinNameDtoBuilder(); }
 }

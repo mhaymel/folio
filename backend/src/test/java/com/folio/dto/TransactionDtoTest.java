@@ -15,10 +15,10 @@ final class TransactionDtoTest {
         Isin isin = new Isin("IE00B4L5Y983");
 
         // when
-        var dto = TransactionDto.builder()
-                .id(1).date(LocalDateTime.of(2026, 1, 15, 10, 0))
-                .isin(isin).name("ETF").depot("DeGiro")
-                .count(10.0).sharePrice(50.0).build();
+        var dto = new TransactionDto(
+                new TransactionIdentity(1, "15-01-2026", LocalDateTime.of(2026, 1, 15, 10, 0)),
+                new SecurityIdentity(isin, null, "ETF"),
+                new TransactionTradeData("DeGiro", 10.0, 50.0));
 
         // then
         assertThat(dto.getId()).isEqualTo(1);

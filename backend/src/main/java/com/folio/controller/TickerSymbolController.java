@@ -114,11 +114,7 @@ public class TickerSymbolController {
             """).getResultList();
 
         return rows.stream()
-            .map(r -> TickerSymbolDto.builder()
-                .isin(new Isin((String) r[0]))
-                .tickerSymbol((String) r[1])
-                .name((String) r[2])
-                .build())
+            .map(r -> new TickerSymbolDto(new Isin((String) r[0]), (String) r[1], (String) r[2]))
             .toList();
     }
 }

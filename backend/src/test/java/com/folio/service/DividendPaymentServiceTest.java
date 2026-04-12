@@ -66,13 +66,9 @@ class DividendPaymentServiceTest {
     }
 
     private DividendPaymentEntity createPayment(IsinEntity isin, DepotEntity depot, double value, LocalDateTime timestamp) {
-        DividendPaymentEntity dp = DividendPaymentEntity.builder()
-                .isin(isin)
-                .depot(depot)
-                .currency(eur)
-                .value(value)
-                .timestamp(timestamp)
-                .build();
+        DividendPaymentEntity dp = new DividendPaymentEntity(null,
+                new com.folio.model.DividendPaymentContext(timestamp, isin, depot),
+                new com.folio.model.DividendPaymentEntityValues(eur, value));
         return dividendPaymentRepo.save(dp);
     }
 

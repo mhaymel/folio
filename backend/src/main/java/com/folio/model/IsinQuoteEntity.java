@@ -1,14 +1,10 @@
 package com.folio.model;
 
-import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
@@ -20,37 +16,34 @@ public final class IsinQuoteEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "isin_id", nullable = false, unique = true)
-    private IsinEntity isin;
+    @Embedded
+    private IsinQuoteSource source;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "quote_provider_id", nullable = false)
-    private QuoteProviderEntity quoteProvider;
+    @Embedded
+    private IsinQuoteData data;
 
-    @Column(name = "\"value\"", nullable = false)
-    private Double value;
+    public IsinQuoteEntity() {
+        this.source = new IsinQuoteSource();
+        this.data = new IsinQuoteData();
+    }
 
-    @Column(name = "fetched_at", nullable = false)
-    private LocalDateTime fetchedAt;
-
-    @Column(name = "currency", length = 3)
-    private String currency;
-
-    public IsinQuoteEntity() {}
+    public IsinQuoteEntity(Integer id, IsinQuoteSource source, IsinQuoteData data) {
+        this.id = id;
+        this.source = source;
+        this.data = data;
+    }
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
-    public IsinEntity getIsin() { return isin; }
-    public void setIsin(IsinEntity isin) { this.isin = isin; }
-    public QuoteProviderEntity getQuoteProvider() { return quoteProvider; }
-    public void setQuoteProvider(QuoteProviderEntity quoteProvider) { this.quoteProvider = quoteProvider; }
-    public Double getValue() { return value; }
-    public void setValue(Double value) { this.value = value; }
-    public LocalDateTime getFetchedAt() { return fetchedAt; }
-    public void setFetchedAt(LocalDateTime fetchedAt) { this.fetchedAt = fetchedAt; }
-    public String getCurrency() { return currency; }
-    public void setCurrency(String currency) { this.currency = currency; }
+    public IsinEntity getIsin() { return source.getIsin(); }
+    public void setIsin(IsinEntity isin) { source.setIsin(isin); }
+    public QuoteProviderEntity getQuoteProvider() { return source.getQuoteProvider(); }
+    public void setQuoteProvider(QuoteProviderEntity quoteProvider) { source.setQuoteProvider(quoteProvider); }
+    public Double getValue() { return data.getValue(); }
+    public void setValue(Double value) { data.setValue(value); }
+    public LocalDateTime getFetchedAt() { return data.getFetchedAt(); }
+    public void setFetchedAt(LocalDateTime fetchedAt) { data.setFetchedAt(fetchedAt); }
+    public String getCurrency() { return data.getCurrency(); }
+    public void setCurrency(String currency) { data.setCurrency(currency); }
 
-    public static IsinQuoteBuilder builder() { return new IsinQuoteBuilder(); }
 }

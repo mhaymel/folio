@@ -12,5 +12,4 @@ public final class DiversificationDto {
     public void setEntries(List<DiversificationEntry> entries) { this.entries = entries; }
     public Double getTotalInvested() { return totalInvested; }
     public void setTotalInvested(Double totalInvested) { this.totalInvested = totalInvested; }
-    public static DiversificationDtoBuilder builder() { return new DiversificationDtoBuilder(); }
 }

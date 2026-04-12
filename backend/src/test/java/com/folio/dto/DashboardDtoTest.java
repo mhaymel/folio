@@ -16,18 +16,13 @@ final class DashboardDtoTest {
     @Test
     void shouldBuildDashboardDtoViaBuilder() {
         // given
-        var holdings = List.of(HoldingDto.builder()
-                .isin(ISIN_ETF).name("Test ETF").investedAmount(1000.0).build());
+        var holdings = List.of(new HoldingDto(ISIN_ETF, "Test ETF", 1000.0));
 
         // when
-        DashboardDto dto = DashboardDto.builder()
-                .totalPortfolioValue(5000.0)
-                .stockCount(3)
-                .totalDividendRatio(2.5)
-                .top5Holdings(holdings)
-                .top5DividendSources(List.of())
-                .lastQuoteFetchAt(LocalDateTime.of(2026, 3, 27, 10, 0))
-                .build();
+        DashboardDto dto = new DashboardDto(
+                new DashboardSummary(5000.0, 3, 2.5),
+                new DashboardLists(holdings, List.of()),
+                "27.03.2026 10:00");
 
         // then
         assertThat(dto.getTotalPortfolioValue()).isEqualTo(5000.0);
@@ -41,8 +36,7 @@ final class DashboardDtoTest {
     @Test
     void shouldBuildHoldingDtoViaBuilder() {
         // given / when
-        var dto = HoldingDto.builder()
-                .isin(ISIN_ETF).name("Test").investedAmount(500.0).build();
+        var dto = new HoldingDto(ISIN_ETF, "Test", 500.0);
 
         // then
         assertThat(dto.getIsin()).isEqualTo(ISIN_ETF);
@@ -53,8 +47,7 @@ final class DashboardDtoTest {
     @Test
     void shouldBuildDividendSourceDtoViaBuilder() {
         // given / when
-        var dto = DividendSourceDto.builder()
-                .isin(ISIN_BASF).name("Div Stock").estimatedAnnualIncome(120.0).build();
+        var dto = new DividendSourceDto(ISIN_BASF, "Div Stock", 120.0);
 
         // then
         assertThat(dto.getIsin()).isEqualTo(ISIN_BASF);

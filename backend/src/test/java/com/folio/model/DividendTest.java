@@ -13,8 +13,7 @@ final class DividendTest {
         var currency = new CurrencyEntity();
 
         // when
-        var d = DividendEntity.builder()
-                .id(1).isin(isin).currency(currency).dividendPerShare(2.5).build();
+        var d = new DividendEntity(1, new DividendReference(isin, currency), 2.5);
 
         // then
         assertThat(d.getId()).isEqualTo(1);

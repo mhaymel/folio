@@ -230,10 +230,10 @@ public class YahooQuotesController {
 
         QuoteProviderEntity provider = dataAccess.quoteRepos().provider().findByName(PROVIDER_NAME)
             .orElseGet(() -> dataAccess.quoteRepos().provider().save(
-                QuoteProviderEntity.builder().name(PROVIDER_NAME).build()
+                new QuoteProviderEntity(null, PROVIDER_NAME)
             ));
 
-        Optional<IsinQuoteEntity> existing = dataAccess.quoteRepos().isinQuote().findByIsinId(isin.getId());
+        Optional<IsinQuoteEntity> existing = dataAccess.quoteRepos().isinQuote().findBySource_IsinId(isin.getId());
         if (existing.isPresent()) {
             IsinQuoteEntity q = existing.get();
             q.setValue(price);
@@ -242,13 +242,9 @@ public class YahooQuotesController {
             q.setFetchedAt(LocalDateTime.now());
             dataAccess.quoteRepos().isinQuote().save(q);
         } else {
-            dataAccess.quoteRepos().isinQuote().save(IsinQuoteEntity.builder()
-                .isin(isin)
-                .quoteProvider(provider)
-                .value(price)
-                .currency(currency)
-                .fetchedAt(LocalDateTime.now())
-                .build());
+            dataAccess.quoteRepos().isinQuote().save(new IsinQuoteEntity(null,
+                new com.folio.model.IsinQuoteSource(isin, provider),
+                new com.folio.model.IsinQuoteData(price, LocalDateTime.now(), currency)));
         }
     }
 
@@ -295,15 +291,16 @@ public class YahooQuotesController {
             """).getResultList();
 
         return rows.stream()
-            .map(r -> YahooQuoteWithQuoteDto.builder()
-                .isin(new Isin((String) r[0]))
-                .name((String) r[1])
-                .tickerSymbol((String) r[2])
-                .price(r[3] != null ? ((Number) r[3]).doubleValue() : null)
-                .currency((String) r[4])
-                .provider((String) r[5])
-                .fetchedAt(r[6] != null ? ((java.sql.Timestamp) r[6]).toLocalDateTime() : null)
-                .build())
+            .map(r -> {
+                LocalDateTime rawFetchedAt = r[6] != null ? ((java.sql.Timestamp) r[6]).toLocalDateTime() : null;
+                String formattedFetchedAt = rawFetchedAt != null
+                    ? rawFetchedAt.format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
+                    : null;
+                return new YahooQuoteWithQuoteDto(
+                    new com.folio.dto.SecurityIdentity(new Isin((String) r[0]), (String) r[2], (String) r[1]),
+                    new com.folio.dto.QuoteData(r[3] != null ? ((Number) r[3]).doubleValue() : null, (String) r[4], (String) r[5]),
+                    new com.folio.dto.QuoteTiming(formattedFetchedAt, rawFetchedAt));
+            })
             .toList();
     }
 

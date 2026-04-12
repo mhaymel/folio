@@ -1,29 +1,29 @@
 package com.folio.dto;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
 import java.util.List;
+
+import static java.util.Objects.requireNonNull;
 
 public final class StockPaginatedResponseDto {
     private final List<StockDto> items;
-    private final int page;
-    private final int pageSize;
-    private final long totalItems;
-    private final int totalPages;
+    private final PaginationData pagination;
     private final Double sumCount;
 
     public StockPaginatedResponseDto(List<StockDto> items, int page, int pageSize,
                                      long totalItems, int totalPages, Double sumCount) {
-        this.items = items;
-        this.page = page;
-        this.pageSize = pageSize;
-        this.totalItems = totalItems;
-        this.totalPages = totalPages;
+        this.items = requireNonNull(items);
+        this.pagination = new PaginationData(page, pageSize, totalItems, totalPages);
         this.sumCount = sumCount;
     }
 
     public List<StockDto> getItems() { return items; }
-    public int getPage() { return page; }
-    public int getPageSize() { return pageSize; }
-    public long getTotalItems() { return totalItems; }
-    public int getTotalPages() { return totalPages; }
+    @JsonUnwrapped
+    public PaginationData getPagination() { return pagination; }
+    public int getPage() { return pagination.page(); }
+    public int getPageSize() { return pagination.pageSize(); }
+    public long getTotalItems() { return pagination.totalItems(); }
+    public int getTotalPages() { return pagination.totalPages(); }
     public Double getSumCount() { return sumCount; }
 }

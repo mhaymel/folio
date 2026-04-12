@@ -1,25 +1,25 @@
 package com.folio.dto;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
 import java.util.List;
+
+import static java.util.Objects.requireNonNull;
 
 public final class PaginatedResponseDto<T> {
     private final List<T> items;
-    private final int page;
-    private final int pageSize;
-    private final long totalItems;
-    private final int totalPages;
+    private final PaginationData pagination;
 
     public PaginatedResponseDto(List<T> items, int page, int pageSize, long totalItems, int totalPages) {
-        this.items = items;
-        this.page = page;
-        this.pageSize = pageSize;
-        this.totalItems = totalItems;
-        this.totalPages = totalPages;
+        this.items = requireNonNull(items);
+        this.pagination = new PaginationData(page, pageSize, totalItems, totalPages);
     }
 
     public List<T> getItems() { return items; }
-    public int getPage() { return page; }
-    public int getPageSize() { return pageSize; }
-    public long getTotalItems() { return totalItems; }
-    public int getTotalPages() { return totalPages; }
+    @JsonUnwrapped
+    public PaginationData getPagination() { return pagination; }
+    public int getPage() { return pagination.page(); }
+    public int getPageSize() { return pagination.pageSize(); }
+    public long getTotalItems() { return pagination.totalItems(); }
+    public int getTotalPages() { return pagination.totalPages(); }
 }

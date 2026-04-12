@@ -9,7 +9,7 @@ final class IsinTest {
     @Test
     void shouldBuildViaBuilder() {
         // given / when
-        var isin = IsinEntity.builder().id(1).isin("IE00B1").build();
+        var isin = new IsinEntity(1, "IE00B1");
 
         // then
         assertThat(isin.getId()).isEqualTo(1);

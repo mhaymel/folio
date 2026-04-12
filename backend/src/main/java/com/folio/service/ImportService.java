@@ -1,16 +1,22 @@
 package com.folio.service;
 
 import com.folio.dto.ImportResult;
+import com.folio.dto.ImportStats;
 import com.folio.model.BranchEntity;
 import com.folio.model.CountryEntity;
 import com.folio.model.CurrencyEntity;
 import com.folio.model.DepotEntity;
 import com.folio.model.DividendEntity;
+import com.folio.model.DividendPaymentContext;
 import com.folio.model.DividendPaymentEntity;
+import com.folio.model.DividendPaymentEntityValues;
+import com.folio.model.DividendReference;
 import com.folio.model.IsinEntity;
 import com.folio.model.IsinNameEntity;
 import com.folio.model.TickerSymbolEntity;
+import com.folio.model.TransactionContext;
 import com.folio.model.TransactionEntity;
+import com.folio.model.TransactionValues;
 import com.folio.parser.ParsedBranch;
 import com.folio.parser.ParsedCountry;
 import com.folio.parser.ParsedDividend;
@@ -118,7 +124,7 @@ public class ImportService {
         missing.removeAll(map.keySet());
         if (!missing.isEmpty()) {
             List<IsinEntity> created = repos.isin().saveAll(
-                missing.stream().map(code -> IsinEntity.builder().isin(code).build()).toList());
+                missing.stream().map(code -> new IsinEntity(null, code)).toList());
             created.forEach(i -> map.put(i.getIsin(), i));
         }
         return map;
@@ -156,7 +162,7 @@ public class ImportService {
         if (isin == null) return Optional.empty();
         String key = isin.getId() + ":" + name.trim();
         if (!existingKeys.add(key)) return Optional.empty();
-        return Optional.of(IsinNameEntity.builder().isin(isin).name(name.trim()).build());
+        return Optional.of(new IsinNameEntity(null, isin, name.trim()));
     }
 
     private Map<String, CurrencyEntity> bulkUpsertCurrencies(Set<String> currencyCodes) {
@@ -169,7 +175,7 @@ public class ImportService {
         missing.removeAll(map.keySet());
         if (!missing.isEmpty()) {
             List<CurrencyEntity> created = repos.currency().saveAll(
-                missing.stream().map(code -> CurrencyEntity.builder().name(code).build()).toList());
+                missing.stream().map(code -> new CurrencyEntity(null, code)).toList());
             created.forEach(c -> map.put(c.getName(), c));
         }
         return map;
@@ -230,15 +236,15 @@ public class ImportService {
                 parsed.stream().collect(toMap(ParsedTransaction::isinCode, ParsedTransaction::name, (a, b) -> a)));
 
             List<TransactionEntity> transactions = parsed.stream()
-                .map(p -> TransactionEntity.builder()
-                    .date(p.date()).isin(isinMap.get(p.isinCode())).depot(depot)
-                    .count(p.count()).sharePrice(p.price()).build())
+                .map(p -> new TransactionEntity(null,
+                    new TransactionContext(p.date(), isinMap.get(p.isinCode()), depot),
+                    new TransactionValues(p.count(), p.price())))
                 .toList();
 
             repos.transaction().saveAll(transactions);
             long duration = now() - start;
             log.info("Imported {} DeGiro transactions in {}", transactions.size(), formatDuration(duration));
-            return ImportResult.builder().success(errors.isEmpty()).imported(transactions.size()).durationMs(duration).errors(errors).build();
+            return new ImportResult(errors.isEmpty(), new ImportStats(transactions.size(), duration), errors);
         } finally {
             importLock.unlock();
         }
@@ -300,15 +306,15 @@ public class ImportService {
                 parsed.stream().collect(toMap(ParsedTransaction::isinCode, ParsedTransaction::name, (a, b) -> a)));
 
             List<TransactionEntity> transactions = parsed.stream()
-                .map(p -> TransactionEntity.builder()
-                    .date(p.date()).isin(isinMap.get(p.isinCode())).depot(depot)
-                    .count(p.count()).sharePrice(p.price()).build())
+                .map(p -> new TransactionEntity(null,
+                    new TransactionContext(p.date(), isinMap.get(p.isinCode()), depot),
+                    new TransactionValues(p.count(), p.price())))
                 .toList();
 
             repos.transaction().saveAll(transactions);
             long duration = now() - start;
             log.info("Imported {} ZERO transactions in {}", transactions.size(), formatDuration(duration));
-            return ImportResult.builder().success(errors.isEmpty()).imported(transactions.size()).durationMs(duration).errors(errors).build();
+            return new ImportResult(errors.isEmpty(), new ImportStats(transactions.size(), duration), errors);
         } finally {
             importLock.unlock();
         }
@@ -372,15 +378,15 @@ public class ImportService {
                 parsed.stream().map(ParsedDividendPayment::currencyCode).collect(toSet()));
 
             List<DividendPaymentEntity> payments = parsed.stream()
-                .map(p -> DividendPaymentEntity.builder()
-                    .timestamp(p.date()).isin(isinMap.get(p.isinCode())).depot(depot)
-                    .currency(currencyMap.get(p.currencyCode())).value(p.amount()).build())
+                .map(p -> new DividendPaymentEntity(null,
+                    new DividendPaymentContext(p.date(), isinMap.get(p.isinCode()), depot),
+                    new DividendPaymentEntityValues(currencyMap.get(p.currencyCode()), p.amount())))
                 .toList();
 
             repos.dividendPayment().saveAll(payments);
             long duration = now() - start;
             log.info("Imported {} DeGiro dividend payments in {}", payments.size(), formatDuration(duration));
-            return ImportResult.builder().success(errors.isEmpty()).imported(payments.size()).durationMs(duration).errors(errors).build();
+            return new ImportResult(errors.isEmpty(), new ImportStats(payments.size(), duration), errors);
         } finally {
             importLock.unlock();
         }
@@ -439,15 +445,15 @@ public class ImportService {
             Map<String, CurrencyEntity> currencyMap = bulkUpsertCurrencies(Set.of("EUR"));
 
             List<DividendPaymentEntity> payments = parsed.stream()
-                .map(p -> DividendPaymentEntity.builder()
-                    .timestamp(p.date()).isin(isinMap.get(p.isinCode())).depot(depot)
-                    .currency(currencyMap.get("EUR")).value(p.amount()).build())
+                .map(p -> new DividendPaymentEntity(null,
+                    new DividendPaymentContext(p.date(), isinMap.get(p.isinCode()), depot),
+                    new DividendPaymentEntityValues(currencyMap.get("EUR"), p.amount())))
                 .toList();
 
             repos.dividendPayment().saveAll(payments);
             long duration = now() - start;
             log.info("Imported {} ZERO dividend payments in {}", payments.size(), formatDuration(duration));
-            return ImportResult.builder().success(errors.isEmpty()).imported(payments.size()).durationMs(duration).errors(errors).build();
+            return new ImportResult(errors.isEmpty(), new ImportStats(payments.size(), duration), errors);
         } finally {
             importLock.unlock();
         }
@@ -503,15 +509,15 @@ public class ImportService {
                 parsed.stream().map(ParsedDividend::currencyCode).collect(toSet()));
 
             List<DividendEntity> dividends = parsed.stream()
-                .map(p -> DividendEntity.builder()
-                    .isin(isinMap.get(p.isinCode())).currency(currencyMap.get(p.currencyCode()))
-                    .dividendPerShare(p.dps()).build())
+                .map(p -> new DividendEntity(null,
+                    new DividendReference(isinMap.get(p.isinCode()), currencyMap.get(p.currencyCode())),
+                    p.dps()))
                 .toList();
 
             repos.dividend().saveAll(dividends);
             long duration = now() - start;
             log.info("Imported {} dividend entries in {}", dividends.size(), formatDuration(duration));
-            return ImportResult.builder().success(errors.isEmpty()).imported(dividends.size()).durationMs(duration).errors(errors).build();
+            return new ImportResult(errors.isEmpty(), new ImportStats(dividends.size(), duration), errors);
         } finally {
             importLock.unlock();
         }
@@ -564,7 +570,7 @@ public class ImportService {
             missingBranches.removeAll(branchMap.keySet());
             if (!missingBranches.isEmpty()) {
                 repos.branch().saveAll(
-                    missingBranches.stream().map(n -> BranchEntity.builder().name(n).build()).toList()
+                    missingBranches.stream().map(n -> new BranchEntity(null, n)).toList()
                 ).forEach(b -> branchMap.put(b.getName(), b));
             }
 
@@ -580,7 +586,7 @@ public class ImportService {
 
             long duration = now() - start;
             log.info("Imported {} branch mappings in {}", parsed.size(), formatDuration(duration));
-            return ImportResult.builder().success(errors.isEmpty()).imported(parsed.size()).durationMs(duration).errors(errors).build();
+            return new ImportResult(errors.isEmpty(), new ImportStats(parsed.size(), duration), errors);
         } finally {
             importLock.unlock();
         }
@@ -630,7 +636,7 @@ public class ImportService {
             missingCountries.removeAll(countryMap.keySet());
             if (!missingCountries.isEmpty()) {
                 repos.country().saveAll(
-                    missingCountries.stream().map(n -> CountryEntity.builder().name(n).build()).toList()
+                    missingCountries.stream().map(n -> new CountryEntity(null, n)).toList()
                 ).forEach(c -> countryMap.put(c.getName(), c));
             }
 
@@ -646,7 +652,7 @@ public class ImportService {
 
             long duration = now() - start;
             log.info("Imported {} country mappings in {}", parsed.size(), formatDuration(duration));
-            return ImportResult.builder().success(errors.isEmpty()).imported(parsed.size()).durationMs(duration).errors(errors).build();
+            return new ImportResult(errors.isEmpty(), new ImportStats(parsed.size(), duration), errors);
         } finally {
             importLock.unlock();
         }
@@ -696,8 +702,7 @@ public class ImportService {
                 IsinEntity isin = isinMap.get(p.isinCode());
 
                 TickerSymbolEntity tickerSymbol = repos.tickerSymbol().findBySymbol(p.symbol())
-                    .orElseGet(() -> repos.tickerSymbol().save(TickerSymbolEntity.builder()
-                        .symbol(p.symbol()).build()));
+                    .orElseGet(() -> repos.tickerSymbol().save(new TickerSymbolEntity(null, p.symbol())));
 
                 Long count = (Long) em.createNativeQuery(
                         "SELECT COUNT(*) FROM isin_ticker WHERE isin_id = :isinId AND ticker_symbol_id = :tsId")
@@ -715,7 +720,7 @@ public class ImportService {
 
             long duration = now() - start;
             log.info("Imported {} ticker symbol mappings in {}", imported, formatDuration(duration));
-            return ImportResult.builder().success(errors.isEmpty()).imported(imported).durationMs(duration).errors(errors).build();
+            return new ImportResult(errors.isEmpty(), new ImportStats(imported, duration), errors);
         } finally {
             importLock.unlock();
         }

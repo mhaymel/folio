@@ -122,13 +122,12 @@ public class IsinController {
             """).getResultList();
 
         return rows.stream()
-            .map(r -> IsinDto.builder()
-                .isin(new Isin((String) r[0]))
-                .tickerSymbol((String) r[1])
-                .name((String) r[2])
-                .country((String) r[3])
-                .branch((String) r[4])
-                .build())
+            .map(r -> new IsinDto(
+                new Isin((String) r[0]),
+                (String) r[1],
+                (String) r[2],
+                (String) r[3],
+                (String) r[4]))
             .toList();
     }
 

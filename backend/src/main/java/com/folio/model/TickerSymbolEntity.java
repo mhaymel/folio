@@ -29,5 +29,4 @@ public final class TickerSymbolEntity {
     public String getSymbol() { return symbol; }
     public void setSymbol(String symbol) { this.symbol = symbol; }
 
-    public static TickerSymbolBuilder builder() { return new TickerSymbolBuilder(); }
 }

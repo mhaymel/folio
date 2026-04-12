@@ -29,5 +29,4 @@ public final class CurrencyEntity {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public static CurrencyBuilder builder() { return new CurrencyBuilder(); }
 }

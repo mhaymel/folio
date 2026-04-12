@@ -22,5 +22,4 @@ public final class HoldingDto {
     public Double getInvestedAmount() { return investedAmount; }
     public void setInvestedAmount(Double investedAmount) { this.investedAmount = investedAmount; }
 
-    public static HoldingDtoBuilder builder() { return new HoldingDtoBuilder(); }
 }

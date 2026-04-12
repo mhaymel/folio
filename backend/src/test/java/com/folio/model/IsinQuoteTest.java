@@ -15,10 +15,9 @@ final class IsinQuoteTest {
         var provider = new QuoteProviderEntity();
 
         // when
-        var quote = IsinQuoteEntity.builder()
-                .id(1).isin(isin).quoteProvider(provider)
-                .value(99.5).fetchedAt(LocalDateTime.now())
-                .build();
+        var quote = new IsinQuoteEntity(1,
+                new IsinQuoteSource(isin, provider),
+                new IsinQuoteData(99.5, LocalDateTime.now(), null));
 
         // then
         assertThat(quote.getId()).isEqualTo(1);

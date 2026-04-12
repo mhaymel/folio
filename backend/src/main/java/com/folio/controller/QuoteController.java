@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
@@ -51,11 +52,11 @@ public final class QuoteController {
             .map(s -> LocalDateTime.parse(s.getValue()))
             .orElse(null);
 
-        return ResponseEntity.ok(QuoteSettingsDto.builder()
-            .enabled(enabled)
-            .intervalMinutes(interval)
-            .lastFetchAt(lastFetch)
-            .build());
+        String lastFetchFormatted = lastFetch != null
+            ? lastFetch.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
+            : null;
+
+        return ResponseEntity.ok(new QuoteSettingsDto(enabled, interval, lastFetchFormatted));
     }
 
     @PutMapping("/settings/enabled")
@@ -67,7 +68,7 @@ public final class QuoteController {
         }
 
         SettingEntity setting = settingRepo.findByKey("quote.fetch.enabled")
-            .orElseGet(() -> SettingEntity.builder().key("quote.fetch.enabled").value("false").build());
+            .orElseGet(() -> new SettingEntity(null, "quote.fetch.enabled", "false"));
         setting.setValue(valueOf(enabled));
         settingRepo.save(setting);
 
@@ -83,7 +84,7 @@ public final class QuoteController {
         }
 
         SettingEntity setting = settingRepo.findByKey("quote.fetch.interval.minutes")
-            .orElseGet(() -> SettingEntity.builder().key("quote.fetch.interval.minutes").value("60").build());
+            .orElseGet(() -> new SettingEntity(null, "quote.fetch.interval.minutes", "60"));
         setting.setValue(valueOf(minutes));
         settingRepo.save(setting);
 

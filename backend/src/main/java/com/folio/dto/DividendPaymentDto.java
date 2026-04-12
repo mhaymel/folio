@@ -1,35 +1,46 @@
 package com.folio.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.folio.domain.Isin;
+
 import java.time.LocalDateTime;
 
 public final class DividendPaymentDto {
-    private Integer id;
-    private String timestamp;
-    @JsonIgnore
-    private LocalDateTime rawTimestamp;
-    private Isin isin;
-    private String name;
-    private String depot;
+    private DividendPaymentIdentity identity;
+    private DividendPaymentSource source;
     private Double value;
 
-    public DividendPaymentDto() {}
+    public DividendPaymentDto() {
+        this.identity = new DividendPaymentIdentity(null, null, null);
+        this.source = new DividendPaymentSource(null, null, null);
+    }
 
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
-    public String getTimestamp() { return timestamp; }
-    public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
-    public LocalDateTime getRawTimestamp() { return rawTimestamp; }
-    public void setRawTimestamp(LocalDateTime rawTimestamp) { this.rawTimestamp = rawTimestamp; }
-    public Isin getIsin() { return isin; }
-    public void setIsin(Isin isin) { this.isin = isin; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getDepot() { return depot; }
-    public void setDepot(String depot) { this.depot = depot; }
+    public DividendPaymentDto(DividendPaymentIdentity identity, DividendPaymentSource source, Double value) {
+        this.identity = identity;
+        this.source = source;
+        this.value = value;
+    }
+
+    @JsonUnwrapped
+    public DividendPaymentIdentity getIdentity() { return identity; }
+    @JsonUnwrapped
+    public DividendPaymentSource getSource() { return source; }
+
+    public Integer getId() { return identity.id(); }
+    public void setId(Integer id) { this.identity = new DividendPaymentIdentity(id, identity.timestamp(), identity.rawTimestamp()); }
+    public String getTimestamp() { return identity.timestamp(); }
+    public void setTimestamp(String timestamp) { this.identity = new DividendPaymentIdentity(identity.id(), timestamp, identity.rawTimestamp()); }
+    @JsonIgnore
+    public LocalDateTime getRawTimestamp() { return identity.rawTimestamp(); }
+    public void setRawTimestamp(LocalDateTime rawTimestamp) { this.identity = new DividendPaymentIdentity(identity.id(), identity.timestamp(), rawTimestamp); }
+    public Isin getIsin() { return source.isin(); }
+    public void setIsin(Isin isin) { this.source = new DividendPaymentSource(isin, source.name(), source.depot()); }
+    public String getName() { return source.name(); }
+    public void setName(String name) { this.source = new DividendPaymentSource(source.isin(), name, source.depot()); }
+    public String getDepot() { return source.depot(); }
+    public void setDepot(String depot) { this.source = new DividendPaymentSource(source.isin(), source.name(), depot); }
     public Double getValue() { return value; }
     public void setValue(Double value) { this.value = value; }
 
-    public static DividendPaymentDtoBuilder builder() { return new DividendPaymentDtoBuilder(); }
 }

@@ -83,10 +83,7 @@ public class IsinNameController {
             """).getResultList();
 
         return rows.stream()
-            .map(r -> IsinNameDto.builder()
-                .isin(new Isin((String) r[0]))
-                .name((String) r[1])
-                .build())
+            .map(r -> new IsinNameDto(new Isin((String) r[0]), (String) r[1]))
             .toList();
     }
 }

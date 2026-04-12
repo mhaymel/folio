@@ -22,5 +22,4 @@ public final class DividendSourceDto {
     public Double getEstimatedAnnualIncome() { return estimatedAnnualIncome; }
     public void setEstimatedAnnualIncome(Double estimatedAnnualIncome) { this.estimatedAnnualIncome = estimatedAnnualIncome; }
 
-    public static DividendSourceDtoBuilder builder() { return new DividendSourceDtoBuilder(); }
 }

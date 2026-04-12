@@ -3,11 +3,14 @@ package com.folio.service;
 import com.folio.domain.Isin;
 import com.folio.dto.DividendPaymentDto;
 import com.folio.dto.DividendPaymentFilter;
+import com.folio.dto.DividendPaymentIdentity;
+import com.folio.dto.DividendPaymentSource;
 import com.folio.model.DividendPaymentEntity;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -30,47 +33,45 @@ public class DividendPaymentService {
     @SuppressWarnings("unchecked")
     public List<DividendPaymentDto> getDividendPayments(DividendPaymentFilter filter) {
         StringBuilder jpql = new StringBuilder(
-            "SELECT dp FROM DividendPaymentEntity dp JOIN FETCH dp.isin JOIN FETCH dp.depot JOIN FETCH dp.currency WHERE 1=1");
+            "SELECT dp FROM DividendPaymentEntity dp JOIN FETCH dp.context.isin JOIN FETCH dp.context.depot JOIN FETCH dp.paymentValues.currency WHERE 1=1");
         Map<String, Object> params = new HashMap<>();
 
         if (filter.isin() != null && !filter.isin().isBlank()) {
-            jpql.append(" AND LOWER(dp.isin.isin) LIKE :isin");
+            jpql.append(" AND LOWER(dp.context.isin.isin) LIKE :isin");
             params.put("isin", "%" + filter.isin().toLowerCase() + "%");
         }
         if (filter.depot() != null && !filter.depot().isBlank()) {
             List<String> depotValues = Arrays.stream(filter.depot().split(","))
                 .map(String::trim).filter(s -> !s.isEmpty()).toList();
             if (depotValues.size() == 1) {
-                jpql.append(" AND dp.depot.name = :depot");
+                jpql.append(" AND dp.context.depot.name = :depot");
                 params.put("depot", depotValues.get(0));
             } else if (!depotValues.isEmpty()) {
-                jpql.append(" AND dp.depot.name IN :depots");
+                jpql.append(" AND dp.context.depot.name IN :depots");
                 params.put("depots", depotValues);
             }
         }
         if (filter.fromDate() != null) {
-            jpql.append(" AND dp.timestamp >= :fromDate");
+            jpql.append(" AND dp.context.timestamp >= :fromDate");
             params.put("fromDate", filter.fromDate().atStartOfDay());
         }
         if (filter.toDate() != null) {
-            jpql.append(" AND dp.timestamp <= :toDate");
+            jpql.append(" AND dp.context.timestamp <= :toDate");
             params.put("toDate", filter.toDate().atTime(23, 59, 59));
         }
-        jpql.append(" ORDER BY dp.timestamp DESC");
+        jpql.append(" ORDER BY dp.context.timestamp DESC");
 
         var query = em.createQuery(jpql.toString(), DividendPaymentEntity.class);
         params.forEach(query::setParameter);
         List<DividendPaymentEntity> payments = query.getResultList();
 
-        List<DividendPaymentDto> result = payments.stream().map(dp -> DividendPaymentDto.builder()
-            .id(dp.getId())
-            .timestamp(dp.getTimestamp())
-            .isin(new Isin(dp.getIsin().getIsin()))
-            .name(getFirstName(dp.getIsin().getId()))
-            .depot(dp.getDepot().getName())
-            .value(dp.getValue())
-            .build())
-            .toList();
+        List<DividendPaymentDto> result = payments.stream().map(dp -> {
+            String formattedTimestamp = dp.getTimestamp().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+            return new DividendPaymentDto(
+                new DividendPaymentIdentity(dp.getId(), formattedTimestamp, dp.getTimestamp()),
+                new DividendPaymentSource(new Isin(dp.getIsin().getIsin()), getFirstName(dp.getIsin().getId()), dp.getDepot().getName()),
+                dp.getValue());
+        }).toList();
 
         if (filter.name() != null && !filter.name().isBlank()) {
             String lower = filter.name().toLowerCase();

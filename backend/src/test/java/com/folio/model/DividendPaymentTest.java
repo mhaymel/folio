@@ -16,10 +16,9 @@ final class DividendPaymentTest {
         var currency = new CurrencyEntity();
 
         // when
-        var dp = DividendPaymentEntity.builder()
-                .id(1).timestamp(LocalDateTime.of(2026, 6, 1, 0, 0))
-                .isin(isin).depot(depot).currency(currency).value(42.0)
-                .build();
+        var dp = new DividendPaymentEntity(1,
+                new DividendPaymentContext(LocalDateTime.of(2026, 6, 1, 0, 0), isin, depot),
+                new DividendPaymentEntityValues(currency, 42.0));
 
         // then
         assertThat(dp.getId()).isEqualTo(1);

@@ -126,7 +126,7 @@ public final class QuoteService {
 
     private Set<Isin> getHeldIsins() {
         List<String> isins = dataAccess.em().createQuery(
-            "SELECT t.isin.isin FROM TransactionEntity t GROUP BY t.isin.isin HAVING SUM(t.count) > 0",
+            "SELECT t.context.isin.isin FROM TransactionEntity t GROUP BY t.context.isin.isin HAVING SUM(t.values.count) > 0",
             String.class
         ).getResultList();
         return isins.stream()
@@ -140,9 +140,9 @@ public final class QuoteService {
             .getSingleResult();
 
         QuoteProviderEntity provider = dataAccess.repos().provider().findByName(providerName)
-            .orElseGet(() -> dataAccess.repos().provider().save(QuoteProviderEntity.builder().name(providerName).build()));
+            .orElseGet(() -> dataAccess.repos().provider().save(new QuoteProviderEntity(null, providerName)));
 
-        Optional<IsinQuoteEntity> existing = dataAccess.repos().isinQuote().findByIsinId(isinId);
+        Optional<IsinQuoteEntity> existing = dataAccess.repos().isinQuote().findBySource_IsinId(isinId);
         if (existing.isPresent()) {
             IsinQuoteEntity quote = existing.get();
             quote.setValue(price);
@@ -151,19 +151,16 @@ public final class QuoteService {
             dataAccess.repos().isinQuote().save(quote);
         } else {
             com.folio.model.IsinEntity isin = dataAccess.em().find(com.folio.model.IsinEntity.class, isinId);
-            IsinQuoteEntity quote = IsinQuoteEntity.builder()
-                .isin(isin)
-                .quoteProvider(provider)
-                .value(price)
-                .fetchedAt(LocalDateTime.now())
-                .build();
+            IsinQuoteEntity quote = new IsinQuoteEntity(null,
+                new com.folio.model.IsinQuoteSource(isin, provider),
+                new com.folio.model.IsinQuoteData(price, LocalDateTime.now(), null));
             dataAccess.repos().isinQuote().save(quote);
         }
     }
 
     private void updateLastFetchTimestamp() {
         SettingEntity setting = dataAccess.repos().setting().findByKey("quote.last.fetch.timestamp")
-            .orElseGet(() -> SettingEntity.builder().key("quote.last.fetch.timestamp").value("").build());
+            .orElseGet(() -> new SettingEntity(null, "quote.last.fetch.timestamp", ""));
         setting.setValue(LocalDateTime.now().toString());
         dataAccess.repos().setting().save(setting);
     }

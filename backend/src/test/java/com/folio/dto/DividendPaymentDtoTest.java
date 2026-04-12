@@ -15,14 +15,10 @@ final class DividendPaymentDtoTest {
         Isin isin = new Isin("DE000BASF111");
 
         // when
-        var dto = DividendPaymentDto.builder()
-                .id(1)
-                .timestamp(LocalDateTime.of(2026, 3, 15, 10, 30))
-                .isin(isin)
-                .name("BASF SE")
-                .depot("DeGiro")
-                .value(34.0)
-                .build();
+        var dto = new DividendPaymentDto(
+                new DividendPaymentIdentity(1, "15.03.2026", LocalDateTime.of(2026, 3, 15, 10, 30)),
+                new DividendPaymentSource(isin, "BASF SE", "DeGiro"),
+                34.0);
 
         // then
         assertThat(dto.getId()).isEqualTo(1);
@@ -45,10 +41,10 @@ final class DividendPaymentDtoTest {
 
     @Test
     void shouldFormatTimestampWithNullDate() {
-        var dto = DividendPaymentDto.builder()
-                .id(2)
-                .timestamp(null)
-                .build();
+        var dto = new DividendPaymentDto(
+                new DividendPaymentIdentity(2, null, null),
+                new DividendPaymentSource(null, null, null),
+                null);
 
         assertThat(dto.getTimestamp()).isNull();
         assertThat(dto.getRawTimestamp()).isNull();

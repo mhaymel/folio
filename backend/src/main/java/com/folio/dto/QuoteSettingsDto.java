@@ -20,5 +20,4 @@ public final class QuoteSettingsDto {
     public String getLastFetchAt() { return lastFetchAt; }
     public void setLastFetchAt(String lastFetchAt) { this.lastFetchAt = lastFetchAt; }
 
-    public static QuoteSettingsDtoBuilder builder() { return new QuoteSettingsDtoBuilder(); }
 }

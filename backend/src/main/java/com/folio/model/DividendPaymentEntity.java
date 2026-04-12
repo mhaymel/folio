@@ -1,13 +1,10 @@
 package com.folio.model;
 
-import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
@@ -19,38 +16,34 @@ public final class DividendPaymentEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "\"timestamp\"", nullable = false)
-    private LocalDateTime timestamp;
+    @Embedded
+    private DividendPaymentContext context;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "isin_id", nullable = false)
-    private IsinEntity isin;
+    @Embedded
+    private DividendPaymentEntityValues paymentValues;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "depot_id", nullable = false)
-    private DepotEntity depot;
+    public DividendPaymentEntity() {
+        this.context = new DividendPaymentContext();
+        this.paymentValues = new DividendPaymentEntityValues();
+    }
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "currency_id", nullable = false)
-    private CurrencyEntity currency;
-
-    @Column(name = "\"value\"", nullable = false)
-    private Double value;
-
-    public DividendPaymentEntity() {}
+    public DividendPaymentEntity(Integer id, DividendPaymentContext context, DividendPaymentEntityValues paymentValues) {
+        this.id = id;
+        this.context = context;
+        this.paymentValues = paymentValues;
+    }
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
-    public LocalDateTime getTimestamp() { return timestamp; }
-    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
-    public IsinEntity getIsin() { return isin; }
-    public void setIsin(IsinEntity isin) { this.isin = isin; }
-    public DepotEntity getDepot() { return depot; }
-    public void setDepot(DepotEntity depot) { this.depot = depot; }
-    public CurrencyEntity getCurrency() { return currency; }
-    public void setCurrency(CurrencyEntity currency) { this.currency = currency; }
-    public Double getValue() { return value; }
-    public void setValue(Double value) { this.value = value; }
+    public LocalDateTime getTimestamp() { return context.getTimestamp(); }
+    public void setTimestamp(LocalDateTime timestamp) { context.setTimestamp(timestamp); }
+    public IsinEntity getIsin() { return context.getIsin(); }
+    public void setIsin(IsinEntity isin) { context.setIsin(isin); }
+    public DepotEntity getDepot() { return context.getDepot(); }
+    public void setDepot(DepotEntity depot) { context.setDepot(depot); }
+    public CurrencyEntity getCurrency() { return paymentValues.getCurrency(); }
+    public void setCurrency(CurrencyEntity currency) { paymentValues.setCurrency(currency); }
+    public Double getValue() { return paymentValues.getValue(); }
+    public void setValue(Double value) { paymentValues.setValue(value); }
 
-    public static DividendPaymentBuilder builder() { return new DividendPaymentBuilder(); }
 }

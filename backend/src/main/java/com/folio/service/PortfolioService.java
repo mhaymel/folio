@@ -2,13 +2,22 @@ package com.folio.service;
 
 import com.folio.domain.Isin;
 import com.folio.dto.DashboardDto;
+import com.folio.dto.DashboardLists;
+import com.folio.dto.DashboardSummary;
 import com.folio.dto.DiversificationDto;
 import com.folio.dto.DiversificationEntry;
 import com.folio.dto.DividendSourceDto;
 import com.folio.dto.HoldingDto;
+import com.folio.dto.SecurityIdentity;
+import com.folio.dto.StockClassification;
 import com.folio.dto.StockDto;
+import com.folio.dto.StockMetrics;
+import com.folio.dto.StockPerformance;
+import com.folio.dto.StockPosition;
 import com.folio.dto.TransactionDto;
 import com.folio.dto.TransactionFilter;
+import com.folio.dto.TransactionIdentity;
+import com.folio.dto.TransactionTradeData;
 import com.folio.repository.SettingRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
@@ -16,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -42,13 +52,13 @@ public class PortfolioService {
     public List<StockDto> getStocks() {
         // Get open positions: ISIN + depot with SUM(count) > 0
         List<Tuple> positions = em.createQuery("""
-            SELECT t.isin.id as isinId, t.isin.isin as isin,
-                   t.depot.name as depotName,
-                   SUM(t.count) as totalCount,
-                   SUM(t.count * t.sharePrice) as totalCost
+            SELECT t.context.isin.id as isinId, t.context.isin.isin as isin,
+                   t.context.depot.name as depotName,
+                   SUM(t.values.count) as totalCount,
+                   SUM(t.values.count * t.values.sharePrice) as totalCost
             FROM TransactionEntity t
-            GROUP BY t.isin.id, t.isin.isin, t.depot.name
-            HAVING SUM(t.count) > 0
+            GROUP BY t.context.isin.id, t.context.isin.isin, t.context.depot.name
+            HAVING SUM(t.values.count) > 0
             """, Tuple.class).getResultList();
 
         List<StockDto> result = new ArrayList<>();
@@ -79,13 +89,12 @@ public class PortfolioService {
 
             Double estimatedAnnualIncome = (dps != null && dps > 0) ? dps * totalCount : null;
 
-            result.add(StockDto.builder()
-                .isin(isin).tickerSymbol(getTickerSymbol(isinId)).name(name)
-                .country(country).branch(branch)
-                .depot(depotName).count(totalCount).avgEntryPrice(avgEntryPrice)
-                .currentQuote(currentQuote).performancePercent(performancePercent)
-                .dividendPerShare(dps).estimatedAnnualIncome(estimatedAnnualIncome)
-                .build());
+            result.add(new StockDto(
+                new SecurityIdentity(isin, getTickerSymbol(isinId), name),
+                new StockClassification(country, branch, depotName),
+                new StockMetrics(
+                    new StockPosition(totalCount, avgEntryPrice, currentQuote),
+                    new StockPerformance(performancePercent, dps, estimatedAnnualIncome))));
         }
         return result;
     }
@@ -95,12 +104,12 @@ public class PortfolioService {
     public List<StockDto> getAggregatedStocks() {
         // Get open positions: ISIN aggregated across all depots
         List<Tuple> positions = em.createQuery("""
-            SELECT t.isin.id as isinId, t.isin.isin as isin,
-                   SUM(t.count) as totalCount,
-                   SUM(t.count * t.sharePrice) as totalCost
+            SELECT t.context.isin.id as isinId, t.context.isin.isin as isin,
+                   SUM(t.values.count) as totalCount,
+                   SUM(t.values.count * t.values.sharePrice) as totalCost
             FROM TransactionEntity t
-            GROUP BY t.isin.id, t.isin.isin
-            HAVING SUM(t.count) > 0
+            GROUP BY t.context.isin.id, t.context.isin.isin
+            HAVING SUM(t.values.count) > 0
             """, Tuple.class).getResultList();
 
         List<StockDto> result = new ArrayList<>();
@@ -125,13 +134,12 @@ public class PortfolioService {
 
             Double estimatedAnnualIncome = (dps != null && dps > 0) ? dps * totalCount : null;
 
-            result.add(StockDto.builder()
-                .isin(isin).tickerSymbol(getTickerSymbol(isinId)).name(name)
-                .country(country).branch(branch)
-                .count(totalCount).avgEntryPrice(avgEntryPrice)
-                .currentQuote(currentQuote).performancePercent(performancePercent)
-                .dividendPerShare(dps).estimatedAnnualIncome(estimatedAnnualIncome)
-                .build());
+            result.add(new StockDto(
+                new SecurityIdentity(isin, getTickerSymbol(isinId), name),
+                new StockClassification(country, branch, null),
+                new StockMetrics(
+                    new StockPosition(totalCount, avgEntryPrice, currentQuote),
+                    new StockPerformance(performancePercent, dps, estimatedAnnualIncome))));
         }
         return result;
     }
@@ -156,34 +164,28 @@ public class PortfolioService {
         List<HoldingDto> top5Holdings = stocks.stream()
             .sorted(Comparator.comparingDouble((StockDto s) -> s.getCount() * s.getAvgEntryPrice()).reversed())
             .limit(5)
-            .map(s -> HoldingDto.builder()
-                .isin(s.getIsin()).name(s.getName())
-                .investedAmount(s.getCount() * s.getAvgEntryPrice())
-                .build())
+            .map(s -> new HoldingDto(s.getIsin(), s.getName(), s.getCount() * s.getAvgEntryPrice()))
             .toList();
 
         List<DividendSourceDto> top5Dividends = stocks.stream()
             .filter(s -> s.getEstimatedAnnualIncome() != null && s.getEstimatedAnnualIncome() > 0)
             .sorted(Comparator.comparingDouble(StockDto::getEstimatedAnnualIncome).reversed())
             .limit(5)
-            .map(s -> DividendSourceDto.builder()
-                .isin(s.getIsin()).name(s.getName())
-                .estimatedAnnualIncome(s.getEstimatedAnnualIncome())
-                .build())
+            .map(s -> new DividendSourceDto(s.getIsin(), s.getName(), s.getEstimatedAnnualIncome()))
             .toList();
 
         LocalDateTime lastFetch = settingRepo.findByKey("quote.last.fetch.timestamp")
             .map(s -> LocalDateTime.parse(s.getValue()))
             .orElse(null);
 
-        return DashboardDto.builder()
-            .totalPortfolioValue(totalValue)
-            .stockCount(stockCount)
-            .totalDividendRatio(dividendRatio)
-            .top5Holdings(top5Holdings)
-            .top5DividendSources(top5Dividends)
-            .lastQuoteFetchAt(lastFetch)
-            .build();
+        String lastFetchFormatted = lastFetch != null
+            ? lastFetch.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
+            : null;
+
+        return new DashboardDto(
+            new DashboardSummary(totalValue, stockCount, dividendRatio),
+            new DashboardLists(top5Holdings, top5Dividends),
+            lastFetchFormatted);
     }
 
     @Transactional(readOnly = true)
@@ -216,63 +218,58 @@ public class PortfolioService {
         double total = rows.stream().mapToDouble(r -> ((Number) r[1]).doubleValue()).sum();
 
         List<DiversificationEntry> entries = rows.stream()
-            .map(r -> DiversificationEntry.builder()
-                .name((String) r[0])
-                .investedAmount(((Number) r[1]).doubleValue())
-                .percentage(total > 0 ? ((Number) r[1]).doubleValue() / total * 100 : 0)
-                .build())
+            .map(r -> new DiversificationEntry(
+                (String) r[0],
+                ((Number) r[1]).doubleValue(),
+                total > 0 ? ((Number) r[1]).doubleValue() / total * 100 : 0))
             .toList();
 
-        return DiversificationDto.builder().entries(entries).totalInvested(total).build();
+        return new DiversificationDto(entries, total);
     }
 
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<TransactionDto> getTransactions(TransactionFilter filter) {
         StringBuilder jpql = new StringBuilder(
-            "SELECT t FROM TransactionEntity t JOIN FETCH t.isin JOIN FETCH t.depot WHERE 1=1");
+            "SELECT t FROM TransactionEntity t JOIN FETCH t.context.isin JOIN FETCH t.context.depot WHERE 1=1");
         Map<String, Object> params = new HashMap<>();
 
         if (filter.isin() != null && !filter.isin().isBlank()) {
-            jpql.append(" AND LOWER(t.isin.isin) LIKE :isin");
+            jpql.append(" AND LOWER(t.context.isin.isin) LIKE :isin");
             params.put("isin", "%" + filter.isin().toLowerCase() + "%");
         }
         if (filter.depot() != null && !filter.depot().isBlank()) {
             List<String> depotValues = java.util.Arrays.stream(filter.depot().split(","))
                 .map(String::trim).filter(s -> !s.isEmpty()).toList();
             if (depotValues.size() == 1) {
-                jpql.append(" AND t.depot.name = :depot");
+                jpql.append(" AND t.context.depot.name = :depot");
                 params.put("depot", depotValues.get(0));
             } else if (!depotValues.isEmpty()) {
-                jpql.append(" AND t.depot.name IN :depots");
+                jpql.append(" AND t.context.depot.name IN :depots");
                 params.put("depots", depotValues);
             }
         }
         if (filter.fromDate() != null) {
-            jpql.append(" AND t.date >= :fromDate");
+            jpql.append(" AND t.context.date >= :fromDate");
             params.put("fromDate", filter.fromDate());
         }
         if (filter.toDate() != null) {
-            jpql.append(" AND t.date <= :toDate");
+            jpql.append(" AND t.context.date <= :toDate");
             params.put("toDate", filter.toDate());
         }
-        jpql.append(" ORDER BY t.date DESC");
+        jpql.append(" ORDER BY t.context.date DESC");
 
         var query = em.createQuery(jpql.toString(), com.folio.model.TransactionEntity.class);
         params.forEach(query::setParameter);
         List<com.folio.model.TransactionEntity> txns = query.getResultList();
 
-        List<TransactionDto> result = txns.stream().map(t -> TransactionDto.builder()
-            .id(t.getId())
-            .date(t.getDate())
-            .isin(new Isin(t.getIsin().getIsin()))
-            .tickerSymbol(getTickerSymbol(t.getIsin().getId()))
-            .name(getFirstName(t.getIsin().getId()))
-            .depot(t.getDepot().getName())
-            .count(t.getCount())
-            .sharePrice(t.getSharePrice())
-            .build())
-            .toList();
+        List<TransactionDto> result = txns.stream().map(t -> {
+            String formattedDate = t.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+            return new TransactionDto(
+                new TransactionIdentity(t.getId(), formattedDate, t.getDate()),
+                new SecurityIdentity(new Isin(t.getIsin().getIsin()), getTickerSymbol(t.getIsin().getId()), getFirstName(t.getIsin().getId())),
+                new TransactionTradeData(t.getDepot().getName(), t.getCount(), t.getSharePrice()));
+        }).toList();
 
         // Apply name filter in-memory (name comes from a separate lookup).
         // Filter by matching ISIN codes so that all transactions (buy + sell) for a
@@ -347,7 +344,7 @@ public class PortfolioService {
 
     private Double getQuote(Integer isinId) {
         try {
-            return (Double) em.createQuery("SELECT q.value FROM IsinQuoteEntity q WHERE q.isin.id = :id")
+            return (Double) em.createQuery("SELECT q.data.value FROM IsinQuoteEntity q WHERE q.source.isin.id = :id")
                 .setParameter("id", isinId).setMaxResults(1).getSingleResult();
         } catch (Exception e) {
             return null;
@@ -356,10 +353,11 @@ public class PortfolioService {
 
     private Double getDividendPerShare(Integer isinId) {
         try {
-            return (Double) em.createQuery("SELECT d.dividendPerShare FROM DividendEntity d WHERE d.isin.id = :id")
+            return (Double) em.createQuery("SELECT d.dividendPerShare FROM DividendEntity d WHERE d.reference.isin.id = :id")
                 .setParameter("id", isinId).setMaxResults(1).getSingleResult();
         } catch (Exception e) {
             return null;
         }
     }
 }
+

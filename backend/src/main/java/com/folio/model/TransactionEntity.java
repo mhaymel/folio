@@ -1,13 +1,10 @@
 package com.folio.model;
 
-import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
@@ -19,37 +16,34 @@ public final class TransactionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "\"date\"", nullable = false)
-    private LocalDateTime date;
+    @Embedded
+    private TransactionContext context;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "isin_id", nullable = false)
-    private IsinEntity isin;
+    @Embedded
+    private TransactionValues values;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "depot_id", nullable = false)
-    private DepotEntity depot;
+    public TransactionEntity() {
+        this.context = new TransactionContext();
+        this.values = new TransactionValues();
+    }
 
-    @Column(name = "\"count\"", nullable = false)
-    private Double count;
-
-    @Column(name = "share_price", nullable = false)
-    private Double sharePrice;
-
-    public TransactionEntity() {}
+    public TransactionEntity(Integer id, TransactionContext context, TransactionValues values) {
+        this.id = id;
+        this.context = context;
+        this.values = values;
+    }
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
-    public LocalDateTime getDate() { return date; }
-    public void setDate(LocalDateTime date) { this.date = date; }
-    public IsinEntity getIsin() { return isin; }
-    public void setIsin(IsinEntity isin) { this.isin = isin; }
-    public DepotEntity getDepot() { return depot; }
-    public void setDepot(DepotEntity depot) { this.depot = depot; }
-    public Double getCount() { return count; }
-    public void setCount(Double count) { this.count = count; }
-    public Double getSharePrice() { return sharePrice; }
-    public void setSharePrice(Double sharePrice) { this.sharePrice = sharePrice; }
+    public LocalDateTime getDate() { return context.getDate(); }
+    public void setDate(LocalDateTime date) { context.setDate(date); }
+    public IsinEntity getIsin() { return context.getIsin(); }
+    public void setIsin(IsinEntity isin) { context.setIsin(isin); }
+    public DepotEntity getDepot() { return context.getDepot(); }
+    public void setDepot(DepotEntity depot) { context.setDepot(depot); }
+    public Double getCount() { return values.getCount(); }
+    public void setCount(Double count) { values.setCount(count); }
+    public Double getSharePrice() { return values.getSharePrice(); }
+    public void setSharePrice(Double sharePrice) { values.setSharePrice(sharePrice); }
 
-    public static TransactionBuilder builder() { return new TransactionBuilder(); }
 }

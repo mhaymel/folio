@@ -8,6 +8,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface DividendPaymentRepository extends JpaRepository<DividendPaymentEntity, Integer> {
     @Modifying
-    @Query("DELETE FROM DividendPaymentEntity dp WHERE dp.depot.id = :depotId")
+    @Query("DELETE FROM DividendPaymentEntity dp WHERE dp.context.depot.id = :depotId")
     void deleteByDepotId(@Param("depotId") Integer depotId);
 }

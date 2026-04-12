@@ -73,12 +73,17 @@ class PortfolioServiceTest {
     // ------------------------------------------------------------------ helpers
 
     private IsinEntity createIsin(String code) {
-        IsinEntity isin = new IsinEntity();
-        isin.setIsin(code);
-        return isinRepo.save(isin);
+        return isinRepo.findByIsin(code).orElseGet(() -> {
+            IsinEntity isin = new IsinEntity();
+            isin.setIsin(code);
+            return isinRepo.save(isin);
+        });
     }
 
     private void createIsinName(IsinEntity isin, String name) {
+        if (isinNameRepo.existsByIsinIdAndName(isin.getId(), name)) {
+            return;
+        }
         IsinNameEntity isinName = new IsinNameEntity();
         isinName.setIsin(isin);
         isinName.setName(name);
@@ -86,13 +91,9 @@ class PortfolioServiceTest {
     }
 
     private void createTransaction(IsinEntity isin, DepotEntity depot, double count, double sharePrice) {
-        TransactionEntity t = TransactionEntity.builder()
-                .isin(isin)
-                .depot(depot)
-                .count(count)
-                .sharePrice(sharePrice)
-                .date(LocalDateTime.of(2026, 1, 15, 10, 0))
-                .build();
+        TransactionEntity t = new TransactionEntity(null,
+                new com.folio.model.TransactionContext(LocalDateTime.of(2026, 1, 15, 10, 0), isin, depot),
+                new com.folio.model.TransactionValues(count, sharePrice));
         txnRepo.save(t);
     }
 
@@ -413,11 +414,11 @@ class PortfolioServiceTest {
     private jakarta.persistence.EntityManager entityManager;
 
     private void insertCountry(Integer isinId, String countryName) {
-        // Insert country if not exists, then link via isin_country
+        // Insert country if not exists, then link via isin_country (also if not exists)
         entityManager.createNativeQuery("INSERT INTO country (name) SELECT :name WHERE NOT EXISTS (SELECT 1 FROM country WHERE name = :name)")
                 .setParameter("name", countryName).executeUpdate();
         entityManager.createNativeQuery(
-                "INSERT INTO isin_country (isin_id, country_id) VALUES (:isinId, (SELECT id FROM country WHERE name = :name))")
+                "INSERT INTO isin_country (isin_id, country_id) SELECT :isinId, (SELECT id FROM country WHERE name = :name) WHERE NOT EXISTS (SELECT 1 FROM isin_country WHERE isin_id = :isinId)")
                 .setParameter("isinId", isinId).setParameter("name", countryName).executeUpdate();
         entityManager.flush();
     }
@@ -426,7 +427,7 @@ class PortfolioServiceTest {
         entityManager.createNativeQuery("INSERT INTO branch (name) SELECT :name WHERE NOT EXISTS (SELECT 1 FROM branch WHERE name = :name)")
                 .setParameter("name", branchName).executeUpdate();
         entityManager.createNativeQuery(
-                "INSERT INTO isin_branch (isin_id, branch_id) VALUES (:isinId, (SELECT id FROM branch WHERE name = :name))")
+                "INSERT INTO isin_branch (isin_id, branch_id) SELECT :isinId, (SELECT id FROM branch WHERE name = :name) WHERE NOT EXISTS (SELECT 1 FROM isin_branch WHERE isin_id = :isinId)")
                 .setParameter("isinId", isinId).setParameter("name", branchName).executeUpdate();
         entityManager.flush();
     }

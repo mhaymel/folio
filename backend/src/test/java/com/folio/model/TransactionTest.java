@@ -17,11 +17,9 @@ final class TransactionTest {
         depot.setName("DeGiro");
 
         // when
-        var tx = TransactionEntity.builder()
-                .id(1).date(LocalDateTime.of(2026, 1, 1, 10, 0))
-                .isin(isin).depot(depot)
-                .count(10.0).sharePrice(50.0)
-                .build();
+        var tx = new TransactionEntity(1,
+                new TransactionContext(LocalDateTime.of(2026, 1, 1, 10, 0), isin, depot),
+                new TransactionValues(10.0, 50.0));
 
         // then
         assertThat(tx.getId()).isEqualTo(1);

@@ -9,6 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface TransactionRepository extends JpaRepository<TransactionEntity, Integer>, JpaSpecificationExecutor<TransactionEntity> {
     @Modifying
-    @Query("DELETE FROM TransactionEntity t WHERE t.depot.id = :depotId")
+    @Query("DELETE FROM TransactionEntity t WHERE t.context.depot.id = :depotId")
     void deleteByDepotId(@Param("depotId") Integer depotId);
 }

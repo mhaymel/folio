@@ -29,5 +29,4 @@ public final class IsinEntity {
     public String getIsin() { return isin; }
     public void setIsin(String isin) { this.isin = isin; }
 
-    public static IsinBuilder builder() { return new IsinBuilder(); }
 }

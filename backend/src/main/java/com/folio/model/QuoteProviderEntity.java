@@ -29,5 +29,4 @@ public final class QuoteProviderEntity {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public static QuoteProviderBuilder builder() { return new QuoteProviderBuilder(); }
 }

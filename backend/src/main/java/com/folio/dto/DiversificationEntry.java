@@ -20,6 +20,5 @@ public final class DiversificationEntry {
     public Double getPercentage() { return percentage; }
     public void setPercentage(Double percentage) { this.percentage = percentage; }
 
-    public static DiversificationEntryBuilder builder() { return new DiversificationEntryBuilder(); }
 }
 
