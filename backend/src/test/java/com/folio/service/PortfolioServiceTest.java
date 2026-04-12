@@ -361,8 +361,8 @@ class PortfolioServiceTest {
 
         assertThat(d.getTop5DividendSources()).hasSize(2);
         // BASF should be first (higher income)
-        assertThat(d.getTop5DividendSources().get(0).getIsin()).isEqualTo(new Isin("DE000BASF111"));
-        assertThat(d.getTop5DividendSources().get(0).getEstimatedAnnualIncome()).isCloseTo(34.0, within(0.001));
+        assertThat(d.getTop5DividendSources().get(0).isin()).isEqualTo(new Isin("DE000BASF111"));
+        assertThat(d.getTop5DividendSources().get(0).estimatedAnnualIncome()).isCloseTo(34.0, within(0.001));
     }
 
     @Test

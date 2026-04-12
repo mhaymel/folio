@@ -19,7 +19,7 @@ Always read the relevant doc section before making changes that touch requiremen
 
 ## Skills
 
-When reviewing, refactoring, or writing Java code, apply the rules from the `java-clean-code` skill (`skills/java-clean-code/`). Load all rule files from `skills/java-clean-code/rules/` before applying fixes.
+**Before writing or modifying any Java file**, read all rule files in `skills/java-clean-code/rules/` and ensure the generated code complies with every sub-rule. This applies to all Java work — new files, edits, refactors, and reviews — not only when explicitly asked for a "clean code" pass.
 
 ## Reference project
 

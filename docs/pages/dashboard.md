@@ -30,7 +30,7 @@ The data should be fetched from the backend via a dedicated REST API endpoint.
 - **Stock count:** number of distinct ISINs with `SUM(count) > 0` across all depots (a product held in two depots counts as one).
 - **Total dividend ratio:** `SUM(shares * dividend_per_share) / total_portfolio_value * 100`.
 - **Top 5 holdings:** highest `avg_entry_price * total_shares`; fields: ISIN, name, invested amount.
-- **Top 5 dividend sources:** highest `shares * dividend_per_share`; fields: ISIN, name, estimated annual income.
+- **Top 5 dividend sources:** highest `shares * dividend_per_share`; fields: ISIN, name, estimated annual income. Every dividend source must have a non-null name; if no `isin_name` entry exists, fall back to the ISIN string.
 - **Last quote fetch:** `settings` key `quote.last.fetch.timestamp`; null if not set.
 
 **Response:**

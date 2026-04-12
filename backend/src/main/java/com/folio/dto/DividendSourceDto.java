@@ -2,24 +2,13 @@ package com.folio.dto;
 
 import com.folio.domain.Isin;
 
-public final class DividendSourceDto {
-    private Isin isin;
-    private String name;
-    private Double estimatedAnnualIncome;
+import static java.util.Objects.requireNonNull;
 
-    public DividendSourceDto() {}
+public record DividendSourceDto(Isin isin, String name, Double estimatedAnnualIncome) {
 
-    public DividendSourceDto(Isin isin, String name, Double estimatedAnnualIncome) {
-        this.isin = isin;
-        this.name = name;
-        this.estimatedAnnualIncome = estimatedAnnualIncome;
+    public DividendSourceDto {
+        requireNonNull(isin);
+        requireNonNull(name);
+        requireNonNull(estimatedAnnualIncome);
     }
-
-    public Isin getIsin() { return isin; }
-    public void setIsin(Isin isin) { this.isin = isin; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public Double getEstimatedAnnualIncome() { return estimatedAnnualIncome; }
-    public void setEstimatedAnnualIncome(Double estimatedAnnualIncome) { this.estimatedAnnualIncome = estimatedAnnualIncome; }
-
 }

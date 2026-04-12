@@ -55,9 +55,9 @@ public final class DashboardController {
     public ResponseEntity<byte[]> exportDividends(@RequestParam(defaultValue = "csv") String format) {
         DashboardDto dto = portfolioService.getDashboard();
         List<ExportColumn<DividendSourceDto>> columns = List.of(
-                new ExportColumn<>("ISIN", DividendSourceDto::getIsin),
-                new ExportColumn<>("Name", DividendSourceDto::getName),
-                new ExportColumn<>("Est. Annual Income (EUR)", DividendSourceDto::getEstimatedAnnualIncome)
+                new ExportColumn<>("ISIN", DividendSourceDto::isin),
+                new ExportColumn<>("Name", DividendSourceDto::name),
+                new ExportColumn<>("Est. Annual Income (EUR)", DividendSourceDto::estimatedAnnualIncome)
         );
         return exportService.export(new ExportRequest<>(dto.getTop5DividendSources(), columns, format, "top5-dividends"));
     }

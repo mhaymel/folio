@@ -171,7 +171,7 @@ public class PortfolioService {
             .filter(s -> s.getEstimatedAnnualIncome() != null && s.getEstimatedAnnualIncome() > 0)
             .sorted(Comparator.comparingDouble(StockDto::getEstimatedAnnualIncome).reversed())
             .limit(5)
-            .map(s -> new DividendSourceDto(s.getIsin(), s.getName(), s.getEstimatedAnnualIncome()))
+            .map(s -> new DividendSourceDto(s.getIsin(), s.getName() != null ? s.getName() : s.getIsin().value(), s.getEstimatedAnnualIncome()))
             .toList();
 
         LocalDateTime lastFetch = settingRepo.findByKey("quote.last.fetch.timestamp")

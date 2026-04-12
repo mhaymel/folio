@@ -50,7 +50,7 @@ final class DashboardDtoTest {
         var dto = new DividendSourceDto(ISIN_BASF, "Div Stock", 120.0);
 
         // then
-        assertThat(dto.getIsin()).isEqualTo(ISIN_BASF);
-        assertThat(dto.getEstimatedAnnualIncome()).isEqualTo(120.0);
+        assertThat(dto.isin()).isEqualTo(ISIN_BASF);
+        assertThat(dto.estimatedAnnualIncome()).isEqualTo(120.0);
     }
 }
