@@ -27,7 +27,7 @@ final class IsinTest {
         var isin = new Isin("IE00B4L5Y983");
 
         // when / then
-        assertThat(isin.toString()).isEqualTo("IE00B4L5Y983");
+        assertThat(isin.toString()).isEqualTo("Isin[value=IE00B4L5Y983]");
     }
 
     @Test

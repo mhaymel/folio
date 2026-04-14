@@ -4,7 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static com.folio.domain.Currency.*;
+import static com.folio.domain.Currency.CHF;
+import static com.folio.domain.Currency.EUR;
+import static com.folio.domain.Currency.GBP;
+import static com.folio.domain.Currency.USD;
+import static com.folio.domain.Currency.currency;
 import static com.util.Assert.assertThrowsIAE;
 import static org.assertj.core.api.Assertions.assertThat;
 

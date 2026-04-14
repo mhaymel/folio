@@ -3,7 +3,12 @@ package com.util;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static com.util.Assert.assertThrowsIAE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,7 +16,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 final class PreconditionTest {
 
-    // --- notEmpty(byte[]) ---
 
     @Test
     void notEmptyByteArrayShouldAcceptNonEmptyArray() {
@@ -32,7 +36,6 @@ final class PreconditionTest {
     }
 
 
-    // --- notEmpty(T[]) ---
 
     @Test
     void notEmptyArrayShouldAcceptNonEmptyArray() {
@@ -58,7 +61,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.notEmpty((String[]) null));
     }
 
-    // --- notEmpty(Set) ---
 
     @Test
     void notEmptySetShouldAcceptNonEmptySet() {
@@ -84,7 +86,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.notEmpty((Set<String>) null));
     }
 
-    // --- notEmpty(String) ---
 
     @Test
     void notEmptyStringShouldAcceptNonEmptyString() {
@@ -110,7 +111,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.notEmpty((String) null));
     }
 
-    // --- notEmpty(List) ---
 
     @Test
     void notEmptyListShouldAcceptNonEmptyList() {
@@ -136,7 +136,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.notEmpty((List<String>) null));
     }
 
-    // --- notEmpty(Map) ---
 
     @Test
     void notEmptyMapShouldAcceptNonEmptyMap() {
@@ -157,7 +156,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.notEmpty(new HashMap<>()));
     }
 
-    // --- nn(T) ---
 
     @Test
     void nnObjectShouldAcceptNonNullValue() {
@@ -177,7 +175,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.nn(null));
     }
 
-    // --- nn(T[]) ---
 
     @Test
     void nnArrayShouldAcceptNonNullArray() {
@@ -197,7 +194,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.nn((String[]) null));
     }
 
-    // --- nn(S, T) ---
 
     @Test
     void nnTwoObjectsShouldAcceptBothNonNull() {
@@ -217,7 +213,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.nn("a", null));
     }
 
-    // --- nn(S, T, R) ---
 
     @Test
     void nnThreeObjectsShouldAcceptAllNonNull() {
@@ -243,7 +238,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.nn("a", "b", null));
     }
 
-    // --- nnv / noNullValues ---
 
     @Test
     void noNullValuesShouldAcceptArrayWithoutNulls() {
@@ -284,7 +278,6 @@ final class PreconditionTest {
         assertThat(result).isEqualTo(input);
     }
 
-    // --- greaterThanOrEqualZero(int) ---
 
     @Test
     void greaterThanOrEqualZeroIntShouldAcceptPositive() {
@@ -304,7 +297,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.greaterThanOrEqualZero(-1));
     }
 
-    // --- greaterThanOrEqualZero(long) ---
 
     @Test
     void greaterThanOrEqualZeroLongShouldAcceptPositive() {
@@ -324,7 +316,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.greaterThanOrEqualZero(-1L));
     }
 
-    // --- greaterThanOrEqualZero(double) ---
 
     @Test
     void greaterThanOrEqualZeroDoubleShouldAcceptPositive() {
@@ -344,7 +335,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.greaterThanOrEqualZero(-0.1));
     }
 
-    // --- greaterThanOrEqualZero(BigInteger) ---
 
     @Test
     void greaterThanOrEqualZeroBigIntegerShouldAcceptPositive() {
@@ -382,7 +372,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.greaterThanOrEqualZero(null));
     }
 
-    // --- noDuplicates ---
 
     @Test
     void noDuplicatesShouldAcceptListWithoutDuplicates() {
@@ -405,7 +394,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.noDuplicates(input));
     }
 
-    // --- greaterThanZero(int) ---
 
     @Test
     void greaterThanZeroIntShouldAcceptPositive() {
@@ -425,7 +413,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.greaterThanZero(-1));
     }
 
-    // --- greaterThanZero(long) ---
 
     @Test
     void greaterThanZeroLongShouldAcceptPositive() {
@@ -445,7 +432,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.greaterThanZero(-1L));
     }
 
-    // --- greaterThanZero(double) ---
 
     @Test
     void greaterThanZeroDoubleShouldAcceptPositive() {
@@ -465,7 +451,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.greaterThanZero(-0.1));
     }
 
-    // --- lessThan(long, long) ---
 
     @Test
     void lessThanLongShouldAcceptValueLessThanBound() {
@@ -485,7 +470,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.lessThan(15L, 10L));
     }
 
-    // --- lessThan(int, int) ---
 
     @Test
     void lessThanIntShouldAcceptValueLessThanBound() {
@@ -505,7 +489,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.lessThan(15, 10));
     }
 
-    // --- greaterThanOrEqual ---
 
     @Test
     void greaterThanOrEqualShouldAcceptValueGreaterThanBound() {
@@ -525,7 +508,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.greaterThanOrEqual(5L, 10L));
     }
 
-    // --- greaterThanOrEqualAndLessThan ---
 
     @Test
     void greaterThanOrEqualAndLessThanShouldAcceptValueInRange() {
@@ -551,7 +533,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.greaterThanOrEqualAndLessThan(-1L, 0L, 10L));
     }
 
-    // --- hasLength ---
 
     @Test
     void hasLengthShouldAcceptStringWithCorrectLength() {
@@ -577,7 +558,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.hasLength(5, null));
     }
 
-    // --- noWhitespaces ---
 
     @Test
     void noWhitespacesShouldAcceptStringWithoutWhitespace() {
@@ -633,7 +613,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.upperCase(null));
     }
 
-    // --- uppercase ---
 
     @Test
     void uppercaseShouldAcceptAllUpperCaseString() {
@@ -672,7 +651,6 @@ final class PreconditionTest {
     }
 
 
-    // --- greaterEqualZero ---
 
     @Test
     void greaterEqualZeroShouldAcceptPositive() {
@@ -692,7 +670,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.greaterEqualZero(-0.1));
     }
 
-    // --- lessThanOrEqualOne ---
 
     @Test
     void lessThanOrEqualOneShouldAcceptValueLessThanOne() {
@@ -712,7 +689,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.lessThanOrEqualOne(1.1));
     }
 
-    // --- lessThanOrEqualZero ---
 
     @Test
     void lessThanOrEqualZeroShouldAcceptZero() {
@@ -732,7 +708,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.lessThanOrEqualZero(0.1));
     }
 
-    // --- isNull ---
 
     @Test
     void isNullShouldAcceptNull() {
@@ -746,7 +721,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.isNull("value"));
     }
 
-    // --- notZero ---
 
     @Test
     void notZeroShouldAcceptPositive() {
@@ -766,7 +740,6 @@ final class PreconditionTest {
         assertThrowsIAE(() -> Precondition.notZero(0));
     }
 
-    // --- lessThanZero ---
 
     @Test
     void lessThanZeroShouldAcceptNegative() {

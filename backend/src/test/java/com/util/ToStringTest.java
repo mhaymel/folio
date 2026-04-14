@@ -40,7 +40,6 @@ final class ToStringTest {
         assertThrowsIAE(() -> ToString.asString(null));
     }
 
-    // --- helpers ---
 
     private static final class Simple {
         private final String text;
