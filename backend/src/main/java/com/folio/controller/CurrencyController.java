@@ -26,7 +26,7 @@ import static java.util.Objects.requireNonNull;
 @RestController
 @RequestMapping("/api/currencies")
 @Tag(name = "Currencies", description = "CurrencyEntity reference data")
-public final class CurrencyController {
+final class CurrencyController {
 
     private static final Map<String, Comparator<CurrencyEntity>> SORT_FIELDS = Map.of(
         "name", SortHelper.text(CurrencyEntity::getName)

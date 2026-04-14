@@ -26,7 +26,7 @@ import static java.util.Objects.requireNonNull;
 @RestController
 @RequestMapping("/api/countries")
 @Tag(name = "Countries", description = "CountryEntity reference data")
-public final class CountryController {
+final class CountryController {
 
     private static final Map<String, Comparator<CountryEntity>> SORT_FIELDS = Map.of(
         "name", SortHelper.text(CountryEntity::getName)

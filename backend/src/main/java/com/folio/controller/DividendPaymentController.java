@@ -31,7 +31,7 @@ import static java.util.Objects.requireNonNull;
 @RestController
 @RequestMapping("/api/dividend-payments")
 @Tag(name = "DividendEntity Payments", description = "DividendEntity payment endpoints")
-public final class DividendPaymentController {
+final class DividendPaymentController {
 
     private static final Map<String, Comparator<DividendPaymentDto>> SORT_FIELDS = Map.of(
         "timestamp", SortHelper.comparing(DividendPaymentDto::getRawTimestamp),

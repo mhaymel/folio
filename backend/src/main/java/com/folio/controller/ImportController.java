@@ -17,7 +17,7 @@ import static java.util.Objects.requireNonNull;
 @RestController
 @RequestMapping("/api/import")
 @Tag(name = "Import", description = "CSV file import endpoints")
-public final class ImportController {
+final class ImportController {
 
     private final ImportService importService;
 

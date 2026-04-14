@@ -31,7 +31,7 @@ import static java.util.Objects.requireNonNull;
 @RestController
 @RequestMapping("/api/stocks-per-depot")
 @Tag(name = "Stocks per DepotEntity", description = "Portfolio positions grouped by depot")
-public final class StocksPerDepotController {
+final class StocksPerDepotController {
 
     private static final Map<String, Comparator<StockDto>> SORT_FIELDS = Map.ofEntries(
         Map.entry("isin", SortHelper.text(s -> s.security().isin() == null ? null : s.security().isin().value())),

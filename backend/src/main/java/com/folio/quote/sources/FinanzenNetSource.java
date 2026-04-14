@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  */
 @Component
 @Order(3)
-public final class FinanzenNetSource implements QuoteSource {
+final class FinanzenNetSource implements QuoteSource {
 
     private static final Logger log = getLogger(FinanzenNetSource.class);
 

@@ -31,7 +31,7 @@ import static java.util.Objects.requireNonNull;
 @RestController
 @RequestMapping("/api/transactions")
 @Tag(name = "Transactions", description = "TransactionEntity data endpoints")
-public final class TransactionController {
+final class TransactionController {
 
 
     private static final Map<String, Comparator<TransactionDto>> SORT_FIELDS = Map.of(

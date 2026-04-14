@@ -28,7 +28,7 @@ import static java.util.Objects.requireNonNull;
 @RestController
 @RequestMapping("/api/analytics")
 @Tag(name = "Analytics", description = "Portfolio diversification analytics")
-public final class AnalyticsController {
+final class AnalyticsController {
 
     private static final Map<String, Comparator<DiversificationEntry>> SORT_FIELDS = Map.of(
         "name", SortHelper.text(DiversificationEntry::getName),

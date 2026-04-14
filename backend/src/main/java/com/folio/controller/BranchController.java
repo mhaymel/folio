@@ -26,7 +26,7 @@ import static java.util.Objects.requireNonNull;
 @RestController
 @RequestMapping("/api/branches")
 @Tag(name = "Branches", description = "BranchEntity reference data")
-public final class BranchController {
+final class BranchController {
 
     private static final Map<String, Comparator<BranchEntity>> SORT_FIELDS = Map.of(
         "name", SortHelper.text(BranchEntity::getName)

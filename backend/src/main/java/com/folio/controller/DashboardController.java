@@ -22,7 +22,7 @@ import static java.util.Objects.requireNonNull;
 @RestController
 @RequestMapping("/api/dashboard")
 @Tag(name = "Dashboard", description = "Portfolio dashboard summary")
-public final class DashboardController {
+final class DashboardController {
 
     private final PortfolioService portfolioService;
     private final ExportService exportService;

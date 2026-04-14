@@ -20,7 +20,7 @@ These apply to many files and require cross-cutting refactors. Per the skill's
 
 | Sub-rule | Scope / Files | Rationale |
 |----------|---------------|-----------|
-| R-003b / R-006a / R-008b (public-by-default) | 91 classes, 14 interfaces, 43 records | Types cross controller/service/dto/model/repository/domain/parser boundaries. Package-private requires package consolidation. |
+| R-003b / R-006a / R-008b (public-by-default) | remaining: types actually consumed across packages | 34 single-package types demoted to package-private (17 controllers, 10 quote sources, 5 config, `GlobalExceptionHandler`, `IsinToTicker`). Rest genuinely cross package boundaries. |
 | R-003a (`final class`) | Some Spring-managed classes and JPA entities | Spring CGLIB and JPA proxying require non-final. Case-by-case analysis needed. |
 | R-004d / R-008d (>3 fields) | Many DTOs, entities, record schemas | DTOs mirror external JSON/DB contracts; splitting changes API. |
 | R-013a (public methods) | Spring `@RestController` endpoints, Spring Data repositories, `implements` overrides | Required by framework and interface contracts. |

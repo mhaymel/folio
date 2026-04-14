@@ -18,7 +18,7 @@ import static java.util.Objects.requireNonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
-public final class IsinToTicker {
+final class IsinToTicker {
 
     private static final Logger LOG = getLogger(IsinToTicker.class);
     private static final String OPENFIGI_URL = "https://api.openfigi.com/v3/mapping";

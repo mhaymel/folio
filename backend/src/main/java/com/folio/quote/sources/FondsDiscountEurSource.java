@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  */
 @Component
 @Order(7)
-public final class FondsDiscountEurSource implements QuoteSource {
+final class FondsDiscountEurSource implements QuoteSource {
 
     private static final Logger log = getLogger(FondsDiscountEurSource.class);
 

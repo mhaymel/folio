@@ -35,7 +35,7 @@ import static java.util.Objects.requireNonNull;
 @RestController
 @RequestMapping("/api/yahoo-ticker-for-isin")
 @Tag(name = "Yahoo Ticker for ISIN", description = "Resolve ticker symbols from Yahoo Finance for all known ISINs")
-public class YahooIsinController {
+class YahooIsinController {
 
     private final EntityManager em;
     private final IsinTickerSearch isinTickerSearch;

@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  */
 @Component
 @Order(1)
-public final class JustEtfApiSource implements QuoteSource {
+final class JustEtfApiSource implements QuoteSource {
 
     private static final Logger log = getLogger(JustEtfApiSource.class);
 

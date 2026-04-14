@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  */
 @Component
 @Order(5)
-public final class JustEtfHtmlSource implements QuoteSource {
+final class JustEtfHtmlSource implements QuoteSource {
 
     private static final Logger log = getLogger(JustEtfHtmlSource.class);
 

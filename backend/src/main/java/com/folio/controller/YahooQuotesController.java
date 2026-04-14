@@ -45,7 +45,7 @@ import static java.util.Objects.requireNonNull;
 @RestController
 @RequestMapping("/api/yahoo-quotes")
 @Tag(name = "Yahoo Quotes", description = "Yahoo Finance quote status for held portfolio ISINs")
-public class YahooQuotesController {
+class YahooQuotesController {
 
     private static final Logger log = getLogger(YahooQuotesController.class);
     private static final String PROVIDER_NAME = "Yahoo Finance";

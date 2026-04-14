@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  */
 @Component
 @Order(4)
-public final class CnbcSource implements QuoteSource {
+final class CnbcSource implements QuoteSource {
 
     private static final Logger log = getLogger(CnbcSource.class);
 

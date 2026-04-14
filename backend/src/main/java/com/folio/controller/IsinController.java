@@ -31,7 +31,7 @@ import static java.util.Objects.requireNonNull;
 @RestController
 @RequestMapping("/api/isins")
 @Tag(name = "ISINs", description = "All ISINs known to the system")
-public class IsinController {
+class IsinController {
 
     private static final Map<String, Comparator<IsinDto>> SORT_FIELDS = Map.of(
         "isin", SortHelper.text(d -> d.getIsin() == null ? null : d.getIsin().value()),

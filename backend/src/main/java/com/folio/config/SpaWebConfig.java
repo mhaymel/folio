@@ -15,7 +15,7 @@ import java.io.IOException;
  * so that React Router can handle client-side routing.
  */
 @Configuration
-public class SpaWebConfig implements WebMvcConfigurer {
+class SpaWebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {

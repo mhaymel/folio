@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 @Component
-public final class RequestLoggingFilter implements Filter {
+final class RequestLoggingFilter implements Filter {
 
     private static final Logger log = getLogger(RequestLoggingFilter.class);
 

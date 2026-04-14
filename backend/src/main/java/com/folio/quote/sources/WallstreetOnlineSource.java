@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  */
 @Component
 @Order(10)
-public final class WallstreetOnlineSource implements QuoteSource {
+final class WallstreetOnlineSource implements QuoteSource {
 
     private static final Logger log = getLogger(WallstreetOnlineSource.class);
 

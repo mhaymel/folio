@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestControllerAdvice
-public final class GlobalExceptionHandler {
+final class GlobalExceptionHandler {
 
     private static final Logger log = getLogger(GlobalExceptionHandler.class);
 

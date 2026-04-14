@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  */
 @Component
 @Order(6)
-public final class JustEtfApiRetrySource implements QuoteSource {
+final class JustEtfApiRetrySource implements QuoteSource {
 
     private static final Logger log = getLogger(JustEtfApiRetrySource.class);
 

@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
@@ -28,7 +27,7 @@ import static java.util.Objects.requireNonNull;
 @RestController
 @RequestMapping("/api/quotes")
 @Tag(name = "Quotes", description = "Quote fetch management")
-public final class QuoteController {
+final class QuoteController {
 
     private final SettingRepository settingRepo;
     private final QuoteService quoteService;

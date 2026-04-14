@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Profile("dev")
-public final class DevModeOnlyH2Server {
+final class DevModeOnlyH2Server {
 
     private static final Logger log = getLogger(DevModeOnlyH2Server.class);
     private static final String ORG_H2_DRIVER = "org.h2.Driver";

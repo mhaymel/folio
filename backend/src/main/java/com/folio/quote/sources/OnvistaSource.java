@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  */
 @Component
 @Order(2)
-public final class OnvistaSource implements QuoteSource {
+final class OnvistaSource implements QuoteSource {
 
     private static final Logger log = getLogger(OnvistaSource.class);
 

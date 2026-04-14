@@ -28,7 +28,7 @@ import static java.util.Objects.requireNonNull;
 @RestController
 @RequestMapping("/api/ticker-symbols")
 @Tag(name = "Ticker Symbols", description = "ISIN to ticker symbol mappings")
-public class TickerSymbolController {
+class TickerSymbolController {
 
     private static final Map<String, Comparator<TickerSymbolDto>> SORT_FIELDS = Map.of(
         "isin", SortHelper.text(d -> d.getIsin() == null ? null : d.getIsin().value()),

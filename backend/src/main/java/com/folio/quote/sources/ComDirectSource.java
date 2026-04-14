@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
  */
 @Component
 @Order(9)
-public final class ComDirectSource implements QuoteSource {
+final class ComDirectSource implements QuoteSource {
 
     private static final Logger log = getLogger(ComDirectSource.class);
 
