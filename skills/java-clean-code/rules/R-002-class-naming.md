@@ -1,6 +1,6 @@
 # Class Naming Rules
 
-## R-001a
+## R-002a
 
 Class names must start with an uppercase letter and use CamelCase.
 
@@ -20,7 +20,7 @@ final class UserRepository { }
 
 ---
 
-## R-001b
+## R-002b
 
 Class names must be **nouns** (e.g., `UserRepository`, `PaymentService`), not verbs or actions.
 
@@ -40,7 +40,7 @@ final class DataProcessor { }
 
 ---
 
-## R-001c
+## R-002c
 
 Class names must be **meaningful** and clearly describe the class's single responsibility — a reader should immediately understand what the class does from its name alone.
 
@@ -62,7 +62,7 @@ final class OrderValidator { }
 
 ---
 
-## R-001d
+## R-002d
 
 Class names must be **more than one character** long. Single-letter class names like `A`, `B`, `X` are forbidden.
 
@@ -84,9 +84,9 @@ final class XMLParser { }
 
 ---
 
-## R-001e
+## R-002e
 
-Do not use underscores in class names. Use `CamelCase` exclusively.
+Underscores are forbidden in class names.
 
 **Bad:**
 

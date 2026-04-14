@@ -1,8 +1,8 @@
-i# Class Design Rules
+# Class Design Rules
 
-## R-002a
+## R-003a
 
-Classes must be declared as `final` — this prevents unintended subclassing and makes the design explicit.
+Classes must be declared as `final`.
 
 **Exception:** classes that Spring needs to CGLIB-proxy must **not** be `final`. This includes classes annotated with `@Configuration`, `@SpringBootApplication`, and any Spring bean whose methods are annotated with `@Transactional` (or other AOP-proxied annotations such as `@Cacheable`, `@Async`, etc.).
 
@@ -28,7 +28,7 @@ final class UserService {
 
 ---
 
-## R-002b
+## R-003b
 
 Classes must be package-private. Make classes public only if they must be accessed outside the package.
 
@@ -48,7 +48,7 @@ final class UserService {
 
 ---
 
-## R-002c
+## R-003c
 
 Classes must not be abstract. Use interfaces and composition instead.
 
@@ -84,7 +84,7 @@ final class UserDataProcessor implements Processor {
 
 ---
 
-## R-002d
+## R-003d
 
 Methods must be package-private by default. Make methods public only if they must be accessed outside the package.
 
@@ -108,94 +108,64 @@ final class UserService {
 
 ---
 
-## R-002e
-
-Non-static fields must be private.
-
-**Bad:**
-
-```java
-final class UserService {
-    final int userId;
-    public final String userName; 
-}
-```
-
-**Good:**
-
-```java
-final class UserService {
-    private final int userId;
-    private final String userName;
-}
-```
-
----
-
-## R-002f
-
-Prefer final fields wherever possible.
-
-**Bad:**
-
-```java
-final class UserService {
-    private int userId;
-    private String userName; 
-}
-```
-
-**Good:**
-
-```java
-final class UserService {
-    private final int userId;
-    private final String userName;
-}
-```
-
----
-
-## R-002g
+## R-003e
 
 Prefer immutable classes wherever possible.
 
 **Bad:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 final class UserService {
-    private final int userId;
-    private String userName; 
-    private String password;
+    private final UserId userId;
+    private UserName userName; 
+    private Password password;
+
+    UserService(UserId userId, UserName userName, Password password) {
+        this.userId = requireNonNull(userId);
+        this.userName = requireNonNull(userName);
+        this.password = requireNonNull(password);
+    }
 }
 ```
 
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 final class UserService {
-    private final int userId;
-    private final String userName;
-    private final String password;
+    private final UserId userId;
+    private final UserName userName;
+    private final Password password;
+
+    UserService(UserId userId, UserName userName, Password password) {
+        this.userId = requireNonNull(userId);
+        this.userName = requireNonNull(userName);
+        this.password = requireNonNull(password);
+    }
 }
 ```
 
 ---
 
-## R-002h
+## R-003f
 
 Classes must have one primary constructor that initializes all non-static fields. The primary constructor must declare one parameter for each non-static field.
 
 **Bad:**
 
 ```java
-final class UserService {
-    private final int userId;
-    private String userName;
+import static java.util.Objects.requireNonNull;
 
-    UserService(String userName) {
-        this.userId = 0;
-        this.userName = userName;
+final class UserService {
+    private final UserId userId;
+    private final UserName userName;
+
+    UserService(UserName userName) {
+        this.userId = new UserId(0);
+        this.userName = requireNonNull(userName);
     }
 }
 ```
@@ -203,20 +173,22 @@ final class UserService {
 **Good:**
 
 ```java
-final class UserService {
-    private final int userId;
-    private String userName;
+import static java.util.Objects.requireNonNull;
 
-    UserService(int userId, String userName) {
-        this.userId = userId;
-        this.userName = userName;
+final class UserService {
+    private final UserId userId;
+    private final UserName userName;
+
+    UserService(UserId userId, UserName userName) {
+        this.userId = requireNonNull(userId);
+        this.userName = requireNonNull(userName);
     }
 }
 ```
 
 ---
 
-## R-002i
+## R-003g
 
 Secondary constructors must delegate to the primary constructor by using `this(...)`. They must not initialize fields or contain field-initialization logic. Their purpose is to provide default values for omitted parameters.
 
@@ -225,21 +197,23 @@ Secondary constructors must delegate to the primary constructor by using `this(.
 **Bad:**
 
 ```java
-final class UserService {
-    private final int userId;
-    private String userName; 
-    private String password;
+import static java.util.Objects.requireNonNull;
 
-    UserService(int userId, String userName, String password) {
-        this.userId = userId;
-        this.userName = userName;
-        this.password = password;
+final class UserService {
+    private final UserId userId;
+    private final UserName userName; 
+    private final Password password;
+
+    UserService(UserId userId, UserName userName, Password password) {
+        this.userId = requireNonNull(userId);
+        this.userName = requireNonNull(userName);
+        this.password = requireNonNull(password);
     }
 
-    UserService(int userId) {
-        this.userId = userId;
-        this.userName = "User1";
-        this.password = "Password1";
+    UserService(UserId userId) {
+        this.userId = requireNonNull(userId);
+        this.userName = new UserName("User1");
+        this.password = new Password("Password1");
     }
 }
 ```
@@ -247,40 +221,44 @@ final class UserService {
 **Good:**
 
 ```java
-final class UserService {
-    private final int userId;
-    private String userName;
-    private String password;
+import static java.util.Objects.requireNonNull;
 
-    private UserService(int userId, String userName, String password) {
-        this.userId = userId;
-        this.userName = userName;
-        this.password = password;
+final class UserService {
+    private final UserId userId;
+    private final UserName userName;
+    private final Password password;
+
+    private UserService(UserId userId, UserName userName, Password password) {
+        this.userId = requireNonNull(userId);
+        this.userName = requireNonNull(userName);
+        this.password = requireNonNull(password);
     }
 
-    UserService(int userId) {
-        this(userId, "User1", "Password1");
+    UserService(UserId userId) {
+        this(userId, new UserName("User1"), new Password("Password1"));
     }
 }
 ```
 
 ---
 
-## R-002j
+## R-003h
 
 A secondary constructor must not have more parameters than the primary constructor.
 
 **Bad:**
 
 ```java
-final class UserService {
-    private final String userName;
+import static java.util.Objects.requireNonNull;
 
-    private UserService(String userName) {
-        this.userName = userName;
+final class UserService {
+    private final UserName userName;
+
+    private UserService(UserName userName) {
+        this.userName = requireNonNull(userName);
     }
 
-    UserService(String userName, String password) { // more params than primary
+    UserService(UserName userName, Password password) { // more params than primary
         this(userName);
     }
 }
@@ -289,35 +267,39 @@ final class UserService {
 **Good:**
 
 ```java
-final class UserService {
-    private final String userName;
+import static java.util.Objects.requireNonNull;
 
-    UserService(String userName) {
-        this.userName = userName;
+final class UserService {
+    private final UserName userName;
+
+    UserService(UserName userName) {
+        this.userName = requireNonNull(userName);
     }
 }
 ```
 
 ---
 
-## R-002k
+## R-003i
 
 When the primary constructor only exists for internal delegation (i.e. some fields are internal state never set from outside), make the primary constructor `private`.
 
 **Bad:**
 
 ```java
-final class UserService {
-    private final int userId;
-    private String userName;
+import static java.util.Objects.requireNonNull;
 
-    UserService(int userId, String userName) { // exposes internal state
-        this.userId = userId;
-        this.userName = userName;
+final class UserService {
+    private final UserId userId;
+    private final UserName userName;
+
+    UserService(UserId userId, UserName userName) { // exposes internal state
+        this.userId = requireNonNull(userId);
+        this.userName = requireNonNull(userName);
     }
 
-    UserService(int userId) {
-        this(userId, "User1");
+    UserService(UserId userId) {
+        this(userId, new UserName("User1"));
     }
 }
 ```
@@ -325,68 +307,43 @@ final class UserService {
 **Good:**
 
 ```java
-final class UserService {
-    private final int userId;
-    private String userName;
+import static java.util.Objects.requireNonNull;
 
-    private UserService(int userId, String userName) { // private — userName is internal state
-        this.userId = userId;
-        this.userName = userName;
+final class UserService {
+    private final UserId userId;
+    private final UserName userName;
+
+    private UserService(UserId userId, UserName userName) { // private — userName is internal state
+        this.userId = requireNonNull(userId);
+        this.userName = requireNonNull(userName);
     }
 
-    UserService(int userId) {
-        this(userId, "User1");
-    }
-}
-```
-
----
-
-## R-002l
-
-Fields must not be initialized at the point of declaration.
-
-**Bad:**
-
-```java
-final class UserService {
-    private int userId = 0;
-    private final List<String> users = new ArrayList<>();
-}
-```
-
-**Good:**
-
-```java
-final class UserService {
-    private int userId;
-    private final List<String> users;
-
-    UserService(int userId, List<String> users) { // primary constructor
-        this.userId = userId;
-        this.users = users;
+    UserService(UserId userId) {
+        this(userId, new UserName("User1"));
     }
 }
 ```
 
 ---
 
-## R-002m
+## R-003j
 
 Constructors must be free of code except for precondition checks.
 
 **Bad:**
 
 ```java
-final class UserService {
-    private final int userId;
-    private String userName; 
-    private String password;
+import static java.util.Objects.requireNonNull;
 
-    UserService(int userId, String userName, String password) {
-        this.userId = userId;
-        this.userName = userName;
-        this.password = password;
+final class UserService {
+    private final UserId userId;
+    private final UserName userName; 
+    private final Password password;
+
+    UserService(UserId userId, UserName userName, Password password) {
+        this.userId = requireNonNull(userId);
+        this.userName = requireNonNull(userName);
+        this.password = requireNonNull(password);
         // some additional code
         log.info("UserService created for user: " + userName);
     }
@@ -396,68 +353,40 @@ final class UserService {
 **Good:**
 
 ```java
-final class UserService {
-    private final int userId;
-    private String userName; 
-    private String password;
+import static java.util.Objects.requireNonNull;
 
-    UserService(int userId, String userName, String password) {
-        this.userId = userId;
-        this.userName = userName;
-        this.password = password;
+final class UserService {
+    private final UserId userId;
+    private final UserName userName; 
+    private final Password password;
+
+    UserService(UserId userId, UserName userName, Password password) {
+        this.userId = requireNonNull(userId);
+        this.userName = requireNonNull(userName);
+        this.password = requireNonNull(password);
     }
 }
 ```
 
 ---
 
-## R-002n
-
-Classes must not have more than three non-static fields. 
-Introduce new classes or records to group related fields together.
-
-**Bad:**
-
-```java
-final class UserService {
-    private final int userId;
-    private final String userName;
-    private final String password;
-    private final String email;
-}
-```
-
-**Good:**
-
-```java
-record UserCredentials(String userName, String password) {
-}
-
-final class UserService {
-    private final int userId;
-    private final UserCredentials credentials;
-    private final String email;
-
-}
-```
-
----
-
-## R-002o
+## R-003k
 
 Inner classes (static and non-static) must not be used. Extract every nested type to its own top-level file.
 
 **Bad:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 final class UserService {
     final class UserCredentials {
-        private final String userName;
-        private final String password;
+        private final UserName userName;
+        private final Password password;
 
-        UserCredentials(String userName, String password) {
-            this.userName = userName;
-            this.password = password;
+        UserCredentials(UserName userName, Password password) {
+            this.userName = requireNonNull(userName);
+            this.password = requireNonNull(password);
         }
     }
 }
@@ -466,13 +395,15 @@ final class UserService {
 **Good:**
 
 ```java
-final class UserCredentials {
-    private final String userName;
-    private final String password;
+import static java.util.Objects.requireNonNull;
 
-    UserCredentials(String userName, String password) {
-        this.userName = userName;
-        this.password = password;
+final class UserCredentials {
+    private final UserName userName;
+    private final Password password;
+
+    UserCredentials(UserName userName, Password password) {
+        this.userName = requireNonNull(userName);
+        this.password = requireNonNull(password);
     }
 }
 
@@ -482,7 +413,7 @@ final class UserService {
 
 ---
 
-## R-002p
+## R-003l
 
 Enums must not be declared as inner types. Declare enums at the top level.
 
@@ -513,59 +444,20 @@ final class UserService {
 
 ---
 
-## R-002q
-
-A class must not have unused fields.
-
-**Bad:**
-
-```java
-final class UserService {
-    private final int userId;
-    private final String userName;
-
-    UserService(int userId, String userName) {
-        this.userId = userId;
-        this.userName = userName;
-    }
- 
-    String userName() {
-        return userName;
-    }
-    // userId is not used anywhere in the class
-}
-```
-
-**Good:**
-
-```java
-final class UserService {
-    private final String userName;
-
-    UserService(String userName) {
-        this.userName = userName;
-    }
-
-    String userName() {
-        return userName;
-    }
-}
-```
-
----
-
-## R-002r
+## R-003m
 
 A constructor must not have unused parameters.
 
 **Bad:**
 
 ```java
-final class UserService {
-    private final String userName;
+import static java.util.Objects.requireNonNull;
 
-    UserService(int userId, String userName) {
-        this.userName = userName;
+final class UserService {
+    private final UserName userName;
+
+    UserService(UserId userId, UserName userName) {
+        this.userName = requireNonNull(userName);
     }
 }
 ```
@@ -573,18 +465,20 @@ final class UserService {
 **Good:**
 
 ```java
-final class UserService {
-    private final String userName;
+import static java.util.Objects.requireNonNull;
 
-    UserService(String userName) {
-        this.userName = userName;
+final class UserService {
+    private final UserName userName;
+
+    UserService(UserName userName) {
+        this.userName = requireNonNull(userName);
     }
 }
 ```
 
 ---
 
-## R-002s
+## R-003n
 
 Do not inherit from concrete classes. Only extend interfaces (or implement them).
 
@@ -612,7 +506,7 @@ final class AdminUser implements Identifiable {
 
 ---
 
-## R-002t
+## R-003o
 
 Methods must have at most 3 parameters; prefer 0 or 1. If more are needed, introduce a parameter object or rethink the design.
 
@@ -639,7 +533,7 @@ final class OrderService {
 
 ---
 
-## R-002u
+## R-003p
 
 Do not use underscores in method names. Use `lowerCamelCase` exclusively. This applies to all methods, including unit test methods.
 
@@ -663,7 +557,7 @@ final class UserValidatorTest {
 
 ---
 
-## R-002v
+## R-003q
 
 Do not use `continue` or `break` in loops. Extract the loop body to a private method and use `return` instead of `continue`. Do not invert the condition; do not add nesting.
 
@@ -703,29 +597,31 @@ final class OrderProcessor {
 
 ---
 
-## R-002w
+## R-003r
 
 Builders are forbidden. Use the constructor directly.
 
 **Bad:**
 
 ```java
-final class UserService {
-    private final int userId;
-    private final String userName;
+import static java.util.Objects.requireNonNull;
 
-    UserService(int userId, String userName) {
-        this.userId = userId;
-        this.userName = userName;
+final class UserService {
+    private final UserId userId;
+    private final UserName userName;
+
+    UserService(UserId userId, UserName userName) {
+        this.userId = requireNonNull(userId);
+        this.userName = requireNonNull(userName);
     }
 }
 
 final class UserServiceBuilder {
-    private int userId;
-    private String userName;
+    private UserId userId;
+    private UserName userName;
 
-    UserServiceBuilder userId(int userId) { this.userId = userId; return this; }
-    UserServiceBuilder userName(String userName) { this.userName = userName; return this; }
+    UserServiceBuilder userId(UserId userId) { this.userId = userId; return this; }
+    UserServiceBuilder userName(UserName userName) { this.userName = userName; return this; }
     UserService build() { return new UserService(userId, userName); }
 }
 ```
@@ -733,23 +629,25 @@ final class UserServiceBuilder {
 **Good:**
 
 ```java
-final class UserService {
-    private final int userId;
-    private final String userName;
+import static java.util.Objects.requireNonNull;
 
-    UserService(int userId, String userName) {
-        this.userId = userId;
-        this.userName = userName;
+final class UserService {
+    private final UserId userId;
+    private final UserName userName;
+
+    UserService(UserId userId, UserName userName) {
+        this.userId = requireNonNull(userId);
+        this.userName = requireNonNull(userName);
     }
 }
 
 // usage:
-var service = new UserService(1, "Alice");
+var service = new UserService(new UserId(1), new UserName("Alice"));
 ```
 
 ---
 
-## R-002x
+## R-003s
 
 Avoid primitive obsession in fields and constructor parameters. When a field represents a domain concept, use a dedicated tiny type (record) instead of a raw primitive (`String`, `int`, `long`, `BigDecimal`, etc.). This makes the code self-documenting, prevents accidental misuse (e.g. swapping two `String` fields), and pushes validation into the type itself.
 
@@ -772,6 +670,8 @@ final class Portfolio {
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 record Isin(String value) {
 }
 
@@ -787,11 +687,33 @@ final class Portfolio {
     private final Money marketValue;
 
     Portfolio(Isin isin, PortfolioName name, Money marketValue) {
-        this.isin = isin;
-        this.name = name;
-        this.marketValue = marketValue;
+        this.isin = requireNonNull(isin);
+        this.name = requireNonNull(name);
+        this.marketValue = requireNonNull(marketValue);
     }
 }
 ```
 
 ---
+
+## R-003t
+
+A class without fields is allowed when the class exists solely to implement an interface or to group behavior. Such classes do not need a constructor.
+
+**Good:**
+
+```java
+interface OrderValidator {
+    boolean isValid(Order order);
+}
+
+final class DefaultOrderValidator implements OrderValidator {
+    @Override
+    public boolean isValid(Order order) {
+        return order.totalAmount().compareTo(BigDecimal.ZERO) > 0;
+    }
+}
+```
+
+---
+

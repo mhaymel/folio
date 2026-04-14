@@ -1,6 +1,6 @@
 # Record Naming Rules
 
-## R-005a
+## R-007a
 
 Record names must start with an uppercase letter and use CamelCase.
 
@@ -20,7 +20,7 @@ record OrderDto(String id) { }
 
 ---
 
-## R-005b
+## R-007b
 
 Record names must be **nouns** that describe the data model, not actions.
 
@@ -40,7 +40,7 @@ record PaymentRequest(String id, BigDecimal amount) { }
 
 ---
 
-## R-005c
+## R-007c
 
 Record names must be **meaningful** and describe what data the record represents.
 
@@ -62,7 +62,7 @@ record LoginCredentials(String username, String password) { }
 
 ---
 
-## R-005d
+## R-007d
 
 Record names must be more than one character long. Single-letter names are forbidden.
 

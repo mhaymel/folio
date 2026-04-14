@@ -1,6 +1,6 @@
 # Interface Naming Rules
 
-## R-003a
+## R-005a
 
 Interface names must start with an uppercase letter and use CamelCase.
 
@@ -20,7 +20,7 @@ interface UserRepository { }
 
 ---
 
-## R-003b
+## R-005b
 
 Interface names must be **nouns** or **capability adjectives** that describe a contract (e.g., `PaymentGateway`, `Runnable`), not vague actions.
 
@@ -40,7 +40,7 @@ interface Runnable { }
 
 ---
 
-## R-003c
+## R-005c
 
 Do not prefix interface names with `I` (e.g., `IUserService`). Name the contract directly.
 
@@ -60,7 +60,7 @@ interface DataRepository { }
 
 ---
 
-## R-003d
+## R-005d
 
 Interface names must be **meaningful** and clearly describe the behavior promised by the contract.
 

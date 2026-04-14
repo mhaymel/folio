@@ -1,6 +1,6 @@
 ## Import Rules
 
-## R-008a
+## R-010a
 
 No unused imports. Remove all unused imports from Java files. IDEs (IntelliJ, VS Code) provide quick-fix commands to clean imports — use them before committing code.
 
@@ -27,7 +27,7 @@ final class UserService {
 
 ---
 
-## R-008b
+## R-010b
 
 No wildcard imports (`import java.util.*;`). Always use explicit, fully-qualified imports. This makes dependencies clear and avoids name collisions. IDEs can auto-organize imports — use them.
 
@@ -46,7 +46,7 @@ import java.util.Map;
 
 ---
 
-## R-008c
+## R-010c
 
 Use static imports for static method calls where unambiguous (e.g. `getLogger(…)` instead of `LoggerFactory.getLogger(…)`, `requireNonNull(…)` instead of `Objects.requireNonNull(…)`). When two static-imported names collide (e.g. `List.of` vs `Map.of`), keep one qualified to avoid ambiguity.
 

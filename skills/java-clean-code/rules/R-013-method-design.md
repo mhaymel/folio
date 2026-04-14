@@ -1,156 +1,6 @@
-# Method Rules
+# Method Design Rules
 
-## R-010a
-
-Method names must use `lowerCamelCase`.
-
-**Bad:**
-
-```java
-final class OrderService {
-    void ProcessOrder(Order order) {
-    }
-
-    void save_user(User user) {
-    }
-}
-```
-
-**Good:**
-
-```java
-final class OrderService {
-    void processOrder(Order order) {
-    }
-
-    void saveUser(User user) {
-    }
-}
-```
-
----
-
-## R-010b
-
-Method names must be a verb or verb phrase that describes the action performed.
-
-**Bad:**
-
-```java
-final class OrderService {
-    void order(Order order) {
-    }
-
-    String username() {
-    }
-}
-```
-
-**Good:**
-
-```java
-final class OrderService {
-    void placeOrder(Order order) {
-    }
-
-    String findUsername() {
-    }
-}
-```
-
----
-
-## R-010c
-
-Method names must be **meaningful** and clearly describe what the method does — a reader should immediately understand the method's purpose from its name alone.
-
-**Bad:**
-
-```java
-final class OrderService {
-    void handle(Order order) {
-    }
-
-    void doStuff() {
-    }
-}
-```
-
-**Good:**
-
-```java
-final class OrderService {
-    void validateOrder(Order order) {
-    }
-
-    void sendConfirmationEmail() {
-    }
-}
-```
-
----
-
-## R-010d
-
-Method names must be **more than one character** long. Single-letter method names like `a`, `x`, `f` are forbidden.
-
-**Bad:**
-
-```java
-final class MathService {
-    int a(int x) {
-        return x * 2;
-    }
-}
-```
-
-**Good:**
-
-```java
-final class MathService {
-    int doubleValue(int value) {
-        return value * 2;
-    }
-}
-```
-
----
-
-## R-010e
-
-Do not use underscores in method names. Use `lowerCamelCase` exclusively. This applies to all methods, including unit test methods.
-
-**Bad:**
-
-```java
-final class OrderService {
-    void process_order(Order order) {
-    }
-}
-
-final class OrderServiceTest {
-    void should_process_order() {
-    }
-}
-```
-
-**Good:**
-
-```java
-final class OrderService {
-    void processOrder(Order order) {
-    }
-}
-
-final class OrderServiceTest {
-    void shouldProcessOrder() {
-    }
-}
-```
-
----
-
-## R-010f
+## R-013a
 
 Methods must be package-private by default. Only make a method `public` if it must be accessed from outside the package (e.g. interface implementations or Spring controller endpoints).
 
@@ -174,9 +24,9 @@ final class UserService {
 
 ---
 
-## R-010g
+## R-013b
 
-`protected` methods are forbidden. Use package-private or `private` visibility instead. Since inheritance from concrete classes is not allowed (see R-002s), `protected` serves no purpose.
+`protected` methods are forbidden. Use package-private or `private` visibility instead. Since inheritance from concrete classes is not allowed (see R-003n), `protected` serves no purpose.
 
 **Bad:**
 
@@ -198,7 +48,7 @@ final class OrderService {
 
 ---
 
-## R-010h
+## R-013c
 
 Return early to reduce nesting. Do not use `else` after `return` or `throw`.
 
@@ -238,7 +88,7 @@ final class DiscountService {
 
 ---
 
-## R-010i
+## R-013d
 
 Avoid boolean parameters (flag arguments). A boolean parameter signals that the method does two different things. Split it into two separate methods with intention-revealing names.
 
@@ -272,7 +122,7 @@ final class InvoiceService {
 
 ---
 
-## R-010j
+## R-013e
 
 Do not use output parameters — do not modify an object passed as a parameter to communicate a result. Return a value instead.
 
@@ -298,7 +148,7 @@ final class PriceCalculator {
 
 ---
 
-## R-010k
+## R-013f
 
 Prefer returning `Optional` over returning `null`. Returning `null` forces callers to remember null-checks and leads to `NullPointerException`s. Use `Optional` for methods that may not produce a result.
 
@@ -324,7 +174,7 @@ final class UserRepository {
 
 ---
 
-## R-010l
+## R-013g
 
 A method must not have unused parameters. Remove any parameter that is not referenced in the method body.
 
@@ -350,7 +200,7 @@ final class OrderService {
 
 ---
 
-## R-010m
+## R-013h
 
 Avoid deeply nested code. A method must not exceed two levels of nesting (relative to the method body). Extract inner logic into private methods to flatten the structure.
 
@@ -401,7 +251,7 @@ final class OrderProcessor {
 
 ---
 
-## R-010n
+## R-013i
 
 Methods must not contain dead or unreachable code. Remove any code after an unconditional `return`, `throw`, or `break`.
 
@@ -431,71 +281,7 @@ final class PaymentService {
 
 ---
 
-## R-010o
-
-Getter-style methods for non-boolean properties must not use the `get` prefix. Use the property name directly. This follows the convention established by Java records.
-
-**Bad:**
-
-```java
-final class User {
-    private final String name;
-
-    String getName() {
-        return name;
-    }
-}
-```
-
-**Good:**
-
-```java
-final class User {
-    private final String name;
-
-    String name() {
-        return name;
-    }
-}
-```
-
----
-
-## R-010p
-
-Boolean query methods must use an `is` or `has` prefix.
-
-**Bad:**
-
-```java
-final class Order {
-    boolean cancelled() {
-        return status == Status.CANCELLED;
-    }
-
-    boolean items() {
-        return !items.isEmpty();
-    }
-}
-```
-
-**Good:**
-
-```java
-final class Order {
-    boolean isCancelled() {
-        return status == Status.CANCELLED;
-    }
-
-    boolean hasItems() {
-        return !items.isEmpty();
-    }
-}
-```
-
----
-
-## R-010q
+## R-013j
 
 Methods must do one thing. If a method does more than one thing, extract the separate concerns into their own methods.
 
@@ -541,7 +327,7 @@ final class UserService {
 
 ---
 
-## R-010r
+## R-013k
 
 Keep methods short — aim for at most 15 lines of logic (excluding blank lines and braces). Long methods are hard to read and test. Extract helper methods instead.
 
@@ -589,7 +375,7 @@ final class ReportService {
 
 ---
 
-## R-010s
+## R-013l
 
 `static` methods are forbidden. Static methods cannot be overridden, are hard to mock in tests, and create hidden coupling. Use instance methods instead.
 
@@ -615,7 +401,7 @@ final class TaxCalculator {
 
 ---
 
-## R-010t
+## R-013m
 
 Private methods must not return `Optional`. Use `null` internally 
 and convert to `Optional` at the public API boundary. `Optional` is designed 
@@ -652,7 +438,7 @@ final class UserService {
 
 ---
 
-## R-010u
+## R-013n
 
 `Optional` must not be used as a method parameter. `Optional` was designed 
 for return types to signal that a result may be absent — not for inputs. 
@@ -687,7 +473,7 @@ final class UserService {
 
 ---
 
-## R-010v
+## R-013o
 
 A method must have **zero or one** parameter. Multiple parameters are hard to read, 
 easy to swap by accident, and signal that the method is doing too much. 
@@ -731,9 +517,9 @@ final class NotificationService {
 
 ---
 
-## R-010w
+## R-013p
 
-Avoid primitive obsession in method parameters. Do not pass raw primitive types (`String`, `int`, `long`, `BigDecimal`, etc.) when the value represents a domain concept. Wrap it in a dedicated tiny type (record) instead. This prevents accidental misuse, makes the API self-documenting, and lets the compiler catch mistakes that primitive types cannot. Although R-010v already limits methods to one parameter, this rule still applies: even a single `String` that represents an ISIN, email address, or currency code should be a typed wrapper.
+Avoid primitive obsession in method parameters. Do not pass raw primitive types (`String`, `int`, `long`, `BigDecimal`, etc.) when the value represents a domain concept. Wrap it in a dedicated tiny type (record) instead. This prevents accidental misuse, makes the API self-documenting, and lets the compiler catch mistakes that primitive types cannot. Although R-013o already limits methods to one parameter, this rule still applies: even a single `String` that represents an ISIN, email address, or currency code should be a typed wrapper.
 
 **Bad:**
 
@@ -774,3 +560,158 @@ final class PaymentService {
 ```
 
 ---
+
+## R-013q
+
+Method parameters must not be declared `final`.
+
+Declaring a parameter `final` is unnecessary noise: it does not change the public API and clutters signatures. If immutability is desired for intermediate values, prefer using local `final` variables inside the method body. Keep parameter lists concise and free of modifiers.
+
+**Bad:**
+
+```java
+final class UserService {
+    void saveUser(final User user) {
+        // do something
+    }
+}
+```
+
+**Good:**
+
+```java
+final class UserService {
+    void saveUser(User user) {
+        // do something
+    }
+}
+```
+
+This rule applies to all method-like declarations (regular methods, constructors, and record canonical constructors). Parameter annotations (e.g. `@Nullable`) are allowed; only the `final` keyword on parameters is forbidden.
+
+---
+
+## R-013r
+
+Setter methods are forbidden. Objects should be immutable — set all state through the constructor. Mutable setters make objects harder to reason about, break thread-safety, and invite temporal coupling (the caller must remember to call setters in the right order).
+
+**Exception:** setters are allowed only when technically unavoidable, e.g. when a framework requires them for deserialization (Jackson without `@JsonCreator`, JPA entities, etc.). In those cases, keep the setter package-private and document why it exists.
+
+**Bad:**
+
+```java
+final class User {
+    private Name name;
+    private Email email;
+
+    void setName(Name name) {
+        this.name = name;
+    }
+
+    void setEmail(Email email) {
+        this.email = email;
+    }
+}
+```
+
+**Good:**
+
+```java
+import static java.util.Objects.requireNonNull;
+
+final class User {
+    private final Name name;
+    private final Email email;
+
+    User(Name name, Email email) {
+        this.name = requireNonNull(name);
+        this.email = requireNonNull(email);
+    }
+}
+```
+
+**Good (framework exception — JPA entity):**
+
+```java
+import static java.util.Objects.requireNonNull;
+
+final class User {
+    private Name name;
+
+    // required by JPA for reflective instantiation
+    void setName(Name name) {
+        this.name = requireNonNull(name);
+    }
+}
+```
+
+---
+
+## R-013s
+
+Getter methods must only return a value. They must not modify the state of the object and must not perform expensive or long-running operations.
+
+**Bad:**
+
+```java
+final class Portfolio {
+    private final List<Position> positions;
+    private boolean accessed;
+
+    List<Position> getPositions() {
+        accessed = true; // mutates state
+        return positions;
+    }
+}
+```
+
+**Good:**
+
+```java
+final class Portfolio {
+    private final List<Position> positions;
+
+    List<Position> getPositions() {
+        return positions;
+    }
+}
+```
+
+
+---
+
+
+## R-013t
+
+Unused private methods are forbidden. A method is unused if it is not referenced anywhere in the codebase and also
+not used by reflection (e.g. Spring controller endpoints, JPA entity lifecycle methods, etc.). 
+
+**Bad:**
+
+```java
+final class ReportService {
+    void generate() {
+        // implementation...
+    }
+
+    // unused private helper — should be removed
+    private void formatAsCsv() {
+        // leftover from previous implementation, not referenced anywhere
+    }
+}
+```
+
+**Good:**
+
+```java
+final class ReportService {
+    void generate() {
+        // implementation...
+    }
+
+    // unused helper removed; no dead code remains
+}
+```
+
+---
+

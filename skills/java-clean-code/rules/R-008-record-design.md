@@ -1,6 +1,6 @@
 ## Record Design Rules
 
-## R-006a
+## R-008a
 
 Prefer records to immutable classes.
 
@@ -22,7 +22,7 @@ record UserSummary(long id, String name) {
 
 ---
 
-## R-006b
+## R-008b
 
 Records must be package-private by default. Make records public only if they must be accessed outside.
 
@@ -42,7 +42,7 @@ record UserSummary(long id, String name) {
 
 ---
 
-## R-006c
+## R-008c
 
 Nested records must not be used. Use top-level records instead.
 
@@ -67,7 +67,7 @@ final class UserService {
 }
 ```
 
-## R-006d
+## R-008d
 
 Consider keeping the number of fields in a record to rather low eg. 3 fields. If a record has more than 3 fields, it may indicate that the record is modeling too much data and should be split into multiple records.
 
@@ -98,7 +98,7 @@ final record UserService {
 
 ---
 
-## R-006e
+## R-008e
 
 Records do not need builders; use the canonical constructor directly.
 
@@ -130,7 +130,7 @@ var summary = new UserSummary(1L, "Alice");
 
 ---
 
-## R-006f
+## R-008f
 
 Object parameters in records must not be null. Validate non-null constraints in the compact canonical constructor using `Objects.requireNonNull`.
 
@@ -156,7 +156,7 @@ record UserSummary(Long id, String name) {
 
 ---
 
-## R-006g
+## R-008g
 
 All components of a record must themselves be immutable. 
 Using mutable types such as `List`, `Map`, `Set`, `Date`, or arrays breaks 
