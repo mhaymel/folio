@@ -1,4 +1,4 @@
-package com.util;
+package com.folio.precondition;
 
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.util.Assert.assertThrowsIAE;
+import static com.folio.precondition.Assert.assertThrowsIAE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

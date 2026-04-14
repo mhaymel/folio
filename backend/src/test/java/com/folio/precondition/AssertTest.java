@@ -1,9 +1,9 @@
-package com.util;
+package com.folio.precondition;
 
 import org.junit.jupiter.api.Test;
 
-import static com.util.Assert.assertThrowsIAE;
-import static com.util.Assert.assertThrowsNPE;
+import static com.folio.precondition.Assert.assertThrowsIAE;
+import static com.folio.precondition.Assert.assertThrowsNPE;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 final class AssertTest {

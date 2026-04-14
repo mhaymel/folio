@@ -1,8 +1,8 @@
-package com.util;
+package com.folio.precondition;
 
-import static com.util.LocalString.format;
-import static com.util.Precondition.nn;
-import static com.util.Precondition.notEmpty;
+import static com.folio.format.LocalString.format;
+import static com.folio.precondition.Precondition.nn;
+import static com.folio.precondition.Precondition.notEmpty;
 
 public final class Throw {
 

@@ -1,4 +1,4 @@
-package com.util;
+package com.folio.format;
 
 import java.util.Locale;
 

@@ -1,4 +1,4 @@
-package com.util;
+package com.folio.format;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -6,7 +6,7 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import static com.util.Precondition.nn;
+import static com.folio.precondition.Precondition.nn;
 
 public final class ToString {
 

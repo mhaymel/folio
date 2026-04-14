@@ -9,7 +9,7 @@ import static com.folio.domain.Currency.EUR;
 import static com.folio.domain.Currency.GBP;
 import static com.folio.domain.Currency.USD;
 import static com.folio.domain.Currency.currency;
-import static com.util.Assert.assertThrowsIAE;
+import static com.folio.precondition.Assert.assertThrowsIAE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 final class CurrencyTest {

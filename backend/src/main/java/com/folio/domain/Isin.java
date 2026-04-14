@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.Optional;
 
-import static com.util.Throw.IAE;
+import static com.folio.precondition.Throw.IAE;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
 

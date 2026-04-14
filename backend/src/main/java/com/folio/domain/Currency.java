@@ -4,8 +4,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.util.Precondition.notEmpty;
-import static com.util.ToString.asString;
+import static com.folio.format.ToString.asString;
+import static com.folio.precondition.Precondition.notEmpty;
 
 public final class Currency {
 

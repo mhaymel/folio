@@ -1,4 +1,4 @@
-package com.util;
+package com.folio.precondition;
 
 import java.math.BigInteger;
 import java.util.HashSet;
@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.util.Throw.IAE;
+import static com.folio.precondition.Throw.IAE;
 
 public final class Precondition {
 

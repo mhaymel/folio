@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.Optional;
 
-import static com.util.Precondition.noWhitespaces;
-import static com.util.Precondition.notEmpty;
+import static com.folio.precondition.Precondition.noWhitespaces;
+import static com.folio.precondition.Precondition.notEmpty;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
 

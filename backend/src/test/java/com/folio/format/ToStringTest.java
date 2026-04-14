@@ -1,8 +1,8 @@
-package com.util;
+package com.folio.format;
 
 import org.junit.jupiter.api.Test;
 
-import static com.util.Assert.assertThrowsIAE;
+import static com.folio.precondition.Assert.assertThrowsIAE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 final class ToStringTest {

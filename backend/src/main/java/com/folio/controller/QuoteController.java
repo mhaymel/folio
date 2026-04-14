@@ -1,6 +1,6 @@
 package com.folio.controller;
 
-import static com.util.Throw.IAE;
+import static com.folio.precondition.Throw.IAE;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.valueOf;
 

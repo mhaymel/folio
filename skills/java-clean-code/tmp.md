@@ -26,7 +26,7 @@ These apply to many files and require cross-cutting refactors. Per the skill's
 | R-013a (public methods) | Spring `@RestController` endpoints, Spring Data repositories, `implements` overrides | Required by framework and interface contracts. |
 | R-013l (static methods) | `com.util.*` helpers (Throw, Precondition, LocalString), `FolioApplication.main` | `main` must be static. Utility helpers used project-wide — conversion touches hundreds of call sites. |
 | R-013o / R-003o (>1 param) | Many controllers/services | Spring binding of `@PathVariable` + `@RequestParam` + `@RequestBody`. |
-| R-015b (generic package names) | `com.util`, `com.test`, `com.folio.dto`, `com.folio.service`, `com.folio.config` | Renaming packages cascades through imports everywhere. |
+| R-015b (generic package names) | `com.folio.dto`, `com.folio.service`, `com.folio.config` | Renaming packages cascades through imports everywhere. (`com.util` split into `com.folio.precondition` + `com.folio.format`; `com.test` removed.) |
 | R-013p / R-003s / R-014 (primitive obsession / tiny types) | Most method signatures use raw `String` / `long` / `BigDecimal` | Pervasive; introducing tiny types touches controllers, JPA, Jackson. Flagged as risky per skill. |
 | R-012f (`get` prefix) | JPA entity getters, Jackson DTOs | Required by frameworks (bean introspection). |
 | R-013r (setters) | JPA entities, Jackson DTOs without `@JsonCreator` | Covered by R-013r's framework exception. |

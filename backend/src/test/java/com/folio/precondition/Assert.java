@@ -1,4 +1,4 @@
-package com.util;
+package com.folio.precondition;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
