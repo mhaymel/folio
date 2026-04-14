@@ -32,6 +32,7 @@ public final class IsinTickerSearch {
     private static final String BASE_URL = "https://query2.finance.yahoo.com/v1/finance/search";
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
@@ -81,7 +82,7 @@ public final class IsinTickerSearch {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
-                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .header("User-Agent", USER_AGENT)
                     .header("Accept", "application/json")
                     .timeout(REQUEST_TIMEOUT)
                     .GET()
