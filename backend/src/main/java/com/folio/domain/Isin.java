@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.Optional;
 
-import static com.folio.precondition.Throw.IAE;
+import static com.folio.precondition.Throw.illegalArgument;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
 
@@ -15,13 +15,13 @@ public record Isin(String value) {
     public Isin {
         requireNonNull(value);
         if (value.isBlank()) {
-            IAE("ISIN must not be blank");
+            illegalArgument("ISIN must not be blank");
         }
         if (value.length() != ISIN_LENGTH) {
-            IAE("ISIN must be exactly %s characters, got %s", ISIN_LENGTH, value.length());
+            illegalArgument("ISIN must be exactly %s characters, got %s", ISIN_LENGTH, value.length());
         }
         if (!value.equals(value.replaceAll("\\s+", ""))) {
-            IAE("ISIN must not contain whitespace");
+            illegalArgument("ISIN must not contain whitespace");
         }
     }
 

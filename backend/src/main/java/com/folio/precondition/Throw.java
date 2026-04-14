@@ -6,24 +6,23 @@ import static com.folio.precondition.Precondition.notEmpty;
 
 public final class Throw {
 
-    public static final Class<IllegalArgumentException> IAE = IllegalArgumentException.class;
-    public static <T> T IAE(String format, Object... args) {
+    public static <T> T illegalArgument(String format, Object... args) {
         notEmpty(format);
         nn(args);
-        return IAE(format(format, args));
+        return illegalArgument(format(format, args));
     }
 
-    public static <T> T IAE(String message) {
+    public static <T> T illegalArgument(String message) {
         throw new IllegalArgumentException(nn(message));
     }
 
-    public static <T> T ISE(String format, Object... args) {
+    public static <T> T illegalState(String format, Object... args) {
         notEmpty(format);
         nn(args);
-        return ISE(format(format, args));
+        return illegalState(format(format, args));
     }
 
-    public static <T> T ISE(String message) {
+    public static <T> T illegalState(String message) {
         throw new IllegalStateException(message);
     }
 

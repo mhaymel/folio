@@ -1,6 +1,6 @@
 package com.folio.controller;
 
-import static com.folio.precondition.Throw.IAE;
+import static com.folio.precondition.Throw.illegalArgument;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.valueOf;
 
@@ -64,7 +64,7 @@ final class QuoteController {
     public ResponseEntity<QuoteSettingsDto> updateEnabled(@RequestBody Map<String, Boolean> body) {
         Boolean enabled = body.get("enabled");
         if (enabled == null) {
-            IAE("enabled must be provided");
+            illegalArgument("enabled must be provided");
         }
 
         SettingEntity setting = settingRepo.findByKey("quote.fetch.enabled")
@@ -80,7 +80,7 @@ final class QuoteController {
     public ResponseEntity<QuoteSettingsDto> updateInterval(@RequestBody Map<String, Integer> body) {
         Integer minutes = body.get("intervalMinutes");
         if (minutes == null || minutes < 1) {
-            IAE("intervalMinutes must be a positive integer");
+            illegalArgument("intervalMinutes must be a positive integer");
         }
 
         SettingEntity setting = settingRepo.findByKey("quote.fetch.interval.minutes")
