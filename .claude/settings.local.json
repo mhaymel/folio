@@ -76,7 +76,12 @@
       "Bash(./gradlew :backend:test --tests \"com.folio.dto.StockDtoTest.shouldRejectNullClassification\")",
       "Bash(./gradlew :backend:test --tests \"AnalyticsControllerTest.getCountryDiversificationSupportsPagination\")",
       "Bash(./gradlew.bat :backend:compileJava)",
-      "Bash(./gradlew.bat :backend:test)"
+      "Bash(./gradlew.bat :backend:test)",
+      "Bash(grep -l \"com.test.WallStreetOnline\\\\|com.test.IsinToTicker\\\\|com.test.MappingRequest\\\\|new WallStreetOnline\\\\|new IsinToTicker\\\\|new MappingRequest\" C:/daten/dev/folio/backend/src/test/java/com/test/*.java)",
+      "Bash(rm C:/daten/dev/folio/backend/src/main/java/com/test/WallStreetOnline.java C:/daten/dev/folio/backend/src/main/java/com/test/IsinToTicker.java C:/daten/dev/folio/backend/src/main/java/com/test/MappingRequest.java C:/daten/dev/folio/backend/src/test/java/com/test/WallStreetOnlineTest.java C:/daten/dev/folio/backend/src/test/java/com/test/IsinTickerSearchIntegrationTest.java C:/daten/dev/folio/backend/src/test/java/com/test/YahooQuoteFetcherTest.java)",
+      "Bash(rmdir C:/daten/dev/folio/backend/src/main/java/com/test)",
+      "Bash(rm C:/daten/dev/folio/backend/src/test/java/com/test/IsinToTickerTest.java C:/daten/dev/folio/backend/src/test/java/com/test/IsinToTickerIntegrationTest.java)",
+      "Bash(rmdir C:/daten/dev/folio/backend/src/test/java/com/test)"
     ]
   }
 }

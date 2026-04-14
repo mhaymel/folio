@@ -51,6 +51,21 @@ final class QuoteFetcherIntegrationTest {
     }
 
     @Test
+    void fetchesQuoteForAxaParis() {
+        TickerSymbol axa = new TickerSymbol("CS.PA");
+
+        Optional<Quote> result = quoteFetcher.fetchQuote(axa);
+        result.ifPresent(q -> System.out.printf(
+                "CS.PA  price=%.2f  currency=%s  time=%s%n",
+                q.amount().value(),
+                q.amount().currency(),
+                q.timestamp()));
+
+        assertThat(result).isPresent();
+        assertThat(result.get().amount().value()).isGreaterThan(0);
+    }
+
+    @Test
     void returnsEmptyForUnknownTicker() {
         // given
         TickerSymbol unknown = new TickerSymbol("ZZZZZZZZZZ");

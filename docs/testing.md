@@ -104,8 +104,7 @@ These tests call **real external services** over the network — no mocking, no 
 
 | Class | Package | External Service | What it verifies |
 |-------|---------|-----------------|-----------------|
-| `WallStreetOnlineTest` | `com.test` | wallstreet-online.de | HTML quote scraping returns price `> 0` |
-| `IsinToTickerIntegrationTest` | `com.test` | api.openfigi.com | Single + batch ISIN → ticker lookup; invalid ISIN → empty |
+| `IsinToTickerIntegrationTest` | `com.folio.service` | api.openfigi.com | Single + batch ISIN → ticker lookup; invalid ISIN → empty |
 | `QuoteFetcherIntegrationTest` | `com.folio.quote.yahoo` | query1.finance.yahoo.com | `regularMarketPrice`, `currency`, `regularMarketTime` parsed into `Quote`; unknown ticker → empty |
 
 ---

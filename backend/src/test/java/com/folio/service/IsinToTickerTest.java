@@ -1,7 +1,6 @@
-package com.test;
+package com.folio.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.folio.service.IsinToTicker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -37,8 +36,6 @@ final class IsinToTickerTest {
         httpClient = mock(HttpClient.class);
         isinToTicker = new IsinToTicker(httpClient, new ObjectMapper());
     }
-
-    // --- tickerFor (single) ---
 
     @Test
     void returnsTicker() throws Exception {
@@ -101,8 +98,6 @@ final class IsinToTickerTest {
         assertThatThrownBy(() -> isinToTicker.tickerFor(null))
                 .isInstanceOf(NullPointerException.class);
     }
-
-    // --- tickersFor (batch) ---
 
     @Test
     void batchReturnsTickersForMultipleIsins() throws Exception {
@@ -174,4 +169,3 @@ final class IsinToTickerTest {
                 .isInstanceOf(NullPointerException.class);
     }
 }
-
