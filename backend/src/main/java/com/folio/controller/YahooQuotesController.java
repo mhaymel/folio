@@ -63,7 +63,7 @@ public class YahooQuotesController {
     private static final Map<String, Comparator<YahooQuoteWithoutQuoteDto>> WITHOUT_QUOTE_SORT = Map.of(
         "isin", SortHelper.text(d -> d.isin().value()),
         "name", SortHelper.text(YahooQuoteWithoutQuoteDto::name),
-        "tickerSymbol", SortHelper.text(YahooQuoteWithoutQuoteDto::tickerSymbol)
+        "tickerSymbol", SortHelper.text(d -> d.tickerSymbol() == null ? null : d.tickerSymbol().value())
     );
 
     private final YahooQuoteDataAccess dataAccess;
@@ -182,7 +182,7 @@ public class YahooQuotesController {
         List<ExportColumn<YahooQuoteWithoutQuoteDto>> columns = List.of(
             new ExportColumn<>("ISIN", YahooQuoteWithoutQuoteDto::isin),
             new ExportColumn<>("Name", YahooQuoteWithoutQuoteDto::name),
-            new ExportColumn<>("Ticker", YahooQuoteWithoutQuoteDto::tickerSymbol)
+            new ExportColumn<>("Ticker", d -> d.tickerSymbol() == null ? null : d.tickerSymbol().value())
         );
         return exportService.export(new ExportRequest<>(data, columns, format, "quotes-without-quote"));
     }
@@ -202,7 +202,7 @@ public class YahooQuotesController {
         return data.stream()
             .filter(d -> matches(d.isin().value(), filter.isin()))
             .filter(d -> matches(d.name(), filter.name()))
-            .filter(d -> matches(d.tickerSymbol(), filter.ticker()))
+            .filter(d -> matches(d.tickerSymbol() == null ? null : d.tickerSymbol().value(), filter.ticker()))
             .toList();
     }
 
@@ -298,7 +298,7 @@ public class YahooQuotesController {
                     ? rawFetchedAt.format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
                     : null;
                 return new YahooQuoteWithQuoteDto(
-                    new com.folio.dto.SecurityIdentity(new Isin((String) r[0]), (String) r[2], (String) r[1]),
+                    new com.folio.dto.SecurityIdentity(new Isin((String) r[0]), TickerSymbol.of((String) r[2]).orElse(null), (String) r[1]),
                     new com.folio.dto.QuoteData(r[3] != null ? ((Number) r[3]).doubleValue() : null, (String) r[4], (String) r[5]),
                     new com.folio.dto.QuoteTiming(formattedFetchedAt, rawFetchedAt));
             })
@@ -328,7 +328,7 @@ public class YahooQuotesController {
             .map(r -> new YahooQuoteWithoutQuoteDto(
                     new Isin((String) r[0]),
                     ofNullable((String) r[1]).orElse((String) r[0]),
-                    ofNullable((String) r[2]).orElse((String) r[0])))
+                    TickerSymbol.of((String) r[2]).orElseGet(() -> new TickerSymbol((String) r[0]))))
             .toList();
     }
 }

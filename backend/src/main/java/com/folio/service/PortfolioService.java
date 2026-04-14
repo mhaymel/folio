@@ -1,6 +1,7 @@
 package com.folio.service;
 
 import com.folio.domain.Isin;
+import com.folio.domain.TickerSymbol;
 import com.folio.dto.DashboardDto;
 import com.folio.dto.DashboardLists;
 import com.folio.dto.DashboardSummary;
@@ -300,14 +301,15 @@ public class PortfolioService {
         return result;
     }
 
-    private String getTickerSymbol(Integer isinId) {
+    private TickerSymbol getTickerSymbol(Integer isinId) {
         try {
-            return (String) em.createNativeQuery("""
+            String symbol = (String) em.createNativeQuery("""
                 SELECT ts.symbol FROM isin_ticker it
                 JOIN ticker_symbol ts ON ts.id = it.ticker_symbol_id
                 WHERE it.isin_id = :id
                 """)
                 .setParameter("id", isinId).setMaxResults(1).getSingleResult();
+            return TickerSymbol.of(symbol).orElse(null);
         } catch (Exception e) {
             return null;
         }

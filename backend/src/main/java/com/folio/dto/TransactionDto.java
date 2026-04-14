@@ -3,6 +3,7 @@ package com.folio.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.folio.domain.Isin;
+import com.folio.domain.TickerSymbol;
 
 import java.time.LocalDateTime;
 
@@ -39,8 +40,8 @@ public final class TransactionDto {
     public void setRawDate(LocalDateTime rawDate) { this.identity = new TransactionIdentity(identity.id(), identity.date(), rawDate); }
     public Isin getIsin() { return security.isin(); }
     public void setIsin(Isin isin) { this.security = new SecurityIdentity(isin, security.tickerSymbol(), security.name()); }
-    public String getTickerSymbol() { return security.tickerSymbol(); }
-    public void setTickerSymbol(String tickerSymbol) { this.security = new SecurityIdentity(security.isin(), tickerSymbol, security.name()); }
+    public String getTickerSymbol() { return security.tickerSymbol() == null ? null : security.tickerSymbol().value(); }
+    public void setTickerSymbol(String tickerSymbol) { this.security = new SecurityIdentity(security.isin(), TickerSymbol.of(tickerSymbol).orElse(null), security.name()); }
     public String getName() { return security.name(); }
     public void setName(String name) { this.security = new SecurityIdentity(security.isin(), security.tickerSymbol(), name); }
     public String getDepot() { return tradeData.depot(); }

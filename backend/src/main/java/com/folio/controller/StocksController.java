@@ -35,7 +35,7 @@ public final class StocksController {
 
     private static final Map<String, Comparator<StockDto>> SORT_FIELDS = Map.ofEntries(
         Map.entry("isin", SortHelper.text(s -> s.security().isin() == null ? null : s.security().isin().value())),
-        Map.entry("tickerSymbol", SortHelper.text(s -> s.security().tickerSymbol())),
+        Map.entry("tickerSymbol", SortHelper.text(s -> s.security().tickerSymbol() == null ? null : s.security().tickerSymbol().value())),
         Map.entry("name", SortHelper.text(s -> s.security().name())),
         Map.entry("country", SortHelper.text(s -> s.classification().country())),
         Map.entry("branch", SortHelper.text(s -> s.classification().branch())),
@@ -107,7 +107,7 @@ public final class StocksController {
 
         List<ExportColumn<StockDto>> columns = List.of(
                 new ExportColumn<>("ISIN", s -> s.security().isin()),
-                new ExportColumn<>("Ticker", s -> s.security().tickerSymbol()),
+                new ExportColumn<>("Ticker", s -> s.security().tickerSymbol() == null ? null : s.security().tickerSymbol().value()),
                 new ExportColumn<>("Name", s -> s.security().name()),
                 new ExportColumn<>("CountryEntity", s -> s.classification().country()),
                 new ExportColumn<>("BranchEntity", s -> s.classification().branch()),
@@ -138,7 +138,7 @@ public final class StocksController {
         }
         if (filter.tickerSymbol() != null && !filter.tickerSymbol().isBlank()) {
             String lower = filter.tickerSymbol().toLowerCase();
-            data = data.stream().filter(s -> s.security().tickerSymbol() != null && s.security().tickerSymbol().toLowerCase().contains(lower)).toList();
+            data = data.stream().filter(s -> s.security().tickerSymbol() != null && s.security().tickerSymbol().value().toLowerCase().contains(lower)).toList();
         }
         if (filter.name() != null && !filter.name().isBlank()) {
             String lower = filter.name().toLowerCase();

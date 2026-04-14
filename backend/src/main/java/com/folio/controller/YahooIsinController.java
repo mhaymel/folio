@@ -63,7 +63,7 @@ public class YahooIsinController {
         List<YahooIsinWithTickerItem> withTicker = searchResult.found().entrySet().stream()
                 .map(e -> new YahooIsinWithTickerItem(
                         e.getKey().value(),
-                        e.getValue().value(),
+                        e.getValue(),
                         isinToName.get(e.getKey().value())))
                 .sorted(Comparator.comparing(YahooIsinWithTickerItem::isin))
                 .toList();
@@ -80,7 +80,7 @@ public class YahooIsinController {
                 .filter(e -> e.getValue().size() > 1)
                 .flatMap(e -> e.getValue().stream()
                         .map(i -> new YahooIsinDuplicateTickerItem(i.isin(), i.tickerSymbol(), i.name())))
-                .sorted(Comparator.comparing(YahooIsinDuplicateTickerItem::tickerSymbol)
+                .sorted(Comparator.comparing((YahooIsinDuplicateTickerItem i) -> i.tickerSymbol().value())
                         .thenComparing(YahooIsinDuplicateTickerItem::isin))
                 .toList();
 
@@ -106,8 +106,9 @@ public class YahooIsinController {
         if (isinEntityOpt.isEmpty()) return new YahooIsinSaveResult(0, 0);
         IsinEntity isinEntity = isinEntityOpt.get();
 
-        TickerSymbolEntity tickerSymbol = repos.tickerSymbolRepository().findBySymbol(item.tickerSymbol())
-            .orElseGet(() -> repos.tickerSymbolRepository().save(new TickerSymbolEntity(null, item.tickerSymbol())));
+        String symbol = item.tickerSymbol().value();
+        TickerSymbolEntity tickerSymbol = repos.tickerSymbolRepository().findBySymbol(symbol)
+            .orElseGet(() -> repos.tickerSymbolRepository().save(new TickerSymbolEntity(null, symbol)));
 
         Long exactMatch = (Long) em.createNativeQuery(
                 "SELECT COUNT(*) FROM isin_ticker WHERE isin_id = :isinId AND ticker_symbol_id = :tsId")
