@@ -28,13 +28,15 @@ public final class QuoteFetcher {
 
     private static final Logger LOG = getLogger(QuoteFetcher.class);
     private static final String BASE_URL = "https://query1.finance.yahoo.com/v8/finance/chart/";
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
+    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
     public QuoteFetcher() {
         this(HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
+                .connectTimeout(CONNECT_TIMEOUT)
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build(),
              new ObjectMapper());
@@ -54,7 +56,7 @@ public final class QuoteFetcher {
                     .uri(URI.create(url))
                     .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
                     .header("Accept", "application/json")
-                    .timeout(Duration.ofSeconds(15))
+                    .timeout(REQUEST_TIMEOUT)
                     .GET()
                     .build();
 

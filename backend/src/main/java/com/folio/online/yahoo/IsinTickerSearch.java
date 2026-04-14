@@ -30,13 +30,15 @@ public final class IsinTickerSearch {
 
     private static final Logger LOG = getLogger(IsinTickerSearch.class);
     private static final String BASE_URL = "https://query2.finance.yahoo.com/v1/finance/search";
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
+    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
     public IsinTickerSearch() {
         this(HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
+                .connectTimeout(CONNECT_TIMEOUT)
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build(),
              new ObjectMapper());
@@ -81,7 +83,7 @@ public final class IsinTickerSearch {
                     .uri(URI.create(url))
                     .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
                     .header("Accept", "application/json")
-                    .timeout(Duration.ofSeconds(15))
+                    .timeout(REQUEST_TIMEOUT)
                     .GET()
                     .build();
 

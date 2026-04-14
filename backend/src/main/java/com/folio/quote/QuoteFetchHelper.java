@@ -19,8 +19,11 @@ import static java.util.Optional.of;
  */
 public final class QuoteFetchHelper {
 
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
+    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
+
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(10))
+        .connectTimeout(CONNECT_TIMEOUT)
         .followRedirects(HttpClient.Redirect.NORMAL)
         .build();
 
@@ -39,7 +42,7 @@ public final class QuoteFetchHelper {
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
                 .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
                 .header("Accept-Language", "de-DE,de;q=0.9,en;q=0.8")
-                .timeout(Duration.ofSeconds(15))
+                .timeout(REQUEST_TIMEOUT)
                 .GET()
                 .build();
 
@@ -66,7 +69,7 @@ public final class QuoteFetchHelper {
                 .uri(URI.create(url))
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
                 .header("Accept", "application/json")
-                .timeout(Duration.ofSeconds(15))
+                .timeout(REQUEST_TIMEOUT)
                 .GET()
                 .build();
 
