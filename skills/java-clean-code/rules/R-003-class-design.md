@@ -508,57 +508,6 @@ final class AdminUser implements Identifiable {
 
 ## R-003o
 
-Methods must have at most 3 parameters; prefer 0 or 1. If more are needed, introduce a parameter object or rethink the design.
-
-**Bad:**
-
-```java
-final class OrderService {
-    void createOrder(String product, int quantity, BigDecimal price, String currency) {
-    }
-}
-```
-
-**Good:**
-
-```java
-record OrderRequest(String product, int quantity, BigDecimal price) {
-}
-
-final class OrderService {
-    void createOrder(OrderRequest request) {
-    }
-}
-```
-
----
-
-## R-003p
-
-Do not use underscores in method names. Use `lowerCamelCase` exclusively. This applies to all methods, including unit test methods.
-
-**Bad:**
-
-```java
-final class UserValidatorTest {
-    void should_accept_non_empty_array() {
-    }
-}
-```
-
-**Good:**
-
-```java
-final class UserValidatorTest {
-    void shouldAcceptNonEmptyArray() {
-    }
-}
-```
-
----
-
-## R-003q
-
 Do not use `continue` or `break` in loops. Extract the loop body to a private method and use `return` instead of `continue`. Do not invert the condition; do not add nesting.
 
 **Bad:**
@@ -597,7 +546,7 @@ final class OrderProcessor {
 
 ---
 
-## R-003r
+## R-003p
 
 Builders are forbidden. Use the constructor directly.
 
@@ -647,7 +596,7 @@ var service = new UserService(new UserId(1), new UserName("Alice"));
 
 ---
 
-## R-003s
+## R-003q
 
 Avoid primitive obsession in fields and constructor parameters. When a field represents a domain concept, use a dedicated tiny type (record) instead of a raw primitive (`String`, `int`, `long`, `BigDecimal`, etc.). This makes the code self-documenting, prevents accidental misuse (e.g. swapping two `String` fields), and pushes validation into the type itself.
 
@@ -696,7 +645,7 @@ final class Portfolio {
 
 ---
 
-## R-003t
+## R-003r
 
 A class without fields is allowed when the class exists solely to implement an interface or to group behavior. Such classes do not need a constructor.
 

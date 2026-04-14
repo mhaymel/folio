@@ -12,15 +12,12 @@ import com.folio.model.IsinEntity;
 import com.folio.model.IsinQuoteEntity;
 import com.folio.model.QuoteProviderEntity;
 import com.folio.online.yahoo.QuoteFetcher;
-import com.folio.repository.IsinRepository;
-import com.folio.repository.QuoteRepositories;
 import com.folio.service.ExportService;
 import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
 import com.folio.service.SortRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,11 +67,10 @@ class YahooQuotesController {
     private final ExportService exportService;
     private final QuoteFetcher quoteFetcher;
 
-    public YahooQuotesController(EntityManager em, ExportService exportService,
-                                  IsinRepository isinRepository,
-                                  QuoteRepositories quoteRepos,
-                                  QuoteFetcher quoteFetcher) {
-        this.dataAccess = new YahooQuoteDataAccess(requireNonNull(em), requireNonNull(isinRepository), requireNonNull(quoteRepos));
+    public YahooQuotesController(YahooQuoteDataAccess dataAccess,
+                                 ExportService exportService,
+                                 QuoteFetcher quoteFetcher) {
+        this.dataAccess = requireNonNull(dataAccess);
         this.exportService = requireNonNull(exportService);
         this.quoteFetcher = requireNonNull(quoteFetcher);
     }

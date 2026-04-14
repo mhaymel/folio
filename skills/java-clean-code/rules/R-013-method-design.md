@@ -475,9 +475,8 @@ final class UserService {
 
 ## R-013o
 
-A method must have **zero or one** parameter. Multiple parameters are hard to read, 
-easy to swap by accident, and signal that the method is doing too much. 
-Group related parameters into a record, an object, or — when the parameters are of 
+A method must have **zero or one** parameter. Group related parameters 
+into a record, an object, or — when the parameters are of 
 the same type and represent a collection of similar elements — a `List`.
 
 **Bad:**
@@ -680,6 +679,31 @@ final class Portfolio {
 
 ---
 
+
+## R-013u
+
+Do not use underscores in method names. Use `lowerCamelCase` exclusively. 
+This applies to all methods, including unit test methods.
+
+**Bad:**
+
+```java
+final class UserValidatorTest {
+    void should_accept_non_empty_array() {
+    }
+}
+```
+
+**Good:**
+
+```java
+final class UserValidatorTest {
+    void shouldAcceptNonEmptyArray() {
+    }
+}
+```
+
+---
 
 ## R-013t
 
