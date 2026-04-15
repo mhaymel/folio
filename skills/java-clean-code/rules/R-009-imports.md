@@ -1,8 +1,8 @@
 ## Import Rules
 
-## R-010a
+## R-009a
 
-No unused imports. Remove all unused imports from Java files. IDEs (IntelliJ, VS Code) provide quick-fix commands to clean imports — use them before committing code.
+No unused imports. Remove all unused imports from Java files. IDEs (IntelliJ, VS Code) provide quick-fix commands to clean imports ΓÇö use them before committing code.
 
 **Bad:**
 
@@ -27,9 +27,9 @@ final class UserService {
 
 ---
 
-## R-010b
+## R-009b
 
-No wildcard imports (`import java.util.*;`). Always use explicit, fully-qualified imports. This makes dependencies clear and avoids name collisions. IDEs can auto-organize imports — use them.
+No wildcard imports (`import java.util.*;`). Always use explicit, fully-qualified imports. This makes dependencies clear and avoids name collisions. IDEs can auto-organize imports ΓÇö use them.
 
 **Bad:**
 
@@ -46,9 +46,9 @@ import java.util.Map;
 
 ---
 
-## R-010c
+## R-009c
 
-Use static imports for static method calls where unambiguous (e.g. `getLogger(…)` instead of `LoggerFactory.getLogger(…)`, `requireNonNull(…)` instead of `Objects.requireNonNull(…)`). When two static-imported names collide (e.g. `List.of` vs `Map.of`), keep one qualified to avoid ambiguity.
+Use static imports for static method calls where unambiguous (e.g. `getLogger(ΓÇª)` instead of `LoggerFactory.getLogger(ΓÇª)`, `requireNonNull(ΓÇª)` instead of `Objects.requireNonNull(ΓÇª)`). When two static-imported names collide (e.g. `List.of` vs `Map.of`), keep one qualified to avoid ambiguity.
 
 **Bad:**
 

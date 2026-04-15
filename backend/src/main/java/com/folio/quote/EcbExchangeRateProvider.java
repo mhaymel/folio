@@ -20,7 +20,7 @@ import static java.util.Objects.requireNonNull;
 @Component
 public final class EcbExchangeRateProvider {
 
-    private static final Logger log = getLogger(EcbExchangeRateProvider.class);
+    private static final Logger LOG = getLogger(EcbExchangeRateProvider.class);
     private static final String ECB_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
     private static final double FALLBACK_EUR_USD = 0.92;
 
@@ -53,12 +53,12 @@ public final class EcbExchangeRateProvider {
                     double eurPerUsd = parseDouble(xml.substring(rateStart, rateEnd));
                     double usdToEur = 1.0 / eurPerUsd;
                     cache.put("USD", new CachedRate(usdToEur));
-                    log.info("ECB EUR/USD rate fetched: 1 USD = {} EUR", format("%.4f", usdToEur));
+                    LOG.info("ECB EUR/USD rate fetched: 1 USD = {} EUR", format("%.4f", usdToEur));
                     return usdToEur;
                 }
             }
-        } catch (Exception e) {
-            log.warn("Failed to fetch ECB exchange rate, using fallback {}: {}", FALLBACK_EUR_USD, e.getMessage());
+        } catch (Exception exception) {
+            LOG.warn("Failed to fetch ECB exchange rate, using fallback {}: {}", FALLBACK_EUR_USD, exception.getMessage());
         }
         return FALLBACK_EUR_USD;
     }

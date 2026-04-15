@@ -6,10 +6,10 @@ import java.time.LocalDateTime;
  * Filter criteria for querying transactions.
  */
 public record TransactionFilter(
-    String isin,
-    String tickerSymbol,
-    String name,
-    String depot,
+    String isinFragment,
+    String tickerSymbolFragment,
+    String nameFragment,
+    String depotFragment,
     LocalDateTime fromDate,
     LocalDateTime toDate
 ) {

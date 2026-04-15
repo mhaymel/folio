@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Profile("dev")
 final class DevModeOnlyH2Server {
 
-    private static final Logger log = getLogger(DevModeOnlyH2Server.class);
+    private static final Logger LOG = getLogger(DevModeOnlyH2Server.class);
     private static final String ORG_H2_DRIVER = "org.h2.Driver";
 
     @Value("${spring.datasource.driver-class-name}")
@@ -22,21 +22,21 @@ final class DevModeOnlyH2Server {
 
     @PostConstruct
     public void init() {
-        log.info("\"dev\" mode is active");
-        log.info("spring.datasource.driver-class-name: {}", driverClassName);
+        LOG.info("\"dev\" mode is active");
+        LOG.info("spring.datasource.driver-class-name: {}", driverClassName);
         if (isH2Database()) {
             startH2Server();
         }
     }
 
     private void startH2Server() {
-        log.info("Starting H2 server ...");
+        LOG.info("Starting H2 server ...");
         try {
             Server server = Server.createTcpServer("-tcpAllowOthers").start();
-            log.info("H2 server started. Connection is available at: {}", server.getURL());
-            log.info("The IP address can probably be replaced by \"localhost\" e.g. tcp://localhost:9092");
-        } catch (SQLException e) {
-            log.error("Could not start H2 server!", e);
+            LOG.info("H2 server started. Connection is available at: {}", server.getURL());
+            LOG.info("The IP address can probably be replaced by \"localhost\" e.g. tcp://localhost:9092");
+        } catch (SQLException exception) {
+            LOG.error("Could not start H2 server!", exception);
         }
     }
 

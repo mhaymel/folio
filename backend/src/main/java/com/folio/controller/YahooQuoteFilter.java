@@ -1,7 +1,13 @@
 package com.folio.controller;
 
-/**
- * Parameter object for Yahoo quote list filtering.
- */
-record YahooQuoteFilter(String isin, String name, String ticker) {}
+import static java.util.Objects.requireNonNull;
+
+record YahooQuoteFilter(String isinFragment, String nameFragment, String tickerFragment) {
+
+    YahooQuoteFilter {
+        requireNonNull(isinFragment);
+        requireNonNull(nameFragment);
+        requireNonNull(tickerFragment);
+    }
+}
 

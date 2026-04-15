@@ -26,7 +26,7 @@ final class UserService {
 
 ## R-013b
 
-`protected` methods are forbidden. Use package-private or `private` visibility instead. Since inheritance from concrete classes is not allowed (see R-003n), `protected` serves no purpose.
+`protected` methods are forbidden. Use package-private or `private` visibility instead. Since inheritance from concrete classes is not allowed (see R-002n), `protected` serves no purpose.
 
 **Bad:**
 
@@ -124,7 +124,7 @@ final class InvoiceService {
 
 ## R-013e
 
-Do not use output parameters — do not modify an object passed as a parameter to communicate a result. Return a value instead.
+Do not use output parameters ΓÇö do not modify an object passed as a parameter to communicate a result. Return a value instead.
 
 **Bad:**
 
@@ -150,13 +150,15 @@ final class PriceCalculator {
 
 ## R-013f
 
-Prefer returning `Optional` over returning `null`. Returning `null` forces callers to remember null-checks and leads to `NullPointerException`s. Use `Optional` for methods that may not produce a result.
+Public methods that that may not produce a result must return `Optional`.  
+
+**Exception:** `Optional` produces an additional object. If object churn matters `null` can be used as a return value. In this case a comment should be added why Optional was not used and the method name should make it clear that `null` is a possible return value.
 
 **Bad:**
 
 ```java
-final class UserRepository {
-    User findByEmail(String email) {
+public final class UserRepository {
+    public User findByEmail(Email email) {
         // returns null when not found
     }
 }
@@ -166,7 +168,7 @@ final class UserRepository {
 
 ```java
 final class UserRepository {
-    Optional<User> findByEmail(String email) {
+    public Optional<User> findByEmail(Email email) {
         // returns Optional.empty() when not found
     }
 }
@@ -176,14 +178,110 @@ final class UserRepository {
 
 ## R-013g
 
-A method must not have unused parameters. Remove any parameter that is not referenced in the method body.
+Package private methods which may not produce a result can either return an `Optional` or `null`.
+
+**Good:**
+
+```java
+final class UserRepository {
+    User findByEmail(Email email) {
+        // returns null when not found
+    }
+
+    Optional<User> findByEmail(Email email) {
+        // returns Optional.empty() when not found
+    }
+}
+```
+
+---
+
+## R-013h
+
+Private methods must not return `Optional`.
+
+**Bad:**
+
+```java
+final class UserService {
+    private Optional<User> lookupUser(String email) {
+        // ...
+    }
+
+    Optional<User> findByEmail(String email) {
+        return lookupUser(email);
+    }
+}
+```
+
+**Good:**
+
+```java
+final class UserService {
+    private User lookupUser(String email) {
+        // returns null when not found
+    }
+
+    Optional<User> findByEmail(String email) {
+        return Optional.ofNullable(lookupUser(email));
+    }
+}
+```
+
+---
+
+## R-013i
+
+Use the primitive-specialized Optional types `OptionalInt`, `OptionalLong`, and `OptionalDouble` instead of their boxed counterparts `Optional<Integer>`, `Optional<Long>`, and `Optional<Double>`.
+
+**Bad:**
+
+```java
+final class PortfolioService {
+    Optional<Integer> countPositions(PortfolioId portfolioId) {
+        // unnecessary boxing: int → Integer → Optional<Integer>
+    }
+
+    Optional<Long> totalVolume(PortfolioId portfolioId) {
+        // unnecessary boxing: long → Long → Optional<Long>
+    }
+
+    Optional<Double> averageReturn(PortfolioId portfolioId) {
+        // unnecessary boxing: double → Double → Optional<Double>
+    }
+}
+```
+
+**Good:**
+
+```java
+final class PortfolioService {
+    OptionalInt countPositions(PortfolioId portfolioId) {
+        // no boxing, returns OptionalInt.of(count) or OptionalInt.empty()
+    }
+
+    OptionalLong totalVolume(PortfolioId portfolioId) {
+        // no boxing, returns OptionalLong.of(volume) or OptionalLong.empty()
+    }
+
+    OptionalDouble averageReturn(PortfolioId portfolioId) {
+        // no boxing, returns OptionalDouble.of(avg) or OptionalDouble.empty()
+    }
+}
+```
+
+---
+
+## R-013j
+
+A method must not have an unused parameter.
 
 **Bad:**
 
 ```java
 final class OrderService {
-    void cancel(Order order, String reason) {
-        order.markCancelled();
+    void cancel(Order order) {
+        doSomething();
     }
 }
 ```
@@ -192,15 +290,15 @@ final class OrderService {
 
 ```java
 final class OrderService {
-    void cancel(Order order) {
-        order.markCancelled();
+    void cancel() {
+        doSomething();
     }
 }
 ```
 
 ---
 
-## R-013h
+## R-013k
 
 Avoid deeply nested code. A method must not exceed two levels of nesting (relative to the method body). Extract inner logic into private methods to flatten the structure.
 
@@ -251,7 +349,7 @@ final class OrderProcessor {
 
 ---
 
-## R-013i
+## R-013l
 
 Methods must not contain dead or unreachable code. Remove any code after an unconditional `return`, `throw`, or `break`.
 
@@ -281,7 +379,7 @@ final class PaymentService {
 
 ---
 
-## R-013j
+## R-013m
 
 Methods must do one thing. If a method does more than one thing, extract the separate concerns into their own methods.
 
@@ -327,9 +425,9 @@ final class UserService {
 
 ---
 
-## R-013k
+## R-013n
 
-Keep methods short — aim for at most 15 lines of logic (excluding blank lines and braces). Long methods are hard to read and test. Extract helper methods instead.
+Keep methods short ΓÇö aim for at most 15 lines of logic (excluding blank lines and braces). Long methods are hard to read and test. Extract helper methods instead.
 
 **Bad:**
 
@@ -375,7 +473,7 @@ final class ReportService {
 
 ---
 
-## R-013l
+## R-013o
 
 `static` methods are forbidden. Static methods cannot be overridden, are hard to mock in tests, and create hidden coupling. Use instance methods instead.
 
@@ -401,47 +499,10 @@ final class TaxCalculator {
 
 ---
 
-## R-013m
-
-Private methods must not return `Optional`. Use `null` internally 
-and convert to `Optional` at the public API boundary. `Optional` is designed 
-for public return types to signal "may be absent" to callers — inside a class, 
-`null` is simpler and avoids unnecessary wrapping.
-
-**Bad:**
-
-```java
-final class UserService {
-    private Optional<User> lookupUser(String email) {
-        // ...
-    }
-
-    Optional<User> findByEmail(String email) {
-        return lookupUser(email);
-    }
-}
-```
-
-**Good:**
-
-```java
-final class UserService {
-    private User lookupUser(String email) {
-        // returns null when not found
-    }
-
-    Optional<User> findByEmail(String email) {
-        return Optional.ofNullable(lookupUser(email));
-    }
-}
-```
-
----
-
-## R-013n
+## R-013p
 
 `Optional` must not be used as a method parameter. `Optional` was designed 
-for return types to signal that a result may be absent — not for inputs. 
+for return types to signal that a result may be absent ΓÇö not for inputs. 
 An `Optional` parameter forces every caller to wrap values and makes the method harder to read. Use method overloading or pass `null` with a `@Nullable` annotation instead.
 
 **Bad:**
@@ -473,11 +534,12 @@ final class UserService {
 
 ---
 
-## R-013o
+## R-013q
 
-A method must have **zero or one** parameter. Group related parameters 
-into a record, an object, or — when the parameters are of 
-the same type and represent a collection of similar elements — a `List`.
+A method must have **zero or one** parameter. Multiple parameters are hard to read, 
+easy to swap by accident, and signal that the method is doing too much. 
+Group related parameters into a record, an object, or ΓÇö when the parameters are of 
+the same type and represent a collection of similar elements ΓÇö a `List`.
 
 **Bad:**
 
@@ -516,9 +578,9 @@ final class NotificationService {
 
 ---
 
-## R-013p
+## R-013r
 
-Avoid primitive obsession in method parameters. Do not pass raw primitive types (`String`, `int`, `long`, `BigDecimal`, etc.) when the value represents a domain concept. Wrap it in a dedicated tiny type (record) instead. This prevents accidental misuse, makes the API self-documenting, and lets the compiler catch mistakes that primitive types cannot. Although R-013o already limits methods to one parameter, this rule still applies: even a single `String` that represents an ISIN, email address, or currency code should be a typed wrapper.
+Avoid primitive obsession in method parameters. Do not pass raw primitive types (`String`, `int`, `long`, `BigDecimal`, etc.) when the value represents a domain concept. Wrap it in a dedicated tiny type (record) instead. This prevents accidental misuse, makes the API self-documenting, and lets the compiler catch mistakes that primitive types cannot. Although R-013q already limits methods to one parameter, this rule still applies: even a single `String` that represents an ISIN, email address, or currency code should be a typed wrapper.
 
 **Bad:**
 
@@ -560,7 +622,7 @@ final class PaymentService {
 
 ---
 
-## R-013q
+## R-013s
 
 Method parameters must not be declared `final`.
 
@@ -590,9 +652,9 @@ This rule applies to all method-like declarations (regular methods, constructors
 
 ---
 
-## R-013r
+## R-013t
 
-Setter methods are forbidden. Objects should be immutable — set all state through the constructor. Mutable setters make objects harder to reason about, break thread-safety, and invite temporal coupling (the caller must remember to call setters in the right order).
+Setter methods are forbidden. Objects should be immutable ΓÇö set all state through the constructor. Mutable setters make objects harder to reason about, break thread-safety, and invite temporal coupling (the caller must remember to call setters in the right order).
 
 **Exception:** setters are allowed only when technically unavoidable, e.g. when a framework requires them for deserialization (Jackson without `@JsonCreator`, JPA entities, etc.). In those cases, keep the setter package-private and document why it exists.
 
@@ -629,7 +691,7 @@ final class User {
 }
 ```
 
-**Good (framework exception — JPA entity):**
+**Good (framework exception ΓÇö JPA entity):**
 
 ```java
 import static java.util.Objects.requireNonNull;
@@ -646,7 +708,7 @@ final class User {
 
 ---
 
-## R-013s
+## R-013u
 
 Getter methods must only return a value. They must not modify the state of the object and must not perform expensive or long-running operations.
 
@@ -680,32 +742,7 @@ final class Portfolio {
 ---
 
 
-## R-013u
-
-Do not use underscores in method names. Use `lowerCamelCase` exclusively. 
-This applies to all methods, including unit test methods.
-
-**Bad:**
-
-```java
-final class UserValidatorTest {
-    void should_accept_non_empty_array() {
-    }
-}
-```
-
-**Good:**
-
-```java
-final class UserValidatorTest {
-    void shouldAcceptNonEmptyArray() {
-    }
-}
-```
-
----
-
-## R-013t
+## R-013v
 
 Unused private methods are forbidden. A method is unused if it is not referenced anywhere in the codebase and also
 not used by reflection (e.g. Spring controller endpoints, JPA entity lifecycle methods, etc.). 
@@ -718,7 +755,7 @@ final class ReportService {
         // implementation...
     }
 
-    // unused private helper — should be removed
+    // unused private helper ΓÇö should be removed
     private void formatAsCsv() {
         // leftover from previous implementation, not referenced anywhere
     }

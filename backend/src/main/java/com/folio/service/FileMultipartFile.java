@@ -30,7 +30,7 @@ final class FileMultipartFile implements MultipartFile {
 
     @Override
     public long getSize() {
-        try { return Files.size(path); } catch (IOException e) { return 0; }
+        try { return Files.size(path); } catch (IOException exception) { return 0; }
     }
 
     @Override

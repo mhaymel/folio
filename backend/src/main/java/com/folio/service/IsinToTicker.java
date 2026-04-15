@@ -103,8 +103,8 @@ final class IsinToTicker {
             for (int i = 0; i < isins.size(); i++) {
                 results.put(isins.get(i), extractTicker(root, i));
             }
-        } catch (Exception e) {
-            LOG.warn("OpenFIGI call failed for batch of {} ISINs", isins.size(), e);
+        } catch (Exception exception) {
+            LOG.warn("OpenFIGI call failed for batch of {} ISINs", isins.size(), exception);
             isins.forEach(isin -> results.putIfAbsent(isin, Optional.empty()));
         }
         return results;

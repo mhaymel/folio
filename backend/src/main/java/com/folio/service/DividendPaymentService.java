@@ -23,10 +23,10 @@ import static java.util.Objects.requireNonNull;
 @Service
 public class DividendPaymentService {
 
-    private final EntityManager em;
+    private final EntityManager entityManager;
 
-    public DividendPaymentService(EntityManager em) {
-        this.em = requireNonNull(em);
+    public DividendPaymentService(EntityManager entityManager) {
+        this.entityManager = requireNonNull(entityManager);
     }
 
     @Transactional(readOnly = true)
@@ -36,13 +36,13 @@ public class DividendPaymentService {
             "SELECT dp FROM DividendPaymentEntity dp JOIN FETCH dp.context.isin JOIN FETCH dp.context.depot JOIN FETCH dp.paymentValues.currency WHERE 1=1");
         Map<String, Object> params = new HashMap<>();
 
-        if (filter.isin() != null && !filter.isin().isBlank()) {
+        if (filter.isinFragment() != null && !filter.isinFragment().isBlank()) {
             jpql.append(" AND LOWER(dp.context.isin.isin) LIKE :isin");
-            params.put("isin", "%" + filter.isin().toLowerCase() + "%");
+            params.put("isin", "%" + filter.isinFragment().toLowerCase() + "%");
         }
-        if (filter.depot() != null && !filter.depot().isBlank()) {
-            List<String> depotValues = Arrays.stream(filter.depot().split(","))
-                .map(String::trim).filter(s -> !s.isEmpty()).toList();
+        if (filter.depotFragment() != null && !filter.depotFragment().isBlank()) {
+            List<String> depotValues = Arrays.stream(filter.depotFragment().split(","))
+                .map(String::trim).filter(value -> !value.isEmpty()).toList();
             if (depotValues.size() == 1) {
                 jpql.append(" AND dp.context.depot.name = :depot");
                 params.put("depot", depotValues.get(0));
@@ -61,26 +61,26 @@ public class DividendPaymentService {
         }
         jpql.append(" ORDER BY dp.context.timestamp DESC");
 
-        var query = em.createQuery(jpql.toString(), DividendPaymentEntity.class);
+        var query = entityManager.createQuery(jpql.toString(), DividendPaymentEntity.class);
         params.forEach(query::setParameter);
         List<DividendPaymentEntity> payments = query.getResultList();
 
-        List<DividendPaymentDto> result = payments.stream().map(dp -> {
-            String formattedTimestamp = dp.getTimestamp().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+        List<DividendPaymentDto> result = payments.stream().map(payment -> {
+            String formattedTimestamp = payment.getTimestamp().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
             return new DividendPaymentDto(
-                new DividendPaymentIdentity(dp.getId(), formattedTimestamp, dp.getTimestamp()),
-                new DividendPaymentSource(new Isin(dp.getIsin().getIsin()), getFirstName(dp.getIsin().getId()), dp.getDepot().getName()),
-                dp.getValue());
+                new DividendPaymentIdentity(payment.getId(), formattedTimestamp, payment.getTimestamp()),
+                new DividendPaymentSource(new Isin(payment.getIsin().getIsin()), getFirstName(payment.getIsin().getId()), payment.getDepot().getName()),
+                payment.getValue());
         }).toList();
 
-        if (filter.name() != null && !filter.name().isBlank()) {
-            String lower = filter.name().toLowerCase();
+        if (filter.nameFragment() != null && !filter.nameFragment().isBlank()) {
+            String lower = filter.nameFragment().toLowerCase();
             Set<Isin> matchingIsins = result.stream()
-                .filter(d -> d.getName() != null && d.getName().toLowerCase().contains(lower))
+                .filter(dto -> dto.getName() != null && dto.getName().toLowerCase().contains(lower))
                 .map(DividendPaymentDto::getIsin)
                 .collect(Collectors.toSet());
             result = result.stream()
-                .filter(d -> matchingIsins.contains(d.getIsin()))
+                .filter(dto -> matchingIsins.contains(dto.getIsin()))
                 .toList();
         }
 
@@ -89,9 +89,9 @@ public class DividendPaymentService {
 
     private String getFirstName(Integer isinId) {
         try {
-            return (String) em.createQuery("SELECT n.name FROM IsinNameEntity n WHERE n.isin.id = :id ORDER BY n.id ASC")
+            return (String) entityManager.createQuery("SELECT n.name FROM IsinNameEntity n WHERE n.isin.id = :id ORDER BY n.id ASC")
                 .setParameter("id", isinId).setMaxResults(1).getSingleResult();
-        } catch (Exception e) {
+        } catch (Exception exception) {
             return null;
         }
     }

@@ -29,34 +29,34 @@ import static java.util.Objects.requireNonNull;
 @Tag(name = "Quotes", description = "Quote fetch management")
 final class QuoteController {
 
-    private final SettingRepository settingRepo;
+    private final SettingRepository settingRepository;
     private final QuoteService quoteService;
 
-    public QuoteController(SettingRepository settingRepo, QuoteService quoteService) {
-        this.settingRepo = requireNonNull(settingRepo);
+    public QuoteController(SettingRepository settingRepository, QuoteService quoteService) {
+        this.settingRepository = requireNonNull(settingRepository);
         this.quoteService = requireNonNull(quoteService);
     }
 
     @GetMapping("/settings")
     @Operation(summary = "Get quote fetch settings")
     public ResponseEntity<QuoteSettingsDto> getSettings() {
-        boolean enabled = settingRepo.findByKey("quote.fetch.enabled")
-            .map(s -> Boolean.parseBoolean(s.getValue()))
+        boolean isEnabled = settingRepository.findByKey("quote.fetch.enabled")
+            .map(setting -> Boolean.parseBoolean(setting.getValue()))
             .orElse(false);
 
-        Integer interval = settingRepo.findByKey("quote.fetch.interval.minutes")
-            .map(s -> parseInt(s.getValue()))
+        Integer interval = settingRepository.findByKey("quote.fetch.interval.minutes")
+            .map(setting -> parseInt(setting.getValue()))
             .orElse(60);
 
-        LocalDateTime lastFetch = settingRepo.findByKey("quote.last.fetch.timestamp")
-            .map(s -> LocalDateTime.parse(s.getValue()))
+        LocalDateTime lastFetch = settingRepository.findByKey("quote.last.fetch.timestamp")
+            .map(setting -> LocalDateTime.parse(setting.getValue()))
             .orElse(null);
 
         String lastFetchFormatted = lastFetch != null
             ? lastFetch.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
             : null;
 
-        return ResponseEntity.ok(new QuoteSettingsDto(enabled, interval, lastFetchFormatted));
+        return ResponseEntity.ok(new QuoteSettingsDto(isEnabled, interval, lastFetchFormatted));
     }
 
     @PutMapping("/settings/enabled")
@@ -67,10 +67,10 @@ final class QuoteController {
             illegalArgument("enabled must be provided");
         }
 
-        SettingEntity setting = settingRepo.findByKey("quote.fetch.enabled")
+        SettingEntity setting = settingRepository.findByKey("quote.fetch.enabled")
             .orElseGet(() -> new SettingEntity(null, "quote.fetch.enabled", "false"));
         setting.setValue(valueOf(enabled));
-        settingRepo.save(setting);
+        settingRepository.save(setting);
 
         return getSettings();
     }
@@ -83,10 +83,10 @@ final class QuoteController {
             illegalArgument("intervalMinutes must be a positive integer");
         }
 
-        SettingEntity setting = settingRepo.findByKey("quote.fetch.interval.minutes")
+        SettingEntity setting = settingRepository.findByKey("quote.fetch.interval.minutes")
             .orElseGet(() -> new SettingEntity(null, "quote.fetch.interval.minutes", "60"));
         setting.setValue(valueOf(minutes));
-        settingRepo.save(setting);
+        settingRepository.save(setting);
 
         return getSettings();
     }

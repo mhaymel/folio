@@ -158,84 +158,84 @@ final class PreconditionTest {
 
 
     @Test
-    void nnObjectShouldAcceptNonNullValue() {
+    void notNullObjectShouldAcceptNonNullValue() {
         // given
         String input = "hello";
 
         // when
-        String result = Precondition.nn(input);
+        String result = Precondition.notNull(input);
 
         // then
         assertThat(result).isEqualTo(input);
     }
 
     @Test
-    void nnObjectShouldRejectNull() {
+    void notNullObjectShouldRejectNull() {
         // given / when / then
-        assertThrowsIAE(() -> Precondition.nn(null));
+        assertThrowsIAE(() -> Precondition.notNull(null));
     }
 
 
     @Test
-    void nnArrayShouldAcceptNonNullArray() {
+    void notNullArrayShouldAcceptNonNullArray() {
         // given
         String[] input = {"a"};
 
         // when
-        String[] result = Precondition.nn(input);
+        String[] result = Precondition.notNull(input);
 
         // then
         assertThat(result).isEqualTo(input);
     }
 
     @Test
-    void nnArrayShouldRejectNull() {
+    void notNullArrayShouldRejectNull() {
         // given / when / then
-        assertThrowsIAE(() -> Precondition.nn((String[]) null));
+        assertThrowsIAE(() -> Precondition.notNull((String[]) null));
     }
 
 
     @Test
-    void nnTwoObjectsShouldAcceptBothNonNull() {
+    void notNullTwoObjectsShouldAcceptBothNonNull() {
         // given / when / then (no exception)
-        Precondition.nn("a", "b");
+        Precondition.notNull("a", "b");
     }
 
     @Test
-    void nnTwoObjectsShouldRejectFirstNull() {
+    void notNullTwoObjectsShouldRejectFirstNull() {
         // given / when / then
-        assertThrowsIAE(() -> Precondition.nn(null, "b"));
+        assertThrowsIAE(() -> Precondition.notNull(null, "b"));
     }
 
     @Test
-    void nnTwoObjectsShouldRejectSecondNull() {
+    void notNullTwoObjectsShouldRejectSecondNull() {
         // given / when / then
-        assertThrowsIAE(() -> Precondition.nn("a", null));
+        assertThrowsIAE(() -> Precondition.notNull("a", null));
     }
 
 
     @Test
-    void nnThreeObjectsShouldAcceptAllNonNull() {
+    void notNullThreeObjectsShouldAcceptAllNonNull() {
         // given / when / then (no exception)
-        Precondition.nn("a", "b", "c");
+        Precondition.notNull("a", "b", "c");
     }
 
     @Test
-    void nnThreeObjectsShouldRejectFirstNull() {
+    void notNullThreeObjectsShouldRejectFirstNull() {
         // given / when / then
-        assertThrowsIAE(() -> Precondition.nn(null, "b", "c"));
+        assertThrowsIAE(() -> Precondition.notNull(null, "b", "c"));
     }
 
     @Test
-    void nnThreeObjectsShouldRejectSecondNull() {
+    void notNullThreeObjectsShouldRejectSecondNull() {
         // given / when / then
-        assertThrowsIAE(() -> Precondition.nn("a", null, "c"));
+        assertThrowsIAE(() -> Precondition.notNull("a", null, "c"));
     }
 
     @Test
-    void nnThreeObjectsShouldRejectThirdNull() {
+    void notNullThreeObjectsShouldRejectThirdNull() {
         // given / when / then
-        assertThrowsIAE(() -> Precondition.nn("a", "b", null));
+        assertThrowsIAE(() -> Precondition.notNull("a", "b", null));
     }
 
 
@@ -267,12 +267,12 @@ final class PreconditionTest {
     }
 
     @Test
-    void nnvShouldCallNoNullValues() {
+    void noNullValuesShouldAcceptNonNullArray() {
         // given
         String[] input = {"a", "b"};
 
         // when
-        String[] result = Precondition.nnv(input);
+        String[] result = Precondition.noNullValues(input);
 
         // then
         assertThat(result).isEqualTo(input);

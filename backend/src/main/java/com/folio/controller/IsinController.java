@@ -5,8 +5,6 @@ import com.folio.dto.ExportColumn;
 import com.folio.dto.ExportRequest;
 import com.folio.dto.IsinDto;
 import com.folio.dto.PaginatedResponseDto;
-import com.folio.service.ExportService;
-import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
 import com.folio.service.SortRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,38 +32,38 @@ import static java.util.Objects.requireNonNull;
 class IsinController {
 
     private static final Map<String, Comparator<IsinDto>> SORT_FIELDS = Map.of(
-        "isin", SortHelper.text(d -> d.getIsin() == null ? null : d.getIsin().value()),
+        "isin", SortHelper.text(dto -> dto.getIsin() == null ? null : dto.getIsin().value()),
         "tickerSymbol", SortHelper.text(IsinDto::getTickerSymbol),
         "name", SortHelper.text(IsinDto::getName),
         "country", SortHelper.text(IsinDto::getCountry),
         "branch", SortHelper.text(IsinDto::getBranch)
     );
 
-    private final EntityManager em;
-    private final ExportService exportService;
+    private final EntityManager entityManager;
+    private final ListOperations listOperations;
 
-    public IsinController(EntityManager em, ExportService exportService) {
-        this.em = requireNonNull(em);
-        this.exportService = requireNonNull(exportService);
+    public IsinController(EntityManager entityManager, ListOperations listOperations) {
+        this.entityManager = requireNonNull(entityManager);
+        this.listOperations = requireNonNull(listOperations);
     }
 
     @GetMapping
     @Operation(summary = "Get all ISINs with associated metadata")
     @Transactional(readOnly = true)
     public ResponseEntity<PaginatedResponseDto<IsinDto>> getIsins(
-            @RequestParam(required = false) String isin,
-            @RequestParam(required = false) String tickerSymbol,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String country,
-            @RequestParam(required = false) String branch,
+            @RequestParam(required = false, defaultValue = "") String isin,
+            @RequestParam(required = false, defaultValue = "") String tickerSymbol,
+            @RequestParam(required = false, defaultValue = "") String name,
+            @RequestParam(required = false, defaultValue = "") String country,
+            @RequestParam(required = false, defaultValue = "") String branch,
             @RequestParam(required = false, defaultValue = "isin") String sortField,
             @RequestParam(required = false, defaultValue = "asc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
         List<IsinDto> data = filterAndSort(loadAll(),
-            new StockFilter(isin, tickerSymbol, name, null, country, branch),
+            new StockFilter(isin, tickerSymbol, name, "", country, branch),
             new SortRequest(sortField, sortDir));
-        return ResponseEntity.ok(PaginationHelper.paginate(data, page, pageSize));
+        return ResponseEntity.ok(listOperations.paginationHelper().paginate(data, page, pageSize));
     }
 
     @GetMapping("/filters")
@@ -74,10 +72,10 @@ class IsinController {
     public ResponseEntity<Map<String, List<String>>> getFilters() {
         List<IsinDto> all = loadAll();
         List<String> countries = all.stream()
-            .map(IsinDto::getCountry).filter(c -> c != null && !c.isBlank())
+            .map(IsinDto::getCountry).filter(country -> country != null && !country.isBlank())
             .distinct().sorted().toList();
         List<String> branches = all.stream()
-            .map(IsinDto::getBranch).filter(b -> b != null && !b.isBlank())
+            .map(IsinDto::getBranch).filter(branch -> branch != null && !branch.isBlank())
             .distinct().sorted().toList();
         return ResponseEntity.ok(Map.of("countries", countries, "branches", branches));
     }
@@ -87,15 +85,15 @@ class IsinController {
     @Transactional(readOnly = true)
     public ResponseEntity<byte[]> exportIsins(
             @RequestParam(defaultValue = "csv") String format,
-            @RequestParam(required = false) String isin,
-            @RequestParam(required = false) String tickerSymbol,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String country,
-            @RequestParam(required = false) String branch,
+            @RequestParam(required = false, defaultValue = "") String isin,
+            @RequestParam(required = false, defaultValue = "") String tickerSymbol,
+            @RequestParam(required = false, defaultValue = "") String name,
+            @RequestParam(required = false, defaultValue = "") String country,
+            @RequestParam(required = false, defaultValue = "") String branch,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir) {
         List<IsinDto> data = filterAndSort(loadAll(),
-            new StockFilter(isin, tickerSymbol, name, null, country, branch),
+            new StockFilter(isin, tickerSymbol, name, "", country, branch),
             new SortRequest(sortField, sortDir));
         List<ExportColumn<IsinDto>> columns = List.of(
             new ExportColumn<>("ISIN", IsinDto::getIsin),
@@ -104,12 +102,12 @@ class IsinController {
             new ExportColumn<>("Country", IsinDto::getCountry),
             new ExportColumn<>("Branch", IsinDto::getBranch)
         );
-        return exportService.export(new ExportRequest<>(data, columns, format, "isins"));
+        return listOperations.exportService().export(new ExportRequest<>(data, columns, format, "isins"));
     }
 
     @SuppressWarnings("unchecked")
     private List<IsinDto> loadAll() {
-        List<Object[]> rows = em.createNativeQuery("""
+        List<Object[]> rows = entityManager.createNativeQuery("""
             SELECT i.isin,
                    (SELECT ts.symbol FROM isin_ticker it
                     JOIN ticker_symbol ts ON ts.id = it.ticker_symbol_id
@@ -122,46 +120,46 @@ class IsinController {
             """).getResultList();
 
         return rows.stream()
-            .map(r -> new IsinDto(
-                new Isin((String) r[0]),
-                (String) r[1],
-                (String) r[2],
-                (String) r[3],
-                (String) r[4]))
+            .map(row -> new IsinDto(
+                new Isin((String) row[0]),
+                (String) row[1],
+                (String) row[2],
+                (String) row[3],
+                (String) row[4]))
             .toList();
     }
 
-    private static Set<String> splitMultiValue(String param) {
+    private Set<String> splitMultiValue(String param) {
         if (param == null || param.isBlank()) return Set.of();
         return Arrays.stream(param.split(","))
-            .map(String::trim).filter(s -> !s.isEmpty())
+            .map(String::trim).filter(value -> !value.isEmpty())
             .collect(Collectors.toSet());
     }
 
-    private static List<IsinDto> filterAndSort(List<IsinDto> data, StockFilter filter,
+    private List<IsinDto> filterAndSort(List<IsinDto> data, StockFilter filter,
                                                 SortRequest sort) {
-        if (filter.isin() != null && !filter.isin().isBlank()) {
-            String lower = filter.isin().toLowerCase();
-            data = data.stream().filter(d -> d.getIsin() != null && d.getIsin().value().toLowerCase().contains(lower)).toList();
+        if (!filter.isinFragment().isBlank()) {
+            String lower = filter.isinFragment().toLowerCase();
+            data = data.stream().filter(dto -> dto.getIsin() != null && dto.getIsin().value().toLowerCase().contains(lower)).toList();
         }
-        if (filter.tickerSymbol() != null && !filter.tickerSymbol().isBlank()) {
-            String lower = filter.tickerSymbol().toLowerCase();
-            data = data.stream().filter(d -> d.getTickerSymbol() != null && d.getTickerSymbol().toLowerCase().contains(lower)).toList();
+        if (!filter.tickerSymbolFragment().isBlank()) {
+            String lower = filter.tickerSymbolFragment().toLowerCase();
+            data = data.stream().filter(dto -> dto.getTickerSymbol() != null && dto.getTickerSymbol().toLowerCase().contains(lower)).toList();
         }
-        if (filter.name() != null && !filter.name().isBlank()) {
-            String lower = filter.name().toLowerCase();
-            data = data.stream().filter(d -> d.getName() != null && d.getName().toLowerCase().contains(lower)).toList();
+        if (!filter.nameFragment().isBlank()) {
+            String lower = filter.nameFragment().toLowerCase();
+            data = data.stream().filter(dto -> dto.getName() != null && dto.getName().toLowerCase().contains(lower)).toList();
         }
-        Set<String> countries = splitMultiValue(filter.country());
+        Set<String> countries = splitMultiValue(filter.countryFragment());
         if (!countries.isEmpty()) {
-            data = data.stream().filter(d -> countries.contains(d.getCountry())).toList();
+            data = data.stream().filter(dto -> countries.contains(dto.getCountry())).toList();
         }
-        Set<String> branches = splitMultiValue(filter.branch());
+        Set<String> branches = splitMultiValue(filter.branchFragment());
         if (!branches.isEmpty()) {
-            data = data.stream().filter(d -> branches.contains(d.getBranch())).toList();
+            data = data.stream().filter(dto -> branches.contains(dto.getBranch())).toList();
         }
         if (sort.sortField() != null && !sort.sortField().isBlank()) {
-            data = SortHelper.sort(data, sort, SORT_FIELDS);
+            data = listOperations.sortHelper().sort(data, sort, SORT_FIELDS);
         }
         return data;
     }

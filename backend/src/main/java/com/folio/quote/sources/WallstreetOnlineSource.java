@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 @Order(10)
 final class WallstreetOnlineSource implements QuoteSource {
 
-    private static final Logger log = getLogger(WallstreetOnlineSource.class);
+    private static final Logger LOG = getLogger(WallstreetOnlineSource.class);
 
     private static final String BASE_URL = "https://www.wallstreet-online.de/";
     private static final double USD_TO_EUR_FACTOR = 0.86;
@@ -48,7 +48,7 @@ final class WallstreetOnlineSource implements QuoteSource {
     @PostConstruct
     void init() {
         config = CsvConfigLoader.loadTwoColumn("wallstreetonline.csv");
-        log.info("WallstreetOnline: loaded {} ISIN path mappings", config.size());
+        LOG.info("WallstreetOnline: loaded {} ISIN path mappings", config.size());
     }
 
     @Override
@@ -62,14 +62,14 @@ final class WallstreetOnlineSource implements QuoteSource {
         if (path == null) return empty();
 
         String url = BASE_URL + path;
-        return QuoteFetchHelper.fetchHtml(url, log, providerName()).flatMap(html -> {
-            Matcher m = PRICE_PATTERN.matcher(html);
-            if (m.find()) {
-                Optional<Double> price = QuoteFetchHelper.parseDecimal(m.group(1));
+        return QuoteFetchHelper.fetchHtml(url, LOG, providerName()).flatMap(html -> {
+            Matcher matcher = PRICE_PATTERN.matcher(html);
+            if (matcher.find()) {
+                Optional<Double> price = QuoteFetchHelper.parseDecimal(matcher.group(1));
                 if (price.isPresent()) {
                     // Auto-detect USD: look for USD/$ near the price in the HTML
-                    int start = max(0, m.start() - 300);
-                    int end = min(html.length(), m.end() + 300);
+                    int start = max(0, matcher.start() - 300);
+                    int end = min(html.length(), matcher.end() + 300);
                     String context = html.substring(start, end);
                     if (CURRENCY_PATTERN.matcher(context).find()) {
                         return of(price.get() * USD_TO_EUR_FACTOR);
@@ -77,7 +77,7 @@ final class WallstreetOnlineSource implements QuoteSource {
                     return price;
                 }
             }
-            log.debug("WallstreetOnline: no price found for {}", isin);
+            LOG.debug("WallstreetOnline: no price found for {}", isin);
             return empty();
         });
     }

@@ -3,9 +3,9 @@ package com.folio.dto;
 import java.time.LocalDate;
 
 public record DividendPaymentFilter(
-    String isin,
-    String name,
-    String depot,
+    String isinFragment,
+    String nameFragment,
+    String depotFragment,
     LocalDate fromDate,
     LocalDate toDate
 ) {

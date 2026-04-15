@@ -29,7 +29,6 @@ public final class QuoteFetchHelper {
         .build();
 
     private QuoteFetchHelper() {
-        // utility class — not instantiable
     }
 
     /**
@@ -54,8 +53,8 @@ public final class QuoteFetchHelper {
             }
             log.debug("{}: HTTP {} for {}", providerName, response.statusCode(), url);
             return empty();
-        } catch (Exception e) {
-            log.debug("{}: fetch failed for {}: {}", providerName, url, e.getMessage());
+        } catch (Exception exception) {
+            log.debug("{}: fetch failed for {}: {}", providerName, url, exception.getMessage());
             return empty();
         }
     }
@@ -81,8 +80,8 @@ public final class QuoteFetchHelper {
             }
             log.debug("{}: HTTP {} for {}", providerName, response.statusCode(), url);
             return empty();
-        } catch (Exception e) {
-            log.debug("{}: fetch failed for {}: {}", providerName, url, e.getMessage());
+        } catch (Exception exception) {
+            log.debug("{}: fetch failed for {}: {}", providerName, url, exception.getMessage());
             return empty();
         }
     }
@@ -93,24 +92,23 @@ public final class QuoteFetchHelper {
      */
     public static Optional<Double> parseDecimal(String raw) {
         try {
-            String s = raw.trim()
+            String cleaned = raw.trim()
                 .replace("\u00a0", "")   // non-breaking space
                 .replace(" ", "")
                 .replace("&nbsp;", "");
 
-            if (s.contains(",") && s.contains(".")) {
-                // German format: 1.234,56
-                s = s.replace(".", "").replace(",", ".");
-            } else if (s.contains(",")) {
-                s = s.replace(",", ".");
+            if (cleaned.contains(",") && cleaned.contains(".")) {
+                cleaned = cleaned.replace(".", "").replace(",", ".");
+            } else if (cleaned.contains(",")) {
+                cleaned = cleaned.replace(",", ".");
             }
 
-            double value = parseDouble(s);
+            double value = parseDouble(cleaned);
             if (value <= 0 || Double.isNaN(value) || Double.isInfinite(value)) {
                 return empty();
             }
             return of(value);
-        } catch (Exception e) {
+        } catch (Exception exception) {
             return empty();
         }
     }

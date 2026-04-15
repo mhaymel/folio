@@ -44,7 +44,7 @@ BigDecimal netPrice = BigDecimal.TEN;
 
 ## R-016c
 
-Local variable names must be meaningful and describe what they hold — a reader should understand the variable's purpose without looking at surrounding code.
+Local variable names must be meaningful and describe what they hold ΓÇö a reader should understand the variable's purpose without looking at surrounding code.
 
 **Bad:**
 
@@ -142,7 +142,7 @@ int count = 0;
 
 ## R-016g
 
-Boolean local variables must start with `is`, `has`, `can`, `should`, or `contains` — consistent with boolean method naming (R-012g).
+Boolean local variables must start with `is`, `has`, `can`, `should`, or `contains` ΓÇö consistent with boolean method naming (R-011g).
 
 **Bad:**
 
@@ -286,7 +286,7 @@ List<Order> orders = repository.findAll();
 ## R-016k
 
 
-Avoid magic literals in expressions. Do not use unexplained numeric or string literals directly in expressions — give them a descriptive name with a local `final` variable or use a class-level constant/tiny type when appropriate.
+Avoid magic literals in expressions. Do not use unexplained numeric or string literals directly in expressions ΓÇö give them a descriptive name with a local `final` variable or use a class-level constant/tiny type when appropriate.
 
 **Bad:**
 
@@ -367,3 +367,39 @@ Enforcement and notes:
 
 ---
 
+## R-016m
+
+Declare local variables as close as possible to their first usage. Do not declare all variables at the top of a method — this forces the reader to hold them in mental memory across many lines. Moving declarations next to their first use makes the code easier to read, reduces the mental scope of each variable, and simplifies future extraction into smaller methods.
+
+**Bad:**
+
+```java
+final class InvoiceService {
+    void process(List<Order> orders) {
+        BigDecimal total = calculateTotal(orders);
+        String currency = orders.get(0).currency();
+        boolean hasDiscount = total.compareTo(BigDecimal.valueOf(100)) > 0;
+
+        // ... 10 lines of unrelated logic that does not use total, currency, or hasDiscount ...
+
+        sendInvoice(total, currency, hasDiscount);
+    }
+}
+```
+
+**Good:**
+
+```java
+final class InvoiceService {
+    void process(List<Order> orders) {
+        // ... 10 lines of unrelated logic ...
+
+        BigDecimal total = calculateTotal(orders);
+        String currency = orders.get(0).currency();
+        boolean hasDiscount = total.compareTo(BigDecimal.valueOf(100)) > 0;
+        sendInvoice(total, currency, hasDiscount);
+    }
+}
+```
+
+---

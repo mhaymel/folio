@@ -61,7 +61,7 @@ import static java.util.Objects.requireNonNull;
 @Service
 public class ImportService {
 
-    private static final Logger log = getLogger(ImportService.class);
+    private static final Logger LOG = getLogger(ImportService.class);
 
     /**
      * Serialises all import operations so that concurrent HTTP requests do not
@@ -71,46 +71,44 @@ public class ImportService {
      */
     private final ReentrantLock importLock;
 
-    private final ImportRepositories repos;
-    private final EntityManager em;
+    private final ImportRepositories repositories;
+    private final EntityManager entityManager;
 
-    private ImportService(ReentrantLock importLock, ImportRepositories repos, EntityManager em) {
+    private ImportService(ReentrantLock importLock, ImportRepositories repositories, EntityManager entityManager) {
         this.importLock = requireNonNull(importLock);
-        this.repos = requireNonNull(repos);
-        this.em = requireNonNull(em);
+        this.repositories = requireNonNull(repositories);
+        this.entityManager = requireNonNull(entityManager);
     }
 
     @Autowired
-    public ImportService(ImportRepositories repos, EntityManager em) {
-        this(new ReentrantLock(), repos, em);
+    public ImportService(ImportRepositories repositories, EntityManager entityManager) {
+        this(new ReentrantLock(), repositories, entityManager);
     }
 
-    // -- Formatting --
-
-    private static String formatDuration(long ms) {
+    private String formatDuration(long ms) {
         if (ms >= 1000) {
             return (ms / 1000) + "s " + (ms % 1000) + "ms";
         }
         return ms + "ms";
     }
 
-    private static List<String> readLines(MultipartFile file) {
+    private List<String> readLines(MultipartFile file) {
         long start = now();
         try (InputStream is = file.getInputStream()) {
             List<String> lines = readLinesFrom(is);
-            log.info("Read {} lines in {} ms", lines.size(), now() - start);
+            LOG.info("Read {} lines in {} ms", lines.size(), now() - start);
             return lines;
-        } catch (Exception e) {
-            log.warn("Failed to read file: {}", e.getMessage());
+        } catch (Exception exception) {
+            LOG.warn("Failed to read file: {}", exception.getMessage());
         }
         return emptyList();
     }
 
-    private static List<String> readLinesFrom(InputStream is) {
+    private List<String> readLinesFrom(InputStream is) {
         return bufferedReader(is).lines().toList();
     }
 
-    private static BufferedReader bufferedReader(InputStream is) {
+    private BufferedReader bufferedReader(InputStream is) {
         return new BufferedReader(new InputStreamReader(is, UTF_8));
     }
 
@@ -118,14 +116,14 @@ public class ImportService {
         if (isinCodes.isEmpty()) return Map.of();
 
         Map<String, IsinEntity> map = new HashMap<>();
-        repos.isin().findByIsinIn(isinCodes).forEach(i -> map.put(i.getIsin(), i));
+        repositories.isin().findByIsinIn(isinCodes).forEach(isinEntity -> map.put(isinEntity.getIsin(), isinEntity));
 
         Set<String> missing = new HashSet<>(isinCodes);
         missing.removeAll(map.keySet());
         if (!missing.isEmpty()) {
-            List<IsinEntity> created = repos.isin().saveAll(
-                missing.stream().map(code -> new IsinEntity(null, code)).toList());
-            created.forEach(i -> map.put(i.getIsin(), i));
+            List<IsinEntity> created = repositories.isin().saveAll(
+                missing.stream().map(isinCode -> new IsinEntity(null, isinCode)).toList());
+            created.forEach(isinEntity -> map.put(isinEntity.getIsin(), isinEntity));
         }
         return map;
     }
@@ -141,15 +139,15 @@ public class ImportService {
         if (isinIds.isEmpty()) return;
 
         Set<String> existingKeys = new HashSet<>();
-        repos.isinName().findByIsinIdIn(isinIds)
-            .forEach(in -> existingKeys.add(in.getIsin().getId() + ":" + in.getName()));
+        repositories.isinName().findByIsinIdIn(isinIds)
+            .forEach(isinName -> existingKeys.add(isinName.getIsin().getId() + ":" + isinName.getName()));
 
         List<IsinNameEntity> toInsert = new ArrayList<>();
         for (var entry : isinCodeToName.entrySet()) {
             buildIsinName(entry, isinMap, existingKeys).ifPresent(toInsert::add);
         }
         if (!toInsert.isEmpty()) {
-            repos.isinName().saveAll(toInsert);
+            repositories.isinName().saveAll(toInsert);
         }
     }
 
@@ -169,22 +167,22 @@ public class ImportService {
         if (currencyCodes.isEmpty()) return Map.of();
 
         Map<String, CurrencyEntity> map = new HashMap<>();
-        repos.currency().findByNameIn(currencyCodes).forEach(c -> map.put(c.getName(), c));
+        repositories.currency().findByNameIn(currencyCodes).forEach(currency -> map.put(currency.getName(), currency));
 
         Set<String> missing = new HashSet<>(currencyCodes);
         missing.removeAll(map.keySet());
         if (!missing.isEmpty()) {
-            List<CurrencyEntity> created = repos.currency().saveAll(
-                missing.stream().map(code -> new CurrencyEntity(null, code)).toList());
-            created.forEach(c -> map.put(c.getName(), c));
+            List<CurrencyEntity> created = repositories.currency().saveAll(
+                missing.stream().map(currencyCode -> new CurrencyEntity(null, currencyCode)).toList());
+            created.forEach(currency -> map.put(currency.getName(), currency));
         }
         return map;
     }
 
-    static double parseGermanDouble(String s) {
-        String v = s.trim();
-        v = v.replace(".", "").replace(",", ".").replace("~", ".");
-        return parseDouble(v);
+    static double parseGermanDouble(String input) {
+        String cleaned = input.trim();
+        cleaned = cleaned.replace(".", "").replace(",", ".").replace("~", ".");
+        return parseDouble(cleaned);
     }
 
     private String[] parseCsvLine(String line, char separator) {
@@ -193,22 +191,19 @@ public class ImportService {
         boolean inQuotes = false;
 
         for (int i = 0; i < line.length(); i++) {
-            char c = line.charAt(i);
-            if (c == '"') {
+            char character = line.charAt(i);
+            if (character == '"') {
                 inQuotes = !inQuotes;
-            } else if (c == separator && !inQuotes) {
+            } else if (character == separator && !inQuotes) {
                 result.add(current.toString().trim());
                 current = new StringBuilder();
             } else {
-                current.append(c);
+                current.append(character);
             }
         }
         result.add(current.toString().trim());
         return result.toArray(new String[0]);
     }
-
-    // ---- DeGiro Transactions.csv ----
-
     @Transactional
     public ImportResult importDegiroTransactions(MultipartFile file) {
         long start = now();
@@ -219,31 +214,29 @@ public class ImportService {
             int lineNum = i + 1;
             try {
                 parseDegiroTransaction(lines.get(i)).ifPresent(parsed::add);
-            } catch (Exception e) {
-                errors.add("Line " + lineNum + ": " + e.getMessage());
+            } catch (Exception exception) {
+                errors.add("Line " + lineNum + ": " + exception.getMessage());
             }
         }
-
-        // 3. Save
         importLock.lock();
         try {
-            DepotEntity depot = repos.depot().findByName("DeGiro").orElseThrow();
-            repos.transaction().deleteByDepotId(depot.getId());
+            DepotEntity depot = repositories.depot().findByName("DeGiro").orElseThrow();
+            repositories.transaction().deleteByDepotId(depot.getId());
 
             Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedTransaction::isinCode).collect(toSet()));
             bulkUpsertIsinNames(isinMap,
-                parsed.stream().collect(toMap(ParsedTransaction::isinCode, ParsedTransaction::name, (a, b) -> a)));
+                parsed.stream().collect(toMap(ParsedTransaction::isinCode, ParsedTransaction::name, (first, second) -> first)));
 
             List<TransactionEntity> transactions = parsed.stream()
-                .map(p -> new TransactionEntity(null,
-                    new TransactionContext(p.date(), isinMap.get(p.isinCode()), depot),
-                    new TransactionValues(p.count(), p.price())))
+                .map(parsedTransaction -> new TransactionEntity(null,
+                    new TransactionContext(parsedTransaction.date(), isinMap.get(parsedTransaction.isinCode()), depot),
+                    new TransactionValues(parsedTransaction.count(), parsedTransaction.price())))
                 .toList();
 
-            repos.transaction().saveAll(transactions);
+            repositories.transaction().saveAll(transactions);
             long duration = now() - start;
-            log.info("Imported {} DeGiro transactions in {}", transactions.size(), formatDuration(duration));
+            LOG.info("Imported {} DeGiro transactions in {}", transactions.size(), formatDuration(duration));
             return new ImportResult(errors.isEmpty(), new ImportStats(transactions.size(), duration), errors);
         } finally {
             importLock.unlock();
@@ -275,9 +268,6 @@ public class ImportService {
 
         return Optional.of(new ParsedTransaction(dateTime, isinCode, product, count, price));
     }
-
-    // ---- ZERO Orders CSV ----
-
     @Transactional
     public ImportResult importZeroOrders(MultipartFile file) {
         long start = now();
@@ -289,31 +279,29 @@ public class ImportService {
             int lineNum = i + 1;
             try {
                 parseZeroOrder(lines.get(i)).ifPresent(parsed::add);
-            } catch (Exception e) {
-                errors.add("Line " + lineNum + ": " + e.getMessage());
+            } catch (Exception exception) {
+                errors.add("Line " + lineNum + ": " + exception.getMessage());
             }
         }
-
-        // 3. Save
         importLock.lock();
         try {
-            DepotEntity depot = repos.depot().findByName("ZERO").orElseThrow();
-            repos.transaction().deleteByDepotId(depot.getId());
+            DepotEntity depot = repositories.depot().findByName("ZERO").orElseThrow();
+            repositories.transaction().deleteByDepotId(depot.getId());
 
             Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedTransaction::isinCode).collect(toSet()));
             bulkUpsertIsinNames(isinMap,
-                parsed.stream().collect(toMap(ParsedTransaction::isinCode, ParsedTransaction::name, (a, b) -> a)));
+                parsed.stream().collect(toMap(ParsedTransaction::isinCode, ParsedTransaction::name, (first, second) -> first)));
 
             List<TransactionEntity> transactions = parsed.stream()
-                .map(p -> new TransactionEntity(null,
-                    new TransactionContext(p.date(), isinMap.get(p.isinCode()), depot),
-                    new TransactionValues(p.count(), p.price())))
+                .map(parsedTransaction -> new TransactionEntity(null,
+                    new TransactionContext(parsedTransaction.date(), isinMap.get(parsedTransaction.isinCode()), depot),
+                    new TransactionValues(parsedTransaction.count(), parsedTransaction.price())))
                 .toList();
 
-            repos.transaction().saveAll(transactions);
+            repositories.transaction().saveAll(transactions);
             long duration = now() - start;
-            log.info("Imported {} ZERO transactions in {}", transactions.size(), formatDuration(duration));
+            LOG.info("Imported {} ZERO transactions in {}", transactions.size(), formatDuration(duration));
             return new ImportResult(errors.isEmpty(), new ImportStats(transactions.size(), duration), errors);
         } finally {
             importLock.unlock();
@@ -361,16 +349,14 @@ public class ImportService {
             int lineNum = i + 1;
             try {
                 parseDegiroAccountRow(lines.get(i)).ifPresent(parsed::add);
-            } catch (Exception e) {
-                errors.add("Line " + lineNum + ": " + e.getMessage());
+            } catch (Exception exception) {
+                errors.add("Line " + lineNum + ": " + exception.getMessage());
             }
         }
-
-        // 3. Save
         importLock.lock();
         try {
-            DepotEntity depot = repos.depot().findByName("DeGiro").orElseThrow();
-            repos.dividendPayment().deleteByDepotId(depot.getId());
+            DepotEntity depot = repositories.depot().findByName("DeGiro").orElseThrow();
+            repositories.dividendPayment().deleteByDepotId(depot.getId());
 
             Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedDividendPayment::isinCode).collect(toSet()));
@@ -378,21 +364,21 @@ public class ImportService {
                 parsed.stream().map(ParsedDividendPayment::currencyCode).collect(toSet()));
 
             List<DividendPaymentEntity> payments = parsed.stream()
-                .map(p -> new DividendPaymentEntity(null,
-                    new DividendPaymentContext(p.date(), isinMap.get(p.isinCode()), depot),
-                    new DividendPaymentEntityValues(currencyMap.get(p.currencyCode()), p.amount())))
+                .map(parsed1 -> new DividendPaymentEntity(null,
+                    new DividendPaymentContext(parsed1.date(), isinMap.get(parsed1.isinCode()), depot),
+                    new DividendPaymentEntityValues(currencyMap.get(parsed1.currencyCode()), parsed1.amount())))
                 .toList();
 
-            repos.dividendPayment().saveAll(payments);
+            repositories.dividendPayment().saveAll(payments);
             long duration = now() - start;
-            log.info("Imported {} DeGiro dividend payments in {}", payments.size(), formatDuration(duration));
+            LOG.info("Imported {} DeGiro dividend payments in {}", payments.size(), formatDuration(duration));
             return new ImportResult(errors.isEmpty(), new ImportStats(payments.size(), duration), errors);
         } finally {
             importLock.unlock();
         }
     }
 
-    private static long now() {
+    private long now() {
         return System.currentTimeMillis();
     }
 
@@ -415,9 +401,6 @@ public class ImportService {
 
         return Optional.of(new ParsedDividendPayment(date.atStartOfDay(), isinCode, currencyCode, amount));
     }
-
-    // ---- ZERO Kontoumsaetze (dividends) ----
-
     @Transactional
     public ImportResult importZeroAccount(MultipartFile file) {
         long start = now();
@@ -429,30 +412,28 @@ public class ImportService {
             int lineNum = i + 1;
             try {
                 parseZeroAccountRow(lines.get(i)).ifPresent(parsed::add);
-            } catch (Exception e) {
-                errors.add("Line " + lineNum + ": " + e.getMessage());
+            } catch (Exception exception) {
+                errors.add("Line " + lineNum + ": " + exception.getMessage());
             }
         }
-
-        // 3. Save
         importLock.lock();
         try {
-            DepotEntity depot = repos.depot().findByName("ZERO").orElseThrow();
-            repos.dividendPayment().deleteByDepotId(depot.getId());
+            DepotEntity depot = repositories.depot().findByName("ZERO").orElseThrow();
+            repositories.dividendPayment().deleteByDepotId(depot.getId());
 
             Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedDividendPayment::isinCode).collect(toSet()));
             Map<String, CurrencyEntity> currencyMap = bulkUpsertCurrencies(Set.of("EUR"));
 
             List<DividendPaymentEntity> payments = parsed.stream()
-                .map(p -> new DividendPaymentEntity(null,
-                    new DividendPaymentContext(p.date(), isinMap.get(p.isinCode()), depot),
-                    new DividendPaymentEntityValues(currencyMap.get("EUR"), p.amount())))
+                .map(parsed1 -> new DividendPaymentEntity(null,
+                    new DividendPaymentContext(parsed1.date(), isinMap.get(parsed1.isinCode()), depot),
+                    new DividendPaymentEntityValues(currencyMap.get("EUR"), parsed1.amount())))
                 .toList();
 
-            repos.dividendPayment().saveAll(payments);
+            repositories.dividendPayment().saveAll(payments);
             long duration = now() - start;
-            log.info("Imported {} ZERO dividend payments in {}", payments.size(), formatDuration(duration));
+            LOG.info("Imported {} ZERO dividend payments in {}", payments.size(), formatDuration(duration));
             return new ImportResult(errors.isEmpty(), new ImportStats(payments.size(), duration), errors);
         } finally {
             importLock.unlock();
@@ -479,9 +460,6 @@ public class ImportService {
 
         return Optional.of(new ParsedDividendPayment(date.atStartOfDay(), isinCode, "EUR", amount));
     }
-
-    // ---- dividende.csv ----
-
     @Transactional
     public ImportResult importDividends(MultipartFile file) {
         long start = now();
@@ -492,31 +470,31 @@ public class ImportService {
             int lineNum = i + 1;
             try {
                 parseDividendRow(lines.get(i)).ifPresent(parsed::add);
-            } catch (Exception e) {
-                errors.add("Line " + lineNum + ": " + e.getMessage());
+            } catch (Exception exception) {
+                errors.add("Line " + lineNum + ": " + exception.getMessage());
             }
         }
 
         importLock.lock();
         try {
-            repos.dividend().deleteAll();
+            repositories.dividend().deleteAll();
 
             Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedDividend::isinCode).collect(toSet()));
             bulkUpsertIsinNames(isinMap,
-                parsed.stream().collect(toMap(ParsedDividend::isinCode, ParsedDividend::name, (a, b) -> a)));
+                parsed.stream().collect(toMap(ParsedDividend::isinCode, ParsedDividend::name, (first, second) -> first)));
             Map<String, CurrencyEntity> currencyMap = bulkUpsertCurrencies(
                 parsed.stream().map(ParsedDividend::currencyCode).collect(toSet()));
 
             List<DividendEntity> dividends = parsed.stream()
-                .map(p -> new DividendEntity(null,
-                    new DividendReference(isinMap.get(p.isinCode()), currencyMap.get(p.currencyCode())),
-                    p.dps()))
+                .map(parsed1 -> new DividendEntity(null,
+                    new DividendReference(isinMap.get(parsed1.isinCode()), currencyMap.get(parsed1.currencyCode())),
+                    parsed1.dps()))
                 .toList();
 
-            repos.dividend().saveAll(dividends);
+            repositories.dividend().saveAll(dividends);
             long duration = now() - start;
-            log.info("Imported {} dividend entries in {}", dividends.size(), formatDuration(duration));
+            LOG.info("Imported {} dividend entries in {}", dividends.size(), formatDuration(duration));
             return new ImportResult(errors.isEmpty(), new ImportStats(dividends.size(), duration), errors);
         } finally {
             importLock.unlock();
@@ -537,9 +515,6 @@ public class ImportService {
         double dps = parseGermanDouble(dpsStr);
         return Optional.of(new ParsedDividend(isinCode, name, currencyCode, dps));
     }
-
-    // ---- branches.csv ----
-
     @Transactional
     public ImportResult importBranches(MultipartFile file) {
         long start = now();
@@ -550,42 +525,40 @@ public class ImportService {
             int lineNum = i + 1;
             try {
                 parseBranchRow(lines.get(i)).ifPresent(parsed::add);
-            } catch (Exception e) {
-                errors.add("Line " + lineNum + ": " + e.getMessage());
+            } catch (Exception exception) {
+                errors.add("Line " + lineNum + ": " + exception.getMessage());
             }
         }
-
-        // 3. Save
         importLock.lock();
         try {
             Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedBranch::isinCode).collect(toSet()));
             bulkUpsertIsinNames(isinMap,
-                parsed.stream().collect(toMap(ParsedBranch::isinCode, ParsedBranch::name, (a, b) -> a)));
+                parsed.stream().collect(toMap(ParsedBranch::isinCode, ParsedBranch::name, (first, second) -> first)));
 
             Map<String, BranchEntity> branchMap = new HashMap<>();
             Set<String> branchNames = parsed.stream().map(ParsedBranch::branchName).collect(toSet());
-            repos.branch().findByNameIn(branchNames).forEach(b -> branchMap.put(b.getName(), b));
+            repositories.branch().findByNameIn(branchNames).forEach(branch -> branchMap.put(branch.getName(), branch));
             Set<String> missingBranches = new HashSet<>(branchNames);
             missingBranches.removeAll(branchMap.keySet());
             if (!missingBranches.isEmpty()) {
-                repos.branch().saveAll(
-                    missingBranches.stream().map(n -> new BranchEntity(null, n)).toList()
-                ).forEach(b -> branchMap.put(b.getName(), b));
+                repositories.branch().saveAll(
+                    missingBranches.stream().map(branchName -> new BranchEntity(null, branchName)).toList()
+                ).forEach(branch -> branchMap.put(branch.getName(), branch));
             }
 
-            for (ParsedBranch p : parsed) {
-                IsinEntity isin = isinMap.get(p.isinCode());
-                BranchEntity branch = branchMap.get(p.branchName());
-                em.createNativeQuery("DELETE FROM isin_branch WHERE isin_id = :isinId")
+            for (ParsedBranch parsedBranch : parsed) {
+                IsinEntity isin = isinMap.get(parsedBranch.isinCode());
+                BranchEntity branch = branchMap.get(parsedBranch.branchName());
+                entityManager.createNativeQuery("DELETE FROM isin_branch WHERE isin_id = :isinId")
                     .setParameter("isinId", isin.getId()).executeUpdate();
-                em.createNativeQuery("INSERT INTO isin_branch (isin_id, branch_id) VALUES (:isinId, :branchId)")
+                entityManager.createNativeQuery("INSERT INTO isin_branch (isin_id, branch_id) VALUES (:isinId, :branchId)")
                     .setParameter("isinId", isin.getId())
                     .setParameter("branchId", branch.getId()).executeUpdate();
             }
 
             long duration = now() - start;
-            log.info("Imported {} branch mappings in {}", parsed.size(), formatDuration(duration));
+            LOG.info("Imported {} branch mappings in {}", parsed.size(), formatDuration(duration));
             return new ImportResult(errors.isEmpty(), new ImportStats(parsed.size(), duration), errors);
         } finally {
             importLock.unlock();
@@ -603,9 +576,6 @@ public class ImportService {
         if (isinCode.isBlank() || branchName.isBlank()) return empty();
         return Optional.of(new ParsedBranch(isinCode, name, branchName));
     }
-
-    // ---- countries.csv ----
-
     @Transactional
     public ImportResult importCountries(MultipartFile file) {
         long start = now();
@@ -616,42 +586,40 @@ public class ImportService {
             int lineNum = i + 1;
             try {
                 parseCountryRow(lines.get(i)).ifPresent(parsed::add);
-            } catch (Exception e) {
-                errors.add("Line " + lineNum + ": " + e.getMessage());
+            } catch (Exception exception) {
+                errors.add("Line " + lineNum + ": " + exception.getMessage());
             }
         }
-
-        // 3. Save
         importLock.lock();
         try {
             Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedCountry::isinCode).collect(toSet()));
             bulkUpsertIsinNames(isinMap,
-                parsed.stream().collect(toMap(ParsedCountry::isinCode, ParsedCountry::name, (a, b) -> a)));
+                parsed.stream().collect(toMap(ParsedCountry::isinCode, ParsedCountry::name, (first, second) -> first)));
 
             Map<String, CountryEntity> countryMap = new HashMap<>();
             Set<String> countryNames = parsed.stream().map(ParsedCountry::countryName).collect(toSet());
-            repos.country().findByNameIn(countryNames).forEach(c -> countryMap.put(c.getName(), c));
+            repositories.country().findByNameIn(countryNames).forEach(country -> countryMap.put(country.getName(), country));
             Set<String> missingCountries = new HashSet<>(countryNames);
             missingCountries.removeAll(countryMap.keySet());
             if (!missingCountries.isEmpty()) {
-                repos.country().saveAll(
-                    missingCountries.stream().map(n -> new CountryEntity(null, n)).toList()
-                ).forEach(c -> countryMap.put(c.getName(), c));
+                repositories.country().saveAll(
+                    missingCountries.stream().map(countryName -> new CountryEntity(null, countryName)).toList()
+                ).forEach(country -> countryMap.put(country.getName(), country));
             }
 
-            for (ParsedCountry p : parsed) {
-                IsinEntity isin = isinMap.get(p.isinCode());
-                CountryEntity country = countryMap.get(p.countryName());
-                em.createNativeQuery("DELETE FROM isin_country WHERE isin_id = :isinId")
+            for (ParsedCountry parsedCountry : parsed) {
+                IsinEntity isin = isinMap.get(parsedCountry.isinCode());
+                CountryEntity country = countryMap.get(parsedCountry.countryName());
+                entityManager.createNativeQuery("DELETE FROM isin_country WHERE isin_id = :isinId")
                     .setParameter("isinId", isin.getId()).executeUpdate();
-                em.createNativeQuery("INSERT INTO isin_country (isin_id, country_id) VALUES (:isinId, :countryId)")
+                entityManager.createNativeQuery("INSERT INTO isin_country (isin_id, country_id) VALUES (:isinId, :countryId)")
                     .setParameter("isinId", isin.getId())
                     .setParameter("countryId", country.getId()).executeUpdate();
             }
 
             long duration = now() - start;
-            log.info("Imported {} country mappings in {}", parsed.size(), formatDuration(duration));
+            LOG.info("Imported {} country mappings in {}", parsed.size(), formatDuration(duration));
             return new ImportResult(errors.isEmpty(), new ImportStats(parsed.size(), duration), errors);
         } finally {
             importLock.unlock();
@@ -669,9 +637,6 @@ public class ImportService {
         if (isinCode.isBlank() || countryName.isBlank()) return empty();
         return Optional.of(new ParsedCountry(isinCode, name, countryName));
     }
-
-    // ---- ticker_symbol.csv ----
-
     @Transactional
     public ImportResult importTickerSymbols(MultipartFile file) {
         long start = now();
@@ -682,35 +647,33 @@ public class ImportService {
             int lineNum = i + 1;
             try {
                 parseTickerSymbolRow(lines.get(i)).ifPresent(parsed::add);
-            } catch (Exception e) {
-                errors.add("Line " + lineNum + ": " + e.getMessage());
+            } catch (Exception exception) {
+                errors.add("Line " + lineNum + ": " + exception.getMessage());
             }
         }
-
-        // 3. Save
         importLock.lock();
         try {
             Map<String, IsinEntity> isinMap = bulkUpsertIsins(
                 parsed.stream().map(ParsedTickerSymbol::isinCode).collect(toSet()));
             bulkUpsertIsinNames(isinMap,
                 parsed.stream()
-                    .filter(p -> !p.name().isBlank())
-                    .collect(toMap(ParsedTickerSymbol::isinCode, ParsedTickerSymbol::name, (a, b) -> a)));
+                    .filter(ticker -> !ticker.name().isBlank())
+                    .collect(toMap(ParsedTickerSymbol::isinCode, ParsedTickerSymbol::name, (first, second) -> first)));
 
             int imported = 0;
-            for (ParsedTickerSymbol p : parsed) {
-                IsinEntity isin = isinMap.get(p.isinCode());
+            for (ParsedTickerSymbol parsedTicker : parsed) {
+                IsinEntity isin = isinMap.get(parsedTicker.isinCode());
 
-                TickerSymbolEntity tickerSymbol = repos.tickerSymbol().findBySymbol(p.symbol())
-                    .orElseGet(() -> repos.tickerSymbol().save(new TickerSymbolEntity(null, p.symbol())));
+                TickerSymbolEntity tickerSymbol = repositories.tickerSymbol().findBySymbol(parsedTicker.symbol())
+                    .orElseGet(() -> repositories.tickerSymbol().save(new TickerSymbolEntity(null, parsedTicker.symbol())));
 
-                Long count = (Long) em.createNativeQuery(
+                Long count = (Long) entityManager.createNativeQuery(
                         "SELECT COUNT(*) FROM isin_ticker WHERE isin_id = :isinId AND ticker_symbol_id = :tsId")
                     .setParameter("isinId", isin.getId())
                     .setParameter("tsId", tickerSymbol.getId())
                     .getSingleResult();
                 if (count == 0) {
-                    em.createNativeQuery("INSERT INTO isin_ticker (isin_id, ticker_symbol_id) VALUES (:isinId, :tsId)")
+                    entityManager.createNativeQuery("INSERT INTO isin_ticker (isin_id, ticker_symbol_id) VALUES (:isinId, :tsId)")
                         .setParameter("isinId", isin.getId())
                         .setParameter("tsId", tickerSymbol.getId())
                         .executeUpdate();
@@ -719,14 +682,14 @@ public class ImportService {
             }
 
             long duration = now() - start;
-            log.info("Imported {} ticker symbol mappings in {}", imported, formatDuration(duration));
+            LOG.info("Imported {} ticker symbol mappings in {}", imported, formatDuration(duration));
             return new ImportResult(errors.isEmpty(), new ImportStats(imported, duration), errors);
         } finally {
             importLock.unlock();
         }
     }
 
-    private static Optional<ParsedTickerSymbol> parseTickerSymbolRow(String line) {
+    private Optional<ParsedTickerSymbol> parseTickerSymbolRow(String line) {
         if (line.isBlank()) return empty();
 
         String[] parts = line.split(";", -1);

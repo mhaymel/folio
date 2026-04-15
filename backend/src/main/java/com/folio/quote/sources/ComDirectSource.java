@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 @Order(9)
 final class ComDirectSource implements QuoteSource {
 
-    private static final Logger log = getLogger(ComDirectSource.class);
+    private static final Logger LOG = getLogger(ComDirectSource.class);
 
     private static final String URL_TEMPLATE = "https://www.comdirect.de/inf/zertifikate/%s";
 
@@ -43,16 +43,16 @@ final class ComDirectSource implements QuoteSource {
     @Override
     public Optional<Double> fetchQuote(Isin isin) {
         String url = format(URL_TEMPLATE, isin.value());
-        return QuoteFetchHelper.fetchHtml(url, log, providerName()).flatMap(html -> {
-            Matcher jm = JSON_PRICE.matcher(html);
-            if (jm.find()) {
-                return QuoteFetchHelper.parseDecimal(jm.group(1));
+        return QuoteFetchHelper.fetchHtml(url, LOG, providerName()).flatMap(html -> {
+            Matcher jsonMatcher = JSON_PRICE.matcher(html);
+            if (jsonMatcher.find()) {
+                return QuoteFetchHelper.parseDecimal(jsonMatcher.group(1));
             }
-            Matcher m = PRICE_PATTERN.matcher(html);
-            if (m.find()) {
-                return QuoteFetchHelper.parseDecimal(m.group(1));
+            Matcher matcher = PRICE_PATTERN.matcher(html);
+            if (matcher.find()) {
+                return QuoteFetchHelper.parseDecimal(matcher.group(1));
             }
-            log.debug("ComDirect: no price found for {}", isin);
+            LOG.debug("ComDirect: no price found for {}", isin);
             return empty();
         });
     }

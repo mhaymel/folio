@@ -1,6 +1,6 @@
 # Enum Rules
 
-## R-009a
+## R-008a
 
 Enum names must start with an uppercase letter and use CamelCase.
 
@@ -20,7 +20,7 @@ enum PaymentType { }
 
 ---
 
-## R-009b
+## R-008b
 
 Enum names must be **nouns** that describe the category of values, not verbs or actions.
 
@@ -40,7 +40,7 @@ enum ValidationStatus { }
 
 ---
 
-## R-009c
+## R-008c
 
 Enum names must be **meaningful** and clearly describe what the set of constants represents.
 
@@ -62,7 +62,7 @@ enum UserRole { }
 
 ---
 
-## R-009d
+## R-008d
 
 Enum names must be more than one character long. Single-letter names are forbidden.
 
@@ -82,7 +82,7 @@ enum Severity { }
 
 ---
 
-## R-009e
+## R-008e
 
 Enum constants must be written in UPPER_SNAKE_CASE.
 

@@ -3,6 +3,7 @@ package com.folio.dto;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.folio.domain.Isin;
 import com.folio.domain.TickerSymbol;
+import com.folio.domain.TickerSymbolFactory;
 
 public final class IsinDto {
     private SecurityIdentity identity;
@@ -14,7 +15,7 @@ public final class IsinDto {
     }
 
     public IsinDto(Isin isin, String tickerSymbol, String name, String country, String branch) {
-        this.identity = new SecurityIdentity(isin, TickerSymbol.of(tickerSymbol).orElse(null), name);
+        this.identity = new SecurityIdentity(isin, TickerSymbolFactory.of(tickerSymbol).orElse(null), name);
         this.classification = new IsinClassification(country, branch);
     }
 
@@ -26,7 +27,7 @@ public final class IsinDto {
     public Isin getIsin() { return identity.isin(); }
     public void setIsin(Isin isin) { this.identity = new SecurityIdentity(isin, identity.tickerSymbol(), identity.name()); }
     public String getTickerSymbol() { return identity.tickerSymbol() == null ? null : identity.tickerSymbol().value(); }
-    public void setTickerSymbol(String tickerSymbol) { this.identity = new SecurityIdentity(identity.isin(), TickerSymbol.of(tickerSymbol).orElse(null), identity.name()); }
+    public void setTickerSymbol(String tickerSymbol) { this.identity = new SecurityIdentity(identity.isin(), TickerSymbolFactory.of(tickerSymbol).orElse(null), identity.name()); }
     public String getName() { return identity.name(); }
     public void setName(String name) { this.identity = new SecurityIdentity(identity.isin(), identity.tickerSymbol(), name); }
     public String getCountry() { return classification.country(); }

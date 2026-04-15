@@ -15,14 +15,14 @@ import org.springframework.stereotype.Component;
 @Component
 final class RequestLoggingFilter implements Filter {
 
-    private static final Logger log = getLogger(RequestLoggingFilter.class);
+    private static final Logger LOG = getLogger(RequestLoggingFilter.class);
 
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        HttpServletRequest req = (HttpServletRequest) request;
-        log.info("Incoming request: {} {}", req.getMethod(), req.getRequestURI());
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        LOG.info("Incoming request: {} {}", httpRequest.getMethod(), httpRequest.getRequestURI());
         chain.doFilter(request, response);
     }
 }

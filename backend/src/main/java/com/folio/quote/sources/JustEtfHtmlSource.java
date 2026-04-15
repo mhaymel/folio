@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import static java.util.Optional.empty;
 
-import static java.lang.String.format;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,7 +25,7 @@ import java.util.regex.Pattern;
 @Order(5)
 final class JustEtfHtmlSource implements QuoteSource {
 
-    private static final Logger log = getLogger(JustEtfHtmlSource.class);
+    private static final Logger LOG = getLogger(JustEtfHtmlSource.class);
 
     private static final String URL_TEMPLATE =
         "https://www.justetf.com/at/etf-profile.html?isin=%s";
@@ -46,16 +45,16 @@ final class JustEtfHtmlSource implements QuoteSource {
     @Override
     public Optional<Double> fetchQuote(Isin isin) {
         String url = format(URL_TEMPLATE, isin.value());
-        return QuoteFetchHelper.fetchHtml(url, log, providerName()).flatMap(html -> {
-            Matcher jm = JSON_PRICE.matcher(html);
-            if (jm.find()) {
-                return QuoteFetchHelper.parseDecimal(jm.group(1));
+        return QuoteFetchHelper.fetchHtml(url, LOG, providerName()).flatMap(html -> {
+            Matcher jsonMatcher = JSON_PRICE.matcher(html);
+            if (jsonMatcher.find()) {
+                return QuoteFetchHelper.parseDecimal(jsonMatcher.group(1));
             }
-            Matcher m = PRICE_PATTERN.matcher(html);
-            if (m.find()) {
-                return QuoteFetchHelper.parseDecimal(m.group(1));
+            Matcher matcher = PRICE_PATTERN.matcher(html);
+            if (matcher.find()) {
+                return QuoteFetchHelper.parseDecimal(matcher.group(1));
             }
-            log.debug("JustETF HTML: no price found for {}", isin);
+            LOG.debug("JustETF HTML: no price found for {}", isin);
             return empty();
         });
     }

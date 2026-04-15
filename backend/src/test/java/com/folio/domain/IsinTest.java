@@ -72,7 +72,7 @@ final class IsinTest {
     @Test
     void shouldReturnPresentOptionalForValidIsin() {
         // given / when
-        Optional<Isin> result = Isin.of("IE00B4L5Y983");
+        Optional<Isin> result = IsinFactory.of("IE00B4L5Y983");
 
         // then
         assertThat(result).isPresent();
@@ -82,7 +82,7 @@ final class IsinTest {
     @Test
     void shouldReturnEmptyOptionalForNull() {
         // given / when
-        Optional<Isin> result = Isin.of(null);
+        Optional<Isin> result = IsinFactory.of(null);
 
         // then
         assertThat(result).isEmpty();
@@ -91,7 +91,7 @@ final class IsinTest {
     @Test
     void shouldReturnEmptyOptionalForInvalidLength() {
         // given / when
-        Optional<Isin> result = Isin.of("TOO_SHORT");
+        Optional<Isin> result = IsinFactory.of("TOO_SHORT");
 
         // then
         assertThat(result).isEmpty();
@@ -100,10 +100,10 @@ final class IsinTest {
     @Test
     void shouldValidateCorrectly() {
         // given / when / then
-        assertThat(Isin.isValid("IE00B4L5Y983")).isTrue();
-        assertThat(Isin.isValid("short")).isFalse();
-        assertThat(Isin.isValid(null)).isFalse();
-        assertThat(Isin.isValid("IE00 B4L5Y98")).isFalse();
+        assertThat(IsinFactory.isValid("IE00B4L5Y983")).isTrue();
+        assertThat(IsinFactory.isValid("short")).isFalse();
+        assertThat(IsinFactory.isValid(null)).isFalse();
+        assertThat(IsinFactory.isValid("IE00 B4L5Y98")).isFalse();
     }
 
     @Test

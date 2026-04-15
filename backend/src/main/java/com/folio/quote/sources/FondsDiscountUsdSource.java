@@ -16,7 +16,6 @@ import java.util.Optional;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
-import static java.lang.String.format;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,7 +27,7 @@ import java.util.regex.Pattern;
 @Order(8)
 final class FondsDiscountUsdSource implements QuoteSource {
 
-    private static final Logger log = getLogger(FondsDiscountUsdSource.class);
+    private static final Logger LOG = getLogger(FondsDiscountUsdSource.class);
 
     private static final String URL_TEMPLATE = "https://www.fondsdiscount.de/fonds/etf/%s/";
 
@@ -49,15 +48,15 @@ final class FondsDiscountUsdSource implements QuoteSource {
     @Override
     public Optional<Double> fetchQuote(Isin isin) {
         String url = format(URL_TEMPLATE, isin.value());
-        return QuoteFetchHelper.fetchHtml(url, log, providerName()).flatMap(html -> {
-            Matcher m = USD_PRICE_PATTERN.matcher(html);
-            if (m.find()) {
-                Optional<Double> usdPrice = QuoteFetchHelper.parseDecimal(m.group(1));
+        return QuoteFetchHelper.fetchHtml(url, LOG, providerName()).flatMap(html -> {
+            Matcher matcher = USD_PRICE_PATTERN.matcher(html);
+            if (matcher.find()) {
+                Optional<Double> usdPrice = QuoteFetchHelper.parseDecimal(matcher.group(1));
                 if (usdPrice.isPresent()) {
                     return of(ecb.usdToEur(usdPrice.get()));
                 }
             }
-            log.debug("FondsDiscount USD: no price found for {}", isin);
+            LOG.debug("FondsDiscount USD: no price found for {}", isin);
             return empty();
         });
     }

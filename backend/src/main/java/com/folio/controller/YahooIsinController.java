@@ -37,15 +37,15 @@ import static java.util.Objects.requireNonNull;
 @Tag(name = "Yahoo Ticker for ISIN", description = "Resolve ticker symbols from Yahoo Finance for all known ISINs")
 class YahooIsinController {
 
-    private final EntityManager em;
+    private final EntityManager entityManager;
     private final IsinTickerSearch isinTickerSearch;
-    private final YahooIsinRepositories repos;
+    private final YahooIsinRepositories repositories;
 
-    public YahooIsinController(EntityManager em, IsinTickerSearch isinTickerSearch,
+    public YahooIsinController(EntityManager entityManager, IsinTickerSearch isinTickerSearch,
                                IsinRepository isinRepository, TickerSymbolRepository tickerSymbolRepository) {
-        this.em = requireNonNull(em);
+        this.entityManager = requireNonNull(entityManager);
         this.isinTickerSearch = requireNonNull(isinTickerSearch);
-        this.repos = new YahooIsinRepositories(requireNonNull(isinRepository), requireNonNull(tickerSymbolRepository));
+        this.repositories = new YahooIsinRepositories(requireNonNull(isinRepository), requireNonNull(tickerSymbolRepository));
     }
 
     @PostMapping("/fetch")
@@ -61,10 +61,10 @@ class YahooIsinController {
         IsinTickerSearchResult searchResult = isinTickerSearch.search(isins);
 
         List<YahooIsinWithTickerItem> withTicker = searchResult.found().entrySet().stream()
-                .map(e -> new YahooIsinWithTickerItem(
-                        e.getKey().value(),
-                        e.getValue(),
-                        isinToName.get(e.getKey().value())))
+                .map(entry -> new YahooIsinWithTickerItem(
+                        entry.getKey().value(),
+                        entry.getValue(),
+                        isinToName.get(entry.getKey().value())))
                 .sorted(Comparator.comparing(YahooIsinWithTickerItem::isin))
                 .toList();
 
@@ -73,14 +73,13 @@ class YahooIsinController {
                 .sorted(Comparator.comparing(YahooIsinWithoutTickerItem::isin))
                 .toList();
 
-        // Ticker symbols that appear for more than one ISIN in this fetch result
         List<YahooIsinDuplicateTickerItem> duplicateTickers = withTicker.stream()
                 .collect(Collectors.groupingBy(YahooIsinWithTickerItem::tickerSymbol))
                 .entrySet().stream()
-                .filter(e -> e.getValue().size() > 1)
-                .flatMap(e -> e.getValue().stream()
-                        .map(i -> new YahooIsinDuplicateTickerItem(i.isin(), i.tickerSymbol(), i.name())))
-                .sorted(Comparator.comparing((YahooIsinDuplicateTickerItem i) -> i.tickerSymbol().value())
+                .filter(entry -> entry.getValue().size() > 1)
+                .flatMap(entry -> entry.getValue().stream()
+                        .map(item -> new YahooIsinDuplicateTickerItem(item.isin(), item.tickerSymbol(), item.name())))
+                .sorted(Comparator.comparing((YahooIsinDuplicateTickerItem duplicate) -> duplicate.tickerSymbol().value())
                         .thenComparing(YahooIsinDuplicateTickerItem::isin))
                 .toList();
 
@@ -94,43 +93,43 @@ class YahooIsinController {
         int created = 0;
         int updated = 0;
         for (YahooIsinWithTickerItem item : items) {
-            YahooIsinSaveResult r = saveItem(item);
-            created += r.created();
-            updated += r.updated();
+            YahooIsinSaveResult result = saveItem(item);
+            created += result.created();
+            updated += result.updated();
         }
         return ResponseEntity.ok(new YahooIsinSaveResult(created, updated));
     }
 
     private YahooIsinSaveResult saveItem(YahooIsinWithTickerItem item) {
-        Optional<IsinEntity> isinEntityOpt = repos.isinRepository().findByIsin(item.isin());
+        Optional<IsinEntity> isinEntityOpt = repositories.isinRepository().findByIsin(item.isin());
         if (isinEntityOpt.isEmpty()) return new YahooIsinSaveResult(0, 0);
         IsinEntity isinEntity = isinEntityOpt.get();
 
         String symbol = item.tickerSymbol().value();
-        TickerSymbolEntity tickerSymbol = repos.tickerSymbolRepository().findBySymbol(symbol)
-            .orElseGet(() -> repos.tickerSymbolRepository().save(new TickerSymbolEntity(null, symbol)));
+        TickerSymbolEntity tickerSymbol = repositories.tickerSymbolRepository().findBySymbol(symbol)
+            .orElseGet(() -> repositories.tickerSymbolRepository().save(new TickerSymbolEntity(null, symbol)));
 
-        Long exactMatch = (Long) em.createNativeQuery(
+        Long exactMatch = (Long) entityManager.createNativeQuery(
                 "SELECT COUNT(*) FROM isin_ticker WHERE isin_id = :isinId AND ticker_symbol_id = :tsId")
             .setParameter("isinId", isinEntity.getId())
             .setParameter("tsId", tickerSymbol.getId())
             .getSingleResult();
         if (exactMatch > 0) return new YahooIsinSaveResult(0, 0);
 
-        List<?> existingLink = em.createNativeQuery(
+        List<?> existingLink = entityManager.createNativeQuery(
                 "SELECT id FROM isin_ticker WHERE isin_id = :isinId")
             .setParameter("isinId", isinEntity.getId())
             .getResultList();
 
         if (!existingLink.isEmpty()) {
-            em.createNativeQuery(
+            entityManager.createNativeQuery(
                     "UPDATE isin_ticker SET ticker_symbol_id = :tsId WHERE isin_id = :isinId")
                 .setParameter("tsId", tickerSymbol.getId())
                 .setParameter("isinId", isinEntity.getId())
                 .executeUpdate();
             return new YahooIsinSaveResult(0, 1);
         }
-        em.createNativeQuery(
+        entityManager.createNativeQuery(
                 "INSERT INTO isin_ticker (isin_id, ticker_symbol_id) VALUES (:isinId, :tsId)")
             .setParameter("isinId", isinEntity.getId())
             .setParameter("tsId", tickerSymbol.getId())
@@ -140,7 +139,7 @@ class YahooIsinController {
 
     @SuppressWarnings("unchecked")
     private Map<String, String> loadAllIsinsWithNames() {
-        List<Object[]> rows = em.createNativeQuery("""
+        List<Object[]> rows = entityManager.createNativeQuery("""
                 SELECT i.isin,
                        (SELECT n.name FROM isin_name n WHERE n.isin_id = i.id ORDER BY n.id ASC LIMIT 1)
                 FROM isin i

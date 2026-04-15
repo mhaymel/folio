@@ -4,8 +4,6 @@ import com.folio.dto.ExportRequest;
 import com.folio.dto.PaginatedResponseDto;
 import com.folio.model.DepotEntity;
 import com.folio.repository.DepotRepository;
-import com.folio.service.ExportService;
-import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
 import com.folio.service.SortRequest;
 import com.folio.dto.ExportColumn;
@@ -32,12 +30,12 @@ final class DepotController {
         "name", SortHelper.text(DepotEntity::getName)
     );
 
-    private final DepotRepository depotRepo;
-    private final ExportService exportService;
+    private final DepotRepository depotRepository;
+    private final ListOperations listOperations;
 
-    public DepotController(DepotRepository depotRepo, ExportService exportService) {
-        this.depotRepo = requireNonNull(depotRepo);
-        this.exportService = requireNonNull(exportService);
+    public DepotController(DepotRepository depotRepository, ListOperations listOperations) {
+        this.depotRepository = requireNonNull(depotRepository);
+        this.listOperations = requireNonNull(listOperations);
     }
 
     @GetMapping
@@ -48,7 +46,7 @@ final class DepotController {
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
         List<DepotEntity> data = sorted(sortField, sortDir);
-        return ResponseEntity.ok(PaginationHelper.paginate(data, page, pageSize));
+        return ResponseEntity.ok(listOperations.paginationHelper().paginate(data, page, pageSize));
     }
 
     @GetMapping("/export")
@@ -59,11 +57,11 @@ final class DepotController {
             @RequestParam(defaultValue = "asc") String sortDir) {
         List<DepotEntity> data = sorted(sortField != null ? sortField : "name", sortDir);
         List<ExportColumn<DepotEntity>> columns = List.of(new ExportColumn<>("DepotEntity", DepotEntity::getName));
-        return exportService.export(new ExportRequest<>(data, columns, format, "depots"));
+        return listOperations.exportService().export(new ExportRequest<>(data, columns, format, "depots"));
     }
 
     private List<DepotEntity> sorted(String sortField, String sortDir) {
-        List<DepotEntity> data = depotRepo.findAllByOrderByNameAsc();
-        return SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
+        List<DepotEntity> data = depotRepository.findAllByOrderByNameAsc();
+        return listOperations.sortHelper().sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
     }
 }

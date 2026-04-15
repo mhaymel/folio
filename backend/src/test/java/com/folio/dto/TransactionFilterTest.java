@@ -12,8 +12,8 @@ final class TransactionFilterTest {
         var filter = new TransactionFilter("IE00B4L5Y983", null, null, "DeGiro", null, null);
 
         // then
-        assertThat(filter.isin()).isEqualTo("IE00B4L5Y983");
-        assertThat(filter.depot()).isEqualTo("DeGiro");
+        assertThat(filter.isinFragment()).isEqualTo("IE00B4L5Y983");
+        assertThat(filter.depotFragment()).isEqualTo("DeGiro");
         assertThat(filter.fromDate()).isNull();
         assertThat(filter.toDate()).isNull();
     }
@@ -24,9 +24,9 @@ final class TransactionFilterTest {
         var filter = TransactionFilter.none();
 
         // then
-        assertThat(filter.isin()).isNull();
-        assertThat(filter.name()).isNull();
-        assertThat(filter.depot()).isNull();
+        assertThat(filter.isinFragment()).isNull();
+        assertThat(filter.nameFragment()).isNull();
+        assertThat(filter.depotFragment()).isNull();
         assertThat(filter.fromDate()).isNull();
         assertThat(filter.toDate()).isNull();
     }

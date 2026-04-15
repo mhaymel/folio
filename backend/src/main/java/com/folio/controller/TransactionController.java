@@ -7,11 +7,9 @@ import com.folio.dto.TransactionDto;
 import com.folio.dto.TransactionFilter;
 import com.folio.dto.TransactionFiltersDto;
 import com.folio.dto.TransactionPaginatedResponseDto;
-import com.folio.service.ExportService;
-import com.folio.service.PaginationHelper;
+import com.folio.service.PortfolioService;
 import com.folio.service.SortHelper;
 import com.folio.service.SortRequest;
-import com.folio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -33,10 +31,9 @@ import static java.util.Objects.requireNonNull;
 @Tag(name = "Transactions", description = "TransactionEntity data endpoints")
 final class TransactionController {
 
-
     private static final Map<String, Comparator<TransactionDto>> SORT_FIELDS = Map.of(
         "date", SortHelper.comparing(TransactionDto::getRawDate),
-        "isin", SortHelper.text(t -> t.getIsin() == null ? null : t.getIsin().value()),
+        "isin", SortHelper.text(transaction -> transaction.getIsin() == null ? null : transaction.getIsin().value()),
         "tickerSymbol", SortHelper.text(TransactionDto::getTickerSymbol),
         "name", SortHelper.text(TransactionDto::getName),
         "depot", SortHelper.text(TransactionDto::getDepot),
@@ -45,20 +42,20 @@ final class TransactionController {
     );
 
     private final PortfolioService portfolioService;
-    private final ExportService exportService;
+    private final ListOperations listOperations;
 
-    public TransactionController(PortfolioService portfolioService, ExportService exportService) {
+    public TransactionController(PortfolioService portfolioService, ListOperations listOperations) {
         this.portfolioService = requireNonNull(portfolioService);
-        this.exportService = requireNonNull(exportService);
+        this.listOperations = requireNonNull(listOperations);
     }
 
     @GetMapping
     @Operation(summary = "Get all transactions with optional filters, sorting, and pagination")
     public ResponseEntity<TransactionPaginatedResponseDto> getTransactions(
-            @RequestParam(required = false) String isin,
-            @RequestParam(required = false) String tickerSymbol,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String depot,
+            @RequestParam(required = false, defaultValue = "") String isin,
+            @RequestParam(required = false, defaultValue = "") String tickerSymbol,
+            @RequestParam(required = false, defaultValue = "") String name,
+            @RequestParam(required = false, defaultValue = "") String depot,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate,
             @RequestParam(required = false, defaultValue = "date") String sortField,
@@ -69,12 +66,12 @@ final class TransactionController {
         List<TransactionDto> data = portfolioService.getTransactions(
             new TransactionFilter(isin, tickerSymbol, name, depot, fromDate, toDate));
 
-        data = SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
+        data = listOperations.sortHelper().sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
 
         long filteredCount = data.size();
-        double sumCount = data.stream().mapToDouble(t -> t.getCount() != null ? t.getCount() : 0).sum();
+        double sumCount = data.stream().mapToDouble(transaction -> transaction.getCount() != null ? transaction.getCount() : 0).sum();
 
-        PaginatedResponseDto<TransactionDto> paginated = PaginationHelper.paginate(data, page, pageSize);
+        PaginatedResponseDto<TransactionDto> paginated = listOperations.paginationHelper().paginate(data, page, pageSize);
 
         return ResponseEntity.ok(new TransactionPaginatedResponseDto(
             paginated.getItems(), paginated.getPage(), paginated.getPageSize(),
@@ -86,9 +83,9 @@ final class TransactionController {
     @GetMapping("/filters")
     @Operation(summary = "Get distinct filter options for transactions")
     public ResponseEntity<TransactionFiltersDto> getTransactionFilters() {
-        List<TransactionDto> allTxns = portfolioService.getTransactions(TransactionFilter.none());
-        List<String> depots = allTxns.stream()
-            .map(TransactionDto::getDepot).filter(d -> d != null && !d.isBlank())
+        List<TransactionDto> allTransactions = portfolioService.getTransactions(TransactionFilter.none());
+        List<String> depots = allTransactions.stream()
+            .map(TransactionDto::getDepot).filter(depot -> depot != null && !depot.isBlank())
             .distinct().sorted().toList();
         return ResponseEntity.ok(new TransactionFiltersDto(depots));
     }
@@ -97,10 +94,10 @@ final class TransactionController {
     @Operation(summary = "Export transactions as CSV or Excel")
     public ResponseEntity<byte[]> exportTransactions(
             @RequestParam(defaultValue = "csv") String format,
-            @RequestParam(required = false) String isin,
-            @RequestParam(required = false) String tickerSymbol,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String depot,
+            @RequestParam(required = false, defaultValue = "") String isin,
+            @RequestParam(required = false, defaultValue = "") String tickerSymbol,
+            @RequestParam(required = false, defaultValue = "") String name,
+            @RequestParam(required = false, defaultValue = "") String depot,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "desc") String sortDir) {
 
@@ -108,7 +105,7 @@ final class TransactionController {
             new TransactionFilter(isin, tickerSymbol, name, depot, null, null));
 
         if (sortField != null && !sortField.isBlank()) {
-            data = SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
+            data = listOperations.sortHelper().sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
         }
 
         List<ExportColumn<TransactionDto>> columns = List.of(
@@ -121,6 +118,6 @@ final class TransactionController {
                 new ExportColumn<>("Share Price", TransactionDto::getSharePrice)
         );
 
-        return exportService.export(new ExportRequest<>(data, columns, format, "transactions"));
+        return listOperations.exportService().export(new ExportRequest<>(data, columns, format, "transactions"));
     }
 }

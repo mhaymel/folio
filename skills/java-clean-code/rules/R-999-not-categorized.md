@@ -10,7 +10,7 @@ Purpose: a container for rules that do not fit existing categories. Rules will b
 
 Do not duplicate existing rules. Before adding an uncategorized rule, search the `rules/` folder to ensure the same guidance doesn't already exist in another file.
 
-**Bad:** adding a rule about `lowerCamelCase` to R-999 while `R-004-class-field.md` and `R-012-method-naming.md` already cover naming.
+**Bad:** adding a rule about `lowerCamelCase` to R-999 while `R-003-class-field.md` and `R-011-method-naming.md` already cover naming.
 
 **Good:** add a short cross-reference to the existing rule and explain why the new rule is different (if it truly is).
 
@@ -18,7 +18,7 @@ Do not duplicate existing rules. Before adding an uncategorized rule, search the
 
 ## R-999c
 
-All identifiers — class names, interface names, record names, enum names, method names, field names, parameter names, local variable names, and package names — must be in English. Do not use German or any other non-English language.
+All identifiers ΓÇö class names, interface names, record names, enum names, method names, field names, parameter names, local variable names, and package names ΓÇö must be in English. Do not use German or any other non-English language.
 
 **Bad:**
 
@@ -51,7 +51,7 @@ final class UserService {
 ```
 ---
 
-## R-999c
+## R-999d
 
 Magic values are forbidden. A magic value is a literal value that appears in code without explanation. Use named constants instead of magic values. Exceptions are trivial literals that like  `0`, `1`, `-1`, ""
 
@@ -87,6 +87,90 @@ final class OrderService {
     void timeout() {
         client.call(TIMEOUT_MS);
     }
+}
+```
+
+---
+
+## R-999e
+
+All identifiers must be pronounceable.
+
+**Bad:**
+
+```java
+final class DtaRcrd {
+    private final Date genymdhms;
+    private final Date modymdhms;
+    private final String pszqint;
+}
+```
+
+**Good:**
+
+```java
+final class DataRecord {
+    private final Date generationTimestamp;
+    private final Date modificationTimestamp;
+    private final String quantity;
+}
+```
+
+---
+
+## R-999f
+
+All identifiers must be searchable. Single-letter names and very short abbreviations are hard to grep for.
+
+**Exception:** loop variables `i`, `j`, `k` in classic `for` loops are acceptable.
+
+**Bad:**
+
+```java
+final class OrderService {
+    void process() {
+        int d = 0;         // days? discount? delta? unsearchable
+        String s = "EUR";  // currency? status? unsearchable
+        for (int i = 0; i < orders.size(); i++) {
+            int t = orders.get(i).total(); // what is t?
+        }
+    }
+}
+```
+
+**Good:**
+
+```java
+final class OrderService {
+    void process() {
+        int elapsedDays = 0;
+        String currencyCode = "EUR";
+        for (int i = 0; i < orders.size(); i++) {
+            int orderTotal = orders.get(i).total();
+        }
+    }
+}
+```
+
+---
+
+## R-999g
+
+Do not name a variable, parameter, or record component after a domain type when it does not represent an instance of that domain type. If a tiny type (e.g. `Isin`, `TickerSymbol`) exists for a concept, a `String` variable holding something other than a valid instance of that concept — such as a search term, partial match, or filter fragment — must use a distinct name that reflects its actual purpose (e.g. `isinFragment`, `tickerSymbolFragment`, `nameFragment`).
+
+**Bad:**
+
+```java
+// "isin" suggests the field holds a valid Isin, but it is actually a partial search string
+record TickerSymbolFilter(String isin, String tickerSymbol, String name) {
+}
+```
+
+**Good:**
+
+```java
+// Names make clear these are search fragments, not domain objects
+record TickerSymbolFilter(String isinFragment, String tickerSymbolFragment, String nameFragment) {
 }
 ```
 

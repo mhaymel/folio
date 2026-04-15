@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import static java.util.Optional.empty;
 
-import static java.lang.String.format;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,7 +25,7 @@ import java.util.regex.Pattern;
 @Order(7)
 final class FondsDiscountEurSource implements QuoteSource {
 
-    private static final Logger log = getLogger(FondsDiscountEurSource.class);
+    private static final Logger LOG = getLogger(FondsDiscountEurSource.class);
 
     private static final String URL_TEMPLATE = "https://www.fondsdiscount.de/fonds/etf/%s/";
 
@@ -45,16 +44,16 @@ final class FondsDiscountEurSource implements QuoteSource {
     @Override
     public Optional<Double> fetchQuote(Isin isin) {
         String url = format(URL_TEMPLATE, isin.value());
-        return QuoteFetchHelper.fetchHtml(url, log, providerName()).flatMap(html -> {
-            Matcher m = PRICE_PATTERN.matcher(html);
-            if (m.find()) {
-                return QuoteFetchHelper.parseDecimal(m.group(1));
+        return QuoteFetchHelper.fetchHtml(url, LOG, providerName()).flatMap(html -> {
+            Matcher matcher = PRICE_PATTERN.matcher(html);
+            if (matcher.find()) {
+                return QuoteFetchHelper.parseDecimal(matcher.group(1));
             }
-            Matcher gm = GENERIC_EUR_PRICE.matcher(html);
-            if (gm.find()) {
-                return QuoteFetchHelper.parseDecimal(gm.group(1));
+            Matcher genericMatcher = GENERIC_EUR_PRICE.matcher(html);
+            if (genericMatcher.find()) {
+                return QuoteFetchHelper.parseDecimal(genericMatcher.group(1));
             }
-            log.debug("FondsDiscount EUR: no price found for {}", isin);
+            LOG.debug("FondsDiscount EUR: no price found for {}", isin);
             return empty();
         });
     }

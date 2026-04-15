@@ -24,7 +24,7 @@ import static java.util.Objects.requireNonNull;
 @Component
 public final class IsinsQuoteLoader {
 
-    private static final Logger log = getLogger(IsinsQuoteLoader.class);
+    private static final Logger LOG = getLogger(IsinsQuoteLoader.class);
 
     private final List<QuoteSource> sources;
 
@@ -49,7 +49,7 @@ public final class IsinsQuoteLoader {
         while (iterator.hasNext() && !remaining.isEmpty()) {
             QuoteSource source = iterator.next();
 
-            log.debug("Trying source {} for {} remaining ISINs", source.providerName(), remaining.size());
+            LOG.debug("Trying source {} for {} remaining ISINs", source.providerName(), remaining.size());
             Set<Isin> resolved = new HashSet<>();
 
             for (Isin isin : remaining) {
@@ -58,26 +58,26 @@ public final class IsinsQuoteLoader {
                     if (price.isPresent()) {
                         results.put(isin, new QuoteResult(price.get(), source.providerName()));
                         resolved.add(isin);
-                        log.debug("{}: {} → {}", source.providerName(), isin, format("%.2f", price.get()));
+                        LOG.debug("{}: {} → {}", source.providerName(), isin, format("%.2f", price.get()));
                     }
-                } catch (Exception e) {
-                    log.debug("{}: error fetching {}: {}", source.providerName(), isin, e.getMessage());
+                } catch (Exception exception) {
+                    LOG.debug("{}: error fetching {}: {}", source.providerName(), isin, exception.getMessage());
                 }
             }
 
             remaining.removeAll(resolved);
             if (!resolved.isEmpty()) {
-                log.info("{}: resolved {} ISINs, {} remaining",
+                LOG.info("{}: resolved {} ISINs, {} remaining",
                     source.providerName(), resolved.size(), remaining.size());
             }
         }
 
         if (!remaining.isEmpty()) {
-            log.warn("No quote found for {} ISINs: {}", remaining.size(),
+            LOG.warn("No quote found for {} ISINs: {}", remaining.size(),
                 remaining.size() <= 10 ? remaining : remaining.stream().limit(10).toList() + "...");
         }
 
-        log.info("Quote fetch complete: {}/{} ISINs resolved", results.size(), isins.size());
+        LOG.info("Quote fetch complete: {}/{} ISINs resolved", results.size(), isins.size());
         return results;
     }
 

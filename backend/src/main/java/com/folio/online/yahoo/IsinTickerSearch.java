@@ -96,8 +96,8 @@ public final class IsinTickerSearch {
             }
 
             return parseFirstTicker(response.body(), isin);
-        } catch (Exception e) {
-            LOG.warn("Yahoo search: request failed for ISIN {}", isin, e);
+        } catch (Exception exception) {
+            LOG.warn("Yahoo search: request failed for ISIN {}", isin, exception);
             return null;
         }
     }

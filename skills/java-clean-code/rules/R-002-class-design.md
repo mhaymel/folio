@@ -1,6 +1,6 @@
 # Class Design Rules
 
-## R-003a
+## R-002a
 
 Classes must be declared as `final`.
 
@@ -28,7 +28,7 @@ final class UserService {
 
 ---
 
-## R-003b
+## R-002b
 
 Classes must be package-private. Make classes public only if they must be accessed outside the package.
 
@@ -48,7 +48,7 @@ final class UserService {
 
 ---
 
-## R-003c
+## R-002c
 
 Classes must not be abstract. Use interfaces and composition instead.
 
@@ -84,7 +84,7 @@ final class UserDataProcessor implements Processor {
 
 ---
 
-## R-003d
+## R-002d
 
 Methods must be package-private by default. Make methods public only if they must be accessed outside the package.
 
@@ -108,7 +108,7 @@ final class UserService {
 
 ---
 
-## R-003e
+## R-002e
 
 Prefer immutable classes wherever possible.
 
@@ -150,7 +150,7 @@ final class UserService {
 
 ---
 
-## R-003f
+## R-002f
 
 Classes must have one primary constructor that initializes all non-static fields. The primary constructor must declare one parameter for each non-static field.
 
@@ -188,7 +188,7 @@ final class UserService {
 
 ---
 
-## R-003g
+## R-002g
 
 Secondary constructors must delegate to the primary constructor by using `this(...)`. They must not initialize fields or contain field-initialization logic. Their purpose is to provide default values for omitted parameters.
 
@@ -242,7 +242,7 @@ final class UserService {
 
 ---
 
-## R-003h
+## R-002h
 
 A secondary constructor must not have more parameters than the primary constructor.
 
@@ -280,7 +280,7 @@ final class UserService {
 
 ---
 
-## R-003i
+## R-002i
 
 When the primary constructor only exists for internal delegation (i.e. some fields are internal state never set from outside), make the primary constructor `private`.
 
@@ -313,7 +313,7 @@ final class UserService {
     private final UserId userId;
     private final UserName userName;
 
-    private UserService(UserId userId, UserName userName) { // private — userName is internal state
+    private UserService(UserId userId, UserName userName) { // private ΓÇö userName is internal state
         this.userId = requireNonNull(userId);
         this.userName = requireNonNull(userName);
     }
@@ -326,7 +326,7 @@ final class UserService {
 
 ---
 
-## R-003j
+## R-002j
 
 Constructors must be free of code except for precondition checks.
 
@@ -370,7 +370,7 @@ final class UserService {
 
 ---
 
-## R-003k
+## R-002k
 
 Inner classes (static and non-static) must not be used. Extract every nested type to its own top-level file.
 
@@ -413,7 +413,7 @@ final class UserService {
 
 ---
 
-## R-003l
+## R-002l
 
 Enums must not be declared as inner types. Declare enums at the top level.
 
@@ -444,7 +444,7 @@ final class UserService {
 
 ---
 
-## R-003m
+## R-002m
 
 A constructor must not have unused parameters.
 
@@ -478,7 +478,7 @@ final class UserService {
 
 ---
 
-## R-003n
+## R-002n
 
 Do not inherit from concrete classes. Only extend interfaces (or implement them).
 
@@ -506,7 +506,58 @@ final class AdminUser implements Identifiable {
 
 ---
 
-## R-003o
+## R-002o
+
+Methods must have at most 3 parameters; prefer 0 or 1. If more are needed, introduce a parameter object or rethink the design.
+
+**Bad:**
+
+```java
+final class OrderService {
+    void createOrder(String product, int quantity, BigDecimal price, String currency) {
+    }
+}
+```
+
+**Good:**
+
+```java
+record OrderRequest(String product, int quantity, BigDecimal price) {
+}
+
+final class OrderService {
+    void createOrder(OrderRequest request) {
+    }
+}
+```
+
+---
+
+## R-002p
+
+Do not use underscores in method names. Use `lowerCamelCase` exclusively. This applies to all methods, including unit test methods.
+
+**Bad:**
+
+```java
+final class UserValidatorTest {
+    void should_accept_non_empty_array() {
+    }
+}
+```
+
+**Good:**
+
+```java
+final class UserValidatorTest {
+    void shouldAcceptNonEmptyArray() {
+    }
+}
+```
+
+---
+
+## R-002q
 
 Do not use `continue` or `break` in loops. Extract the loop body to a private method and use `return` instead of `continue`. Do not invert the condition; do not add nesting.
 
@@ -546,7 +597,7 @@ final class OrderProcessor {
 
 ---
 
-## R-003p
+## R-002r
 
 Builders are forbidden. Use the constructor directly.
 
@@ -596,7 +647,7 @@ var service = new UserService(new UserId(1), new UserName("Alice"));
 
 ---
 
-## R-003q
+## R-002s
 
 Avoid primitive obsession in fields and constructor parameters. When a field represents a domain concept, use a dedicated tiny type (record) instead of a raw primitive (`String`, `int`, `long`, `BigDecimal`, etc.). This makes the code self-documenting, prevents accidental misuse (e.g. swapping two `String` fields), and pushes validation into the type itself.
 
@@ -645,7 +696,7 @@ final class Portfolio {
 
 ---
 
-## R-003r
+## R-002t
 
 A class without fields is allowed when the class exists solely to implement an interface or to group behavior. Such classes do not need a constructor.
 

@@ -1,7 +1,13 @@
 package com.folio.controller;
 
-/**
- * Parameter object for ticker symbol list filtering.
- */
-record TickerSymbolFilter(String isin, String tickerSymbol, String name) {}
+import static java.util.Objects.requireNonNull;
+
+record TickerSymbolFilter(String isinFragment, String tickerSymbolFragment, String nameFragment) {
+
+    TickerSymbolFilter {
+        requireNonNull(isinFragment);
+        requireNonNull(tickerSymbolFragment);
+        requireNonNull(nameFragment);
+    }
+}
 

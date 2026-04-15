@@ -4,8 +4,6 @@ import com.folio.dto.ExportRequest;
 import com.folio.dto.PaginatedResponseDto;
 import com.folio.model.CountryEntity;
 import com.folio.repository.CountryRepository;
-import com.folio.service.ExportService;
-import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
 import com.folio.service.SortRequest;
 import com.folio.dto.ExportColumn;
@@ -32,12 +30,12 @@ final class CountryController {
         "name", SortHelper.text(CountryEntity::getName)
     );
 
-    private final CountryRepository countryRepo;
-    private final ExportService exportService;
+    private final CountryRepository countryRepository;
+    private final ListOperations listOperations;
 
-    public CountryController(CountryRepository countryRepo, ExportService exportService) {
-        this.countryRepo = requireNonNull(countryRepo);
-        this.exportService = requireNonNull(exportService);
+    public CountryController(CountryRepository countryRepository, ListOperations listOperations) {
+        this.countryRepository = requireNonNull(countryRepository);
+        this.listOperations = requireNonNull(listOperations);
     }
 
     @GetMapping
@@ -48,7 +46,7 @@ final class CountryController {
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
         List<CountryEntity> data = sorted(sortField, sortDir);
-        return ResponseEntity.ok(PaginationHelper.paginate(data, page, pageSize));
+        return ResponseEntity.ok(listOperations.paginationHelper().paginate(data, page, pageSize));
     }
 
     @GetMapping("/export")
@@ -59,11 +57,11 @@ final class CountryController {
             @RequestParam(defaultValue = "asc") String sortDir) {
         List<CountryEntity> data = sorted(sortField != null ? sortField : "name", sortDir);
         List<ExportColumn<CountryEntity>> columns = List.of(new ExportColumn<>("CountryEntity", CountryEntity::getName));
-        return exportService.export(new ExportRequest<>(data, columns, format, "countries"));
+        return listOperations.exportService().export(new ExportRequest<>(data, columns, format, "countries"));
     }
 
     private List<CountryEntity> sorted(String sortField, String sortDir) {
-        List<CountryEntity> data = countryRepo.findAllByOrderByNameAsc();
-        return SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
+        List<CountryEntity> data = countryRepository.findAllByOrderByNameAsc();
+        return listOperations.sortHelper().sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
     }
 }

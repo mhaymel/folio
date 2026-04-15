@@ -3,8 +3,6 @@ package com.folio.controller;
 import com.folio.dto.ExportRequest;
 import com.folio.dto.IsinNameDto;
 import com.folio.dto.PaginatedResponseDto;
-import com.folio.service.ExportService;
-import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
 import com.folio.service.SortRequest;
 import com.folio.dto.ExportColumn;
@@ -31,16 +29,16 @@ import static java.util.Objects.requireNonNull;
 class IsinNameController {
 
     private static final Map<String, Comparator<IsinNameDto>> SORT_FIELDS = Map.of(
-        "isin", SortHelper.text(d -> d.getIsin() == null ? null : d.getIsin().value()),
+        "isin", SortHelper.text(dto -> dto.getIsin() == null ? null : dto.getIsin().value()),
         "name", SortHelper.text(IsinNameDto::getName)
     );
 
-    private final EntityManager em;
-    private final ExportService exportService;
+    private final EntityManager entityManager;
+    private final ListOperations listOperations;
 
-    public IsinNameController(EntityManager em, ExportService exportService) {
-        this.em = requireNonNull(em);
-        this.exportService = requireNonNull(exportService);
+    public IsinNameController(EntityManager entityManager, ListOperations listOperations) {
+        this.entityManager = requireNonNull(entityManager);
+        this.listOperations = requireNonNull(listOperations);
     }
 
     @GetMapping
@@ -51,8 +49,8 @@ class IsinNameController {
             @RequestParam(required = false, defaultValue = "asc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
-        List<IsinNameDto> data = SortHelper.sort(loadAll(), new SortRequest(sortField, sortDir), SORT_FIELDS);
-        return ResponseEntity.ok(PaginationHelper.paginate(data, page, pageSize));
+        List<IsinNameDto> data = listOperations.sortHelper().sort(loadAll(), new SortRequest(sortField, sortDir), SORT_FIELDS);
+        return ResponseEntity.ok(listOperations.paginationHelper().paginate(data, page, pageSize));
     }
 
     @GetMapping("/export")
@@ -64,18 +62,18 @@ class IsinNameController {
             @RequestParam(defaultValue = "asc") String sortDir) {
         List<IsinNameDto> data = loadAll();
         if (sortField != null && !sortField.isBlank()) {
-            data = SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
+            data = listOperations.sortHelper().sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
         }
         List<ExportColumn<IsinNameDto>> columns = List.of(
                 new ExportColumn<>("ISIN", IsinNameDto::getIsin),
                 new ExportColumn<>("Name", IsinNameDto::getName)
         );
-        return exportService.export(new ExportRequest<>(data, columns, format, "isin-names"));
+        return listOperations.exportService().export(new ExportRequest<>(data, columns, format, "isin-names"));
     }
 
     @SuppressWarnings("unchecked")
     private List<IsinNameDto> loadAll() {
-        List<Object[]> rows = em.createNativeQuery("""
+        List<Object[]> rows = entityManager.createNativeQuery("""
             SELECT i.isin, n.name
             FROM isin_name n
             JOIN isin i ON i.id = n.isin_id
@@ -83,7 +81,7 @@ class IsinNameController {
             """).getResultList();
 
         return rows.stream()
-            .map(r -> new IsinNameDto(new Isin((String) r[0]), (String) r[1]))
+            .map(row -> new IsinNameDto(new Isin((String) row[0]), (String) row[1]))
             .toList();
     }
 }

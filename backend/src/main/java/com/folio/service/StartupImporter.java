@@ -19,15 +19,11 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
-/**
- * Imports sample data from {@code docs/samples/} on startup in dev mode.
- * Runs exactly once per application start.
- */
 @Component
 @Profile("dev")
 final class StartupImporter implements ApplicationRunner {
 
-    private static final Logger log = getLogger(StartupImporter.class);
+    private static final Logger LOG = getLogger(StartupImporter.class);
 
     private final ImportService importService;
     private final Path samplesDir;
@@ -38,39 +34,38 @@ final class StartupImporter implements ApplicationRunner {
         this.samplesDir = resolveDir(samplesDir);
     }
 
-    private static Path resolveDir(String configured) {
+    private Path resolveDir(String configured) {
         Path primary = Paths.get(configured);
         if (Files.isDirectory(primary)) return primary;
-        // Fallback: try ../docs/samples when working directory is the backend/ subproject
         Path fallback = Paths.get("..").resolve(configured);
         if (Files.isDirectory(fallback)) return fallback;
-        return primary; // return as-is so the warning shows the attempted path
+        return primary;
     }
 
     @Override
     public void run(ApplicationArguments args) {
         if (!Files.isDirectory(samplesDir)) {
-            log.warn("Startup import skipped — samples directory not found: {}", samplesDir.toAbsolutePath());
+            LOG.warn("Startup import skipped — samples directory not found: {}", samplesDir.toAbsolutePath());
             return;
         }
-        log.info("Running startup import from {}", samplesDir.toAbsolutePath());
+        LOG.info("Running startup import from {}", samplesDir.toAbsolutePath());
 
-        importFile("countries.csv",     f -> importService.importCountries(f));
-        importFile("branches.csv",      f -> importService.importBranches(f));
-        importFile("ticker-symbol.csv", f -> importService.importTickerSymbols(f));
-        importFile("dividende.csv",     f -> importService.importDividends(f));
-        importFile("Account.csv",       f -> importService.importDegiroAccount(f));
-        importFile("Transactions.csv",  f -> importService.importDegiroTransactions(f));
-        importGlob("ZERO-orders*.csv",          f -> importService.importZeroOrders(f));
-        importGlob("ZERO-kontoumsaetze-*.csv",  f -> importService.importZeroAccount(f));
+        importFile("countries.csv",     file -> importService.importCountries(file));
+        importFile("branches.csv",      file -> importService.importBranches(file));
+        importFile("ticker-symbol.csv", file -> importService.importTickerSymbols(file));
+        importFile("dividende.csv",     file -> importService.importDividends(file));
+        importFile("Account.csv",       file -> importService.importDegiroAccount(file));
+        importFile("Transactions.csv",  file -> importService.importDegiroTransactions(file));
+        importGlob("ZERO-orders*.csv",          file -> importService.importZeroOrders(file));
+        importGlob("ZERO-kontoumsaetze-*.csv",  file -> importService.importZeroAccount(file));
 
-        log.info("Startup import complete.");
+        LOG.info("Startup import complete.");
     }
 
     private void importFile(String filename, Importer importer) {
         Path file = samplesDir.resolve(filename);
         if (!Files.isRegularFile(file)) {
-            log.warn("Startup import — file not found, skipping: {}", file);
+            LOG.warn("Startup import — file not found, skipping: {}", file);
             return;
         }
         runImport(file, importer);
@@ -81,15 +76,15 @@ final class StartupImporter implements ApplicationRunner {
         try (Stream<Path> stream = Files.list(samplesDir)) {
             String regex = glob.replace("*", ".*");
             matches = stream
-                    .filter(p -> p.getFileName().toString().matches(regex))
+                    .filter(path -> path.getFileName().toString().matches(regex))
                     .sorted()
                     .toList();
-        } catch (IOException e) {
-            log.error("Startup import — failed to list {}: {}", samplesDir, e.getMessage());
+        } catch (IOException exception) {
+            LOG.error("Startup import — failed to list {}: {}", samplesDir, exception.getMessage());
             return;
         }
         if (matches.isEmpty()) {
-            log.warn("Startup import — no files matched glob '{}', skipping.", glob);
+            LOG.warn("Startup import — no files matched glob '{}', skipping.", glob);
             return;
         }
         for (Path file : matches) {
@@ -99,12 +94,11 @@ final class StartupImporter implements ApplicationRunner {
 
     private void runImport(Path file, Importer importer) {
         try {
-            log.info("Loading {}...", file.getFileName());
+            LOG.info("Loading {}...", file.getFileName());
             ImportResult result = importer.run(new FileMultipartFile(file));
-            log.info("Loaded {} — {} rows imported.", file.getFileName(), result.getImported());
-        } catch (Exception e) {
-            log.error("Startup import failed for {}: {}", file.getFileName(), e.getMessage(), e);
+            LOG.info("Loaded {} — {} rows imported.", file.getFileName(), result.getImported());
+        } catch (Exception exception) {
+            LOG.error("Startup import failed for {}: {}", file.getFileName(), exception.getMessage(), exception);
         }
     }
-
 }

@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public final class CsvConfigLoader {
 
-    private static final Logger log = getLogger(CsvConfigLoader.class);
+    private static final Logger LOG = getLogger(CsvConfigLoader.class);
 
     /**
      * Load a two-column config: ISIN → value.
@@ -27,7 +27,7 @@ public final class CsvConfigLoader {
         try {
             ClassPathResource resource = new ClassPathResource(resourcePath);
             if (!resource.exists()) {
-                log.debug("Config file not found: {}", resourcePath);
+                LOG.debug("Config file not found: {}", resourcePath);
                 return emptyMap();
             }
             try (BufferedReader reader = new BufferedReader(
@@ -40,8 +40,8 @@ public final class CsvConfigLoader {
                     }
                 }
             }
-        } catch (Exception e) {
-            log.warn("Failed to load config {}: {}", resourcePath, e.getMessage());
+        } catch (Exception exception) {
+            LOG.warn("Failed to load config {}: {}", resourcePath, exception.getMessage());
         }
         return map;
     }
@@ -55,7 +55,7 @@ public final class CsvConfigLoader {
         try {
             ClassPathResource resource = new ClassPathResource(resourcePath);
             if (!resource.exists()) {
-                log.debug("Config file not found: {}", resourcePath);
+                LOG.debug("Config file not found: {}", resourcePath);
                 return emptyMap();
             }
             try (BufferedReader reader = new BufferedReader(
@@ -68,8 +68,8 @@ public final class CsvConfigLoader {
                     }
                 }
             }
-        } catch (Exception e) {
-            log.warn("Failed to load config {}: {}", resourcePath, e.getMessage());
+        } catch (Exception exception) {
+            LOG.warn("Failed to load config {}: {}", resourcePath, exception.getMessage());
         }
         return map;
     }

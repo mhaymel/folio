@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.folio.domain.Isin;
 import com.folio.domain.TickerSymbol;
+import com.folio.domain.TickerSymbolFactory;
 
 import java.time.LocalDateTime;
 
@@ -36,7 +37,7 @@ public final class YahooQuoteWithQuoteDto {
     public String getName() { return security.name(); }
     public void setName(String name) { this.security = new SecurityIdentity(security.isin(), security.tickerSymbol(), name); }
     public String getTickerSymbol() { return security.tickerSymbol() == null ? null : security.tickerSymbol().value(); }
-    public void setTickerSymbol(String tickerSymbol) { this.security = new SecurityIdentity(security.isin(), TickerSymbol.of(tickerSymbol).orElse(null), security.name()); }
+    public void setTickerSymbol(String tickerSymbol) { this.security = new SecurityIdentity(security.isin(), TickerSymbolFactory.of(tickerSymbol).orElse(null), security.name()); }
     public Double getPrice() { return quoteData.price(); }
     public void setPrice(Double price) { this.quoteData = new QuoteData(price, quoteData.currency(), quoteData.provider()); }
     public String getCurrency() { return quoteData.currency(); }

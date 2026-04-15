@@ -1,6 +1,6 @@
 # Method Naming Rules
 
-## R-012a
+## R-011a
 
 Method names must use `lowerCamelCase`.
 
@@ -30,7 +30,7 @@ final class OrderService {
 
 ---
 
-## R-012b
+## R-011b
 
 Method names must be a verb or verb phrase that describes the action performed.
 
@@ -60,9 +60,9 @@ final class OrderService {
 
 ---
 
-## R-012c
+## R-011c
 
-Method names must be **meaningful** and clearly describe what the method does — a reader should immediately understand the method's purpose from its name alone.
+Method names must be **meaningful** and clearly describe what the method does ΓÇö a reader should immediately understand the method's purpose from its name alone.
 
 **Bad:**
 
@@ -90,7 +90,7 @@ final class OrderService {
 
 ---
 
-## R-012d
+## R-011d
 
 Method names must be **more than one character** long. Single-letter method names like `a`, `x`, `f` are forbidden.
 
@@ -116,7 +116,7 @@ final class MathService {
 
 ---
 
-## R-012e
+## R-011e
 
 Do not use underscores in method names. Use `lowerCamelCase` exclusively. This applies to all methods, including unit test methods.
 
@@ -150,7 +150,7 @@ final class OrderServiceTest {
 
 ---
 
-## R-012f
+## R-011f
 
 Getter-style methods for non-boolean properties must not use the `get` prefix. Use the property name directly. This follows the convention established by Java records.
 
@@ -180,15 +180,15 @@ final class User {
 
 ---
 
-## R-012g
+## R-011g
 
 Boolean query (predicate) methods must start with one of the prefixes `is`, `has`, `can`, `should`, or `contains`. Choose the prefix that best expresses the question being asked:
 
-- `is` — state or identity checks (e.g. `isEmpty()`, `isCancelled()`)
-- `has` — ownership or presence checks (e.g. `hasPermission(User user)`, `hasItems()`)
-- `can` — capability or permission checks (e.g. `canRetry()`, `canAccess()`)
-- `should` — policy or recommendation checks (e.g. `shouldNotify()`, `shouldRetry()`)
-- `contains` — containment checks (e.g. `containsKey(Key key)`, `containsValue(Value value)`)
+- `is` ΓÇö state or identity checks (e.g. `isEmpty()`, `isCancelled()`)
+- `has` ΓÇö ownership or presence checks (e.g. `hasPermission(User user)`, `hasItems()`)
+- `can` ΓÇö capability or permission checks (e.g. `canRetry()`, `canAccess()`)
+- `should` ΓÇö policy or recommendation checks (e.g. `shouldNotify()`, `shouldRetry()`)
+- `contains` ΓÇö containment checks (e.g. `containsKey(Key key)`, `containsValue(Value value)`)
 
 **Bad:**
 

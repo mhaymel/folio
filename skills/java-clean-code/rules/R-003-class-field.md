@@ -1,6 +1,6 @@
 # Class Field Rules
 
-## R-004a
+## R-003a
 
 Non-static fields must be private.
 
@@ -24,7 +24,7 @@ final class UserService {
 
 ---
 
-## R-004b
+## R-003b
 
 Prefer final fields wherever possible. If all fields are final, consider using a record instead of a class.
 
@@ -48,9 +48,9 @@ final class UserService {
 
 ---
 
-## R-004c
+## R-003c
 
-Fields must not be initialized at the point of declaration. Initialize fields in the primary constructor instead (see [R-003f](R-003-class-design.md#r-003f)).
+Fields must not be initialized at the point of declaration. Initialize fields in the primary constructor instead (see [R-002f](R-002-class-design.md#r-002f)).
 
 **Bad:**
 
@@ -79,7 +79,7 @@ final class UserService {
 
 ---
 
-## R-004d
+## R-003d
 
 Classes must not have more than three non-static fields.
 Introduce new classes or records to group related fields together.
@@ -111,7 +111,7 @@ final class UserService {
 
 ---
 
-## R-004e
+## R-003e
 
 A class must not have unused fields.
 
@@ -152,7 +152,7 @@ final class UserService {
 
 ---
 
-## R-004f
+## R-003f
 
 
 Non-static field names must use `lowerCamelCase`.
@@ -177,7 +177,7 @@ final class UserService {
 
 ---
 
-## R-004g
+## R-003g
 
 Do not use underscores or prefixes in field names. No Hungarian notation, no `m_`, no `_` prefix or suffix.
 
@@ -203,9 +203,9 @@ final class UserService {
 
 ---
 
-## R-004h
+## R-003h
 
-Field names must be **meaningful** and clearly describe what they hold — a reader should understand the field's purpose without looking at surrounding code.
+Field names must be **meaningful** and clearly describe what they hold ΓÇö a reader should understand the field's purpose without looking at surrounding code.
 
 **Bad:**
 
@@ -229,7 +229,7 @@ final class OrderService {
 
 ---
 
-## R-004i
+## R-003i
 
 Field names must be **more than one character** long. Single-letter names like `x`, `s`, `a` are forbidden.
 
@@ -253,7 +253,7 @@ final class OrderService {
 
 ---
 
-## R-004j
+## R-003j
 
 Do not use abbreviations or acronyms in field names unless they are universally understood (e.g. `id`, `url`). Spell out the full word.
 
@@ -279,7 +279,7 @@ final class InvoiceService {
 
 ---
 
-## R-004k
+## R-003k
 
 Boolean fields must start with `is`, `has`, `can`, `should`, or `contains`.
 
@@ -305,9 +305,9 @@ final class UserService {
 
 ---
 
-## R-004l
+## R-003l
 
-Static fields must be `private static final`. Mutable static state (`static` without `final`) is forbidden — it introduces hidden global state, breaks thread safety, and makes testing unreliable.
+Static fields must be `private static final`. Mutable static state (`static` without `final`) is forbidden ΓÇö it introduces hidden global state, breaks thread safety, and makes testing unreliable.
 
 **Bad:**
 
@@ -329,7 +329,7 @@ final class UserService {
 
 ---
 
-## R-004m
+## R-003m
 
 The number of `public static final` fields (constants) in a class is not limited.
 
@@ -348,10 +348,10 @@ final class HttpStatus {
 
 ---
 
-## R-004n
+## R-003n
 
 
-Static final fields (constants) must use `UPPER_SNAKE_CASE` — all uppercase letters with words separated by underscores. This is the only place where uppercase letters and underscores are allowed in field names.
+Static final fields (constants) must use `UPPER_SNAKE_CASE` ΓÇö all uppercase letters with words separated by underscores. This is the only place where uppercase letters and underscores are allowed in field names.
 
 **Bad:**
 
@@ -373,5 +373,5 @@ final class UserService {
 }
 ```
 
-f**Note:** `UPPER_SNAKE_CASE` applies only to `static final` fields. Non-static fields must always use `lowerCamelCase` ([R-004f](#r-004f)).
+f**Note:** `UPPER_SNAKE_CASE` applies only to `static final` fields. Non-static fields must always use `lowerCamelCase` ([R-003f](#r-003f)).
 

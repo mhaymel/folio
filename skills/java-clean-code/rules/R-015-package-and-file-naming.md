@@ -102,17 +102,17 @@ The Java source file name must exactly match the name of the public (or package-
 **Bad:**
 
 ```
-userService.java        → contains class UserService
-UserServiceImpl.java    → contains class UserService
-OrderHelper.java        → contains class OrderProcessor and class OrderValidator
+userService.java        ΓåÆ contains class UserService
+UserServiceImpl.java    ΓåÆ contains class UserService
+OrderHelper.java        ΓåÆ contains class OrderProcessor and class OrderValidator
 ```
 
 **Good:**
 
 ```
-UserService.java        → contains class UserService
-OrderProcessor.java     → contains class OrderProcessor
-OrderValidator.java     → contains class OrderValidator
+UserService.java        ΓåÆ contains class UserService
+OrderProcessor.java     ΓåÆ contains class OrderProcessor
+OrderValidator.java     ΓåÆ contains class OrderValidator
 ```
 
 ---

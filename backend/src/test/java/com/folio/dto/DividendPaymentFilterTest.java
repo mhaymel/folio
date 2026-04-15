@@ -16,9 +16,9 @@ final class DividendPaymentFilterTest {
             LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
 
         // then
-        assertThat(filter.isin()).isEqualTo("DE000BASF111");
-        assertThat(filter.name()).isEqualTo("BASF");
-        assertThat(filter.depot()).isEqualTo("DeGiro");
+        assertThat(filter.isinFragment()).isEqualTo("DE000BASF111");
+        assertThat(filter.nameFragment()).isEqualTo("BASF");
+        assertThat(filter.depotFragment()).isEqualTo("DeGiro");
         assertThat(filter.fromDate()).isEqualTo(LocalDate.of(2026, 1, 1));
         assertThat(filter.toDate()).isEqualTo(LocalDate.of(2026, 12, 31));
     }
@@ -29,9 +29,9 @@ final class DividendPaymentFilterTest {
         var filter = DividendPaymentFilter.none();
 
         // then
-        assertThat(filter.isin()).isNull();
-        assertThat(filter.name()).isNull();
-        assertThat(filter.depot()).isNull();
+        assertThat(filter.isinFragment()).isNull();
+        assertThat(filter.nameFragment()).isNull();
+        assertThat(filter.depotFragment()).isNull();
         assertThat(filter.fromDate()).isNull();
         assertThat(filter.toDate()).isNull();
     }

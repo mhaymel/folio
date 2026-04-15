@@ -13,17 +13,17 @@ import java.util.Map;
 @RestControllerAdvice
 final class GlobalExceptionHandler {
 
-    private static final Logger log = getLogger(GlobalExceptionHandler.class);
+    private static final Logger LOG = getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
-        log.warn("Bad request: {}", ex.getMessage());
+        LOG.warn("Bad request: {}", ex.getMessage());
         return ResponseEntity.badRequest().body(errorBody(ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
-        log.error("Unhandled exception", ex);
+        LOG.error("Unhandled exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(errorBody("Internal server error"));
     }

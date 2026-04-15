@@ -21,7 +21,6 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
 import java.util.regex.Matcher;
-import static java.lang.String.format;
 import java.util.regex.Pattern;
 
 /**
@@ -32,11 +31,10 @@ import java.util.regex.Pattern;
 @Order(4)
 final class CnbcSource implements QuoteSource {
 
-    private static final Logger log = getLogger(CnbcSource.class);
+    private static final Logger LOG = getLogger(CnbcSource.class);
 
     private static final String URL_TEMPLATE = "https://www.cnbc.com/quotes/%s";
 
-    // CNBC embeds price in structured data or specific elements
     private static final Pattern PRICE_PATTERN = Pattern.compile(
         "\"(?:price|last)\"\\s*:\\s*\"?([0-9]+\\.?[0-9]*)\"?");
 
@@ -53,7 +51,7 @@ final class CnbcSource implements QuoteSource {
     @PostConstruct
     void init() {
         config = CsvConfigLoader.loadThreeColumnSecond("isin.symbol.csv");
-        log.info("CNBC: loaded {} ISIN→ticker mappings", config.size());
+        LOG.info("CNBC: loaded {} ISIN→ticker mappings", config.size());
     }
 
     @Override
@@ -67,24 +65,22 @@ final class CnbcSource implements QuoteSource {
         if (ticker == null) return empty();
 
         String url = format(URL_TEMPLATE, ticker);
-        return QuoteFetchHelper.fetchHtml(url, log, providerName()).flatMap(html -> {
-            // Try JSON/structured data
-            Matcher m = PRICE_PATTERN.matcher(html);
-            if (m.find()) {
-                Optional<Double> usdPrice = QuoteFetchHelper.parseDecimal(m.group(1));
+        return QuoteFetchHelper.fetchHtml(url, LOG, providerName()).flatMap(html -> {
+            Matcher matcher = PRICE_PATTERN.matcher(html);
+            if (matcher.find()) {
+                Optional<Double> usdPrice = QuoteFetchHelper.parseDecimal(matcher.group(1));
                 if (usdPrice.isPresent()) {
                     return of(ecb.usdToEur(usdPrice.get()));
                 }
             }
-            // Try HTML pattern
-            Matcher hm = HTML_PRICE.matcher(html);
-            if (hm.find()) {
-                Optional<Double> usdPrice = QuoteFetchHelper.parseDecimal(hm.group(1));
+            Matcher htmlMatcher = HTML_PRICE.matcher(html);
+            if (htmlMatcher.find()) {
+                Optional<Double> usdPrice = QuoteFetchHelper.parseDecimal(htmlMatcher.group(1));
                 if (usdPrice.isPresent()) {
                     return of(ecb.usdToEur(usdPrice.get()));
                 }
             }
-            log.debug("CNBC: no price found for {} ({})", isin, ticker);
+            LOG.debug("CNBC: no price found for {} ({})", isin, ticker);
             return empty();
         });
     }

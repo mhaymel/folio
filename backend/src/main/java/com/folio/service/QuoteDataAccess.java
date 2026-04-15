@@ -9,11 +9,11 @@ import static java.util.Objects.requireNonNull;
 /**
  * Groups the data-access dependencies of {@link QuoteService}.
  */
-record QuoteDataAccess(QuoteRepositories repos, EntityManager em, TransactionTemplate tx) {
+record QuoteDataAccess(QuoteRepositories repos, EntityManager entityManager, TransactionTemplate transactionTemplate) {
     QuoteDataAccess {
         requireNonNull(repos);
-        requireNonNull(em);
-        requireNonNull(tx);
+        requireNonNull(entityManager);
+        requireNonNull(transactionTemplate);
     }
 }
 

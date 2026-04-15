@@ -36,7 +36,7 @@ record Isin(String value) {
 
 ## R-014b
 
-A tiny type must wrap exactly one value. If more than one field is needed, it is no longer a tiny type — model it as a regular record or class instead.
+A tiny type must wrap exactly one value. If more than one field is needed, it is no longer a tiny type ΓÇö model it as a regular record or class instead.
 
 **Bad:**
 

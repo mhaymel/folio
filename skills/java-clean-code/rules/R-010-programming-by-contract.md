@@ -1,8 +1,8 @@
 # Programming by Contract
 
-## R-011a
+## R-010a
 
-All parameters to public methods and constructors must be checked for nullity using `requireNonNull`. Use `requireNonNull` with one parameter only — no message string.
+All parameters to public methods and constructors must be checked for nullity using `requireNonNull`. Use `requireNonNull` with one parameter only ΓÇö no message string.
 
 **Bad:**
 
@@ -34,7 +34,7 @@ final class UserService {
 
 ---
 
-## R-011b
+## R-010b
 
 Do not pass a message string to `requireNonNull`. Use the single-parameter form only.
 
@@ -64,7 +64,7 @@ final class ExampleGood {
 
 ---
 
-## R-011c
+## R-010c
 
 `requireNonNull` on parameters of private methods is forbidden.
 

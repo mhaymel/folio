@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import static java.util.Optional.empty;
 
-import static java.lang.String.format;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,7 +25,7 @@ import java.util.regex.Pattern;
 @Order(1)
 final class JustEtfApiSource implements QuoteSource {
 
-    private static final Logger log = getLogger(JustEtfApiSource.class);
+    private static final Logger LOG = getLogger(JustEtfApiSource.class);
 
     private static final String URL_TEMPLATE =
         "https://www.justetf.com/api/etfs/%s/quote?locale=de&currency=EUR";
@@ -43,12 +42,12 @@ final class JustEtfApiSource implements QuoteSource {
     @Override
     public Optional<Double> fetchQuote(Isin isin) {
         String url = format(URL_TEMPLATE, isin.value());
-        return QuoteFetchHelper.fetchJson(url, log, providerName()).flatMap(json -> {
-            Matcher m = PRICE_PATTERN.matcher(json);
-            if (m.find()) {
-                return QuoteFetchHelper.parseDecimal(m.group(1));
+        return QuoteFetchHelper.fetchJson(url, LOG, providerName()).flatMap(json -> {
+            Matcher matcher = PRICE_PATTERN.matcher(json);
+            if (matcher.find()) {
+                return QuoteFetchHelper.parseDecimal(matcher.group(1));
             }
-            log.debug("JustETF API: no price found in response for {}", isin);
+            LOG.debug("JustETF API: no price found in response for {}", isin);
             return empty();
         });
     }

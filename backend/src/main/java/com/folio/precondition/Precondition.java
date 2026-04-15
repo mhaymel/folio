@@ -13,58 +13,55 @@ public final class Precondition {
 
 
     public static byte[] notEmpty(byte[] bytes) {
-        return (nn(bytes).length > 0)
+        return (notNull(bytes).length > 0)
                 ? bytes
                 : illegalArgument("byte array must not be empty");
     }
 
     public static <T> T[] notEmpty(T[] values) {
-        return (nn(values).length > 0)
+        return (notNull(values).length > 0)
                 ? values
                 : illegalArgument("array must not be empty");
     }
 
     public static <T> Set<T> notEmpty(Set<T> values) {
-        return (!nn(values).isEmpty())
+        return (!notNull(values).isEmpty())
                 ? values
                 : illegalArgument("set must not be empty");
     }
 
     public static String notEmpty(String value) {
-        return (!nn(value).isEmpty())
+        return (!notNull(value).isEmpty())
                 ? value
                 : illegalArgument("string must not be empty");
     }
 
-    public static <T> T nn(T value) {
+    public static <T> T notNull(T value) {
         return (value != null)
                 ? value
                 : illegalArgument("value must not be null");
     }
 
-    public static <T> T[] nn(T[] value) {
+    public static <T> T[] notNull(T[] value) {
         return (value != null)
                 ? value
                 : illegalArgument("value must not be null");
     }
 
-    public static <S, T> void nn(S value1, T value2) {
-        nn(value1);
-        nn(value2);
+    public static <S, T> void notNull(S value1, T value2) {
+        notNull(value1);
+        notNull(value2);
     }
 
-    public static <S, T, R> void nn(S value1, T value2, R value3) {
-        nn(value1);
-        nn(value2);
-        nn(value3);
+    public static <S, T, R> void notNull(S value1, T value2, R value3) {
+        notNull(value1);
+        notNull(value2);
+        notNull(value3);
     }
 
-    public static <T> T[] nnv(T[] values) {
-        return noNullValues(values);
-    }
 
     public static <T> T[] noNullValues(T[] values) {
-        for (T value : nn(values))
+        for (T value : notNull(values))
             if (Objects.isNull(value))
                 return illegalArgument("values must be contain null: %s", values);
 
@@ -134,31 +131,31 @@ public final class Precondition {
     }
 
     public static BigInteger greaterThanOrEqualZero(BigInteger value) {
-        greaterThanOrEqualZero(nn(value).signum());
+        greaterThanOrEqualZero(notNull(value).signum());
         return value;
     }
 
     public static <X, Y> Map<X, Y> notEmpty(Map<X, Y> map) {
-        return (!nn(map).isEmpty())
+        return (!notNull(map).isEmpty())
                 ? map
                 : illegalArgument("map must not be empty");
     }
 
     public static String hasLength(int length, String value) {
-        return (nn(value).length() == length)
+        return (notNull(value).length() == length)
                 ? value
                 : illegalArgument("string must have a length '%s' but is '%s' in %s", length, value.length(), value);
     }
 
     public static String noWhitespaces(String value) {
-        String noWhiteSpaces = nn(value).replaceAll("\\s+", "");
+        String noWhiteSpaces = notNull(value).replaceAll("\\s+", "");
         return noWhiteSpaces.equals(value)
                 ? value
                 : illegalArgument("string must not contain whitespaces: %s", value);
     }
 
     public static String upperCase(String value) {
-        return nn(value).toUpperCase().equals(value)
+        return notNull(value).toUpperCase().equals(value)
                 ? value
                 : illegalArgument("string must be all uppercase but is %s", value);
     }
@@ -186,7 +183,7 @@ public final class Precondition {
     }
 
     public static <T> List<T> notEmpty(List<T> values) {
-        return (!nn(values).isEmpty())
+        return (!notNull(values).isEmpty())
                 ? values
                 : illegalArgument("list must not be empty");
     }

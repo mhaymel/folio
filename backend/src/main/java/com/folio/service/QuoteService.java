@@ -1,6 +1,7 @@
 package com.folio.service;
 
 import com.folio.domain.Isin;
+import com.folio.domain.IsinFactory;
 import com.folio.model.IsinQuoteEntity;
 import com.folio.model.QuoteProviderEntity;
 import com.folio.model.SettingEntity;
@@ -31,7 +32,7 @@ import static java.util.Objects.requireNonNull;
 @Service
 public final class QuoteService {
 
-    private static final Logger log = getLogger(QuoteService.class);
+    private static final Logger LOG = getLogger(QuoteService.class);
 
     private final IsinsQuoteLoader quoteLoader;
     private final QuoteDataAccess dataAccess;
@@ -44,9 +45,9 @@ public final class QuoteService {
     }
 
     @Autowired
-    public QuoteService(IsinsQuoteLoader quoteLoader, QuoteRepositories repos, EntityManager em,
-                        TransactionTemplate tx) {
-        this(quoteLoader, new QuoteDataAccess(repos, em, tx),
+    public QuoteService(IsinsQuoteLoader quoteLoader, QuoteRepositories repos, EntityManager entityManager,
+                        TransactionTemplate transactionTemplate) {
+        this(quoteLoader, new QuoteDataAccess(repos, entityManager, transactionTemplate),
              new FetchState(new AtomicBoolean(false), new AtomicLong(0)));
     }
 
@@ -68,7 +69,7 @@ public final class QuoteService {
             return; // not yet time
         }
 
-        log.info("Scheduled quote fetch triggered (interval: {} min)", intervalMinutes);
+        LOG.info("Scheduled quote fetch triggered (interval: {} min)", intervalMinutes);
         triggerFetch();
     }
 
@@ -82,24 +83,24 @@ public final class QuoteService {
      */
     public int triggerFetch() {
         if (!fetchState.inProgress().compareAndSet(false, true)) {
-            log.info("Quote fetch already in progress, skipping");
+            LOG.info("Quote fetch already in progress, skipping");
             return 0;
         }
 
         try {
             // 1. Short read-only transaction: collect held ISINs
-            Set<Isin> heldIsins = dataAccess.tx().execute(status -> getHeldIsins());
+            Set<Isin> heldIsins = dataAccess.transactionTemplate().execute(status -> getHeldIsins());
             if (heldIsins == null || heldIsins.isEmpty()) {
-                log.info("No held ISINs to fetch quotes for");
+                LOG.info("No held ISINs to fetch quotes for");
                 return 0;
             }
 
             // 2. No transaction: slow HTTP calls to external quote providers
-            log.info("Fetching quotes for {} ISINs", heldIsins.size());
+            LOG.info("Fetching quotes for {} ISINs", heldIsins.size());
             Map<Isin, QuoteResult> results = quoteLoader.fetchQuotes(heldIsins);
 
             // 3. Short write transaction: persist all fetched quotes
-            Integer upserted = dataAccess.tx().execute(status -> {
+            Integer upserted = dataAccess.transactionTemplate().execute(status -> {
                 int count = 0;
                 for (var entry : results.entrySet()) {
                     Isin isin = entry.getKey();
@@ -107,8 +108,8 @@ public final class QuoteService {
                     try {
                         upsertQuote(isin.value(), result.price(), result.providerName());
                         count++;
-                    } catch (Exception e) {
-                        log.error("Failed to persist quote for {}: {}", isin, e.getMessage());
+                    } catch (Exception exception) {
+                        LOG.error("Failed to persist quote for {}: {}", isin, exception.getMessage());
                     }
                 }
                 updateLastFetchTimestamp();
@@ -117,7 +118,7 @@ public final class QuoteService {
 
             fetchState.lastScheduledFetch().set(System.currentTimeMillis());
 
-            log.info("Quote fetch complete: {}/{} ISINs updated", upserted, heldIsins.size());
+            LOG.info("Quote fetch complete: {}/{} ISINs updated", upserted, heldIsins.size());
             return upserted != null ? upserted : 0;
         } finally {
             fetchState.inProgress().set(false);
@@ -125,17 +126,17 @@ public final class QuoteService {
     }
 
     private Set<Isin> getHeldIsins() {
-        List<String> isins = dataAccess.em().createQuery(
+        List<String> isins = dataAccess.entityManager().createQuery(
             "SELECT t.context.isin.isin FROM TransactionEntity t GROUP BY t.context.isin.isin HAVING SUM(t.values.count) > 0",
             String.class
         ).getResultList();
         return isins.stream()
-            .flatMap(s -> Isin.of(s).stream())
+            .flatMap(isinCode -> IsinFactory.of(isinCode).stream())
             .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
     }
 
     private void upsertQuote(String isinCode, double price, String providerName) {
-        Integer isinId = (Integer) dataAccess.em().createQuery("SELECT i.id FROM IsinEntity i WHERE i.isin = :code")
+        Integer isinId = (Integer) dataAccess.entityManager().createQuery("SELECT i.id FROM IsinEntity i WHERE i.isin = :code")
             .setParameter("code", isinCode)
             .getSingleResult();
 
@@ -150,7 +151,7 @@ public final class QuoteService {
             quote.setFetchedAt(LocalDateTime.now());
             dataAccess.repos().isinQuote().save(quote);
         } else {
-            com.folio.model.IsinEntity isin = dataAccess.em().find(com.folio.model.IsinEntity.class, isinId);
+            com.folio.model.IsinEntity isin = dataAccess.entityManager().find(com.folio.model.IsinEntity.class, isinId);
             IsinQuoteEntity quote = new IsinQuoteEntity(null,
                 new com.folio.model.IsinQuoteSource(isin, provider),
                 new com.folio.model.IsinQuoteData(price, LocalDateTime.now(), null));
@@ -167,16 +168,16 @@ public final class QuoteService {
 
     private int getIntervalMinutes() {
         return dataAccess.repos().setting().findByKey("quote.fetch.interval.minutes")
-            .map(s -> {
-                try { return parseInt(s.getValue()); }
-                catch (Exception e) { return 60; }
+            .map(setting -> {
+                try { return parseInt(setting.getValue()); }
+                catch (Exception exception) { return 60; }
             })
             .orElse(60);
     }
 
     private boolean isEnabled() {
         return dataAccess.repos().setting().findByKey("quote.fetch.enabled")
-            .map(s -> Boolean.parseBoolean(s.getValue()))
+            .map(setting -> Boolean.parseBoolean(setting.getValue()))
             .orElse(false);
     }
 }

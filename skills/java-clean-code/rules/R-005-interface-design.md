@@ -1,6 +1,6 @@
 ## Interface Design Rules
 
-### R-006a: Interfaces must be package-private by default
+### R-005a: Interfaces must be package-private by default
 
 Make interfaces public only if they must be used outside of the package.
 
@@ -22,7 +22,7 @@ interface UserRepository {
 
 ---
 
-### R-006b: Interfaces must follow single responsibility
+### R-005b: Interfaces must follow single responsibility
 
 Each interface should model one clear capability.
 
@@ -50,7 +50,7 @@ interface PasswordResetNotifier {
 
 ---
 
-### R-006c: Interfaces should stay small and cohesive
+### R-005c: Interfaces should stay small and cohesive
 
 Prefer focused interfaces with a small number of related methods.
 

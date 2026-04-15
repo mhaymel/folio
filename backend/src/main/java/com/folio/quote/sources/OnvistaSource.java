@@ -32,16 +32,14 @@ import java.util.regex.Pattern;
 @Order(2)
 final class OnvistaSource implements QuoteSource {
 
-    private static final Logger log = getLogger(OnvistaSource.class);
+    private static final Logger LOG = getLogger(OnvistaSource.class);
 
     private static final String BASE_URL = "https://www.onvista.de/";
 
-    // Look for price patterns in Onvista HTML: spans with price-like content
     private static final Pattern PRICE_PATTERN = Pattern.compile(
         "(?:Kurs|Geldkurs|Briefkurs|Letzter)[^>]*>\\s*(?:<[^>]*>)*\\s*([0-9]+[.,][0-9]+)",
         Pattern.CASE_INSENSITIVE);
 
-    // Simpler fallback: look for data attributes or JSON-LD with price
     private static final Pattern JSON_PRICE_PATTERN = Pattern.compile(
         "\"price\"\\s*:\\s*\"?([0-9]+[.,]?[0-9]*)\"?");
 
@@ -58,7 +56,7 @@ final class OnvistaSource implements QuoteSource {
     @PostConstruct
     void init() {
         config = CsvConfigLoader.loadTwoColumn("onvista.csv");
-        log.info("Onvista: loaded {} ISIN path mappings", config.size());
+        LOG.info("Onvista: loaded {} ISIN path mappings", config.size());
     }
 
     @Override
@@ -72,29 +70,26 @@ final class OnvistaSource implements QuoteSource {
         if (path == null) return empty();
 
         String url = BASE_URL + path;
-        return QuoteFetchHelper.fetchHtml(url, log, providerName()).flatMap(html -> {
-            // Try JSON price first
-            Matcher jm = JSON_PRICE_PATTERN.matcher(html);
-            if (jm.find()) {
-                Optional<Double> price = QuoteFetchHelper.parseDecimal(jm.group(1));
+        return QuoteFetchHelper.fetchHtml(url, LOG, providerName()).flatMap(html -> {
+            Matcher jsonMatcher = JSON_PRICE_PATTERN.matcher(html);
+            if (jsonMatcher.find()) {
+                Optional<Double> price = QuoteFetchHelper.parseDecimal(jsonMatcher.group(1));
                 if (price.isPresent()) {
-                    // Check if page indicates USD
                     if (CURRENCY_PATTERN.matcher(html.substring(
-                            max(0, jm.start() - 200),
-                            min(html.length(), jm.end() + 200))).find()) {
+                            max(0, jsonMatcher.start() - 200),
+                            min(html.length(), jsonMatcher.end() + 200))).find()) {
                         return of(ecb.usdToEur(price.get()));
                     }
                     return price;
                 }
             }
 
-            // Try HTML pattern
-            Matcher m = PRICE_PATTERN.matcher(html);
-            if (m.find()) {
-                return QuoteFetchHelper.parseDecimal(m.group(1));
+            Matcher matcher = PRICE_PATTERN.matcher(html);
+            if (matcher.find()) {
+                return QuoteFetchHelper.parseDecimal(matcher.group(1));
             }
 
-            log.debug("Onvista: no price found for {}", isin);
+            LOG.debug("Onvista: no price found for {}", isin);
             return empty();
         });
     }

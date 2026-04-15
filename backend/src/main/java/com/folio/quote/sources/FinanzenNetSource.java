@@ -25,11 +25,10 @@ import java.util.regex.Pattern;
 @Order(3)
 final class FinanzenNetSource implements QuoteSource {
 
-    private static final Logger log = getLogger(FinanzenNetSource.class);
+    private static final Logger LOG = getLogger(FinanzenNetSource.class);
 
     private static final String BASE_URL = "https://www.finanzen.net/";
 
-    // Look for price in snapshot quote box
     private static final Pattern PRICE_PATTERN = Pattern.compile(
         "(?:snapshot-value-current|intraday-price)[^>]*>\\s*(?:<[^>]*>)*\\s*([0-9]+[.,][0-9]+)");
 
@@ -42,7 +41,7 @@ final class FinanzenNetSource implements QuoteSource {
     @PostConstruct
     void init() {
         config = CsvConfigLoader.loadTwoColumn("finanzennet.csv");
-        log.info("FinanzenNet: loaded {} ISIN path mappings", config.size());
+        LOG.info("FinanzenNet: loaded {} ISIN path mappings", config.size());
     }
 
     @Override
@@ -56,16 +55,16 @@ final class FinanzenNetSource implements QuoteSource {
         if (path == null) return empty();
 
         String url = BASE_URL + path;
-        return QuoteFetchHelper.fetchHtml(url, log, providerName()).flatMap(html -> {
-            Matcher m = PRICE_PATTERN.matcher(html);
-            if (m.find()) {
-                return QuoteFetchHelper.parseDecimal(m.group(1));
+        return QuoteFetchHelper.fetchHtml(url, LOG, providerName()).flatMap(html -> {
+            Matcher matcher = PRICE_PATTERN.matcher(html);
+            if (matcher.find()) {
+                return QuoteFetchHelper.parseDecimal(matcher.group(1));
             }
-            Matcher mm = META_PRICE.matcher(html);
-            if (mm.find()) {
-                return QuoteFetchHelper.parseDecimal(mm.group(1));
+            Matcher metaMatcher = META_PRICE.matcher(html);
+            if (metaMatcher.find()) {
+                return QuoteFetchHelper.parseDecimal(metaMatcher.group(1));
             }
-            log.debug("FinanzenNet: no price found for {}", isin);
+            LOG.debug("FinanzenNet: no price found for {}", isin);
             return empty();
         });
     }

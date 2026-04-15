@@ -1,16 +1,21 @@
 package com.folio.service;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Provides reusable sorting for in-memory lists.
+ * Comparator factory methods remain static because they are pure functions
+ * used in static field initialisers of controllers.
+ */
+@Component
 public final class SortHelper {
 
-    private SortHelper() {}
-
-    public static <T> List<T> sort(List<T> items, SortRequest sort,
-                                   Map<String, Comparator<T>> fieldMap) {
+    public <T> List<T> sort(List<T> items, SortRequest sort, Map<String, Comparator<T>> fieldMap) {
         if (sort.sortField() == null || sort.sortField().isBlank()) return items;
         Comparator<T> cmp = fieldMap.get(sort.sortField());
         if (cmp == null) return items;

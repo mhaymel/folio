@@ -69,8 +69,8 @@ public final class QuoteFetcher {
             }
 
             return parseQuote(response.body());
-        } catch (Exception e) {
-            LOG.warn("Yahoo Finance: fetch failed for {}", url, e);
+        } catch (Exception exception) {
+            LOG.warn("Yahoo Finance: fetch failed for {}", url, exception);
             return empty();
         }
     }

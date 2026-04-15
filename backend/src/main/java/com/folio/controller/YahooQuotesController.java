@@ -2,6 +2,7 @@ package com.folio.controller;
 
 import com.folio.domain.Isin;
 import com.folio.domain.TickerSymbol;
+import com.folio.domain.TickerSymbolFactory;
 import com.folio.dto.ExportColumn;
 import com.folio.dto.ExportRequest;
 import com.folio.dto.PaginatedResponseDto;
@@ -12,8 +13,6 @@ import com.folio.model.IsinEntity;
 import com.folio.model.IsinQuoteEntity;
 import com.folio.model.QuoteProviderEntity;
 import com.folio.online.yahoo.QuoteFetcher;
-import com.folio.service.ExportService;
-import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
 import com.folio.service.SortRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,11 +43,11 @@ import static java.util.Objects.requireNonNull;
 @Tag(name = "Yahoo Quotes", description = "Yahoo Finance quote status for held portfolio ISINs")
 class YahooQuotesController {
 
-    private static final Logger log = getLogger(YahooQuotesController.class);
+    private static final Logger LOG = getLogger(YahooQuotesController.class);
     private static final String PROVIDER_NAME = "Yahoo Finance";
 
     private static final Map<String, Comparator<YahooQuoteWithQuoteDto>> WITH_QUOTE_SORT = Map.of(
-        "isin", SortHelper.text(d -> d.getIsin() == null ? null : d.getIsin().value()),
+        "isin", SortHelper.text(dto -> dto.getIsin() == null ? null : dto.getIsin().value()),
         "name", SortHelper.text(YahooQuoteWithQuoteDto::getName),
         "tickerSymbol", SortHelper.text(YahooQuoteWithQuoteDto::getTickerSymbol),
         "price", SortHelper.number(YahooQuoteWithQuoteDto::getPrice),
@@ -58,21 +57,21 @@ class YahooQuotesController {
     );
 
     private static final Map<String, Comparator<YahooQuoteWithoutQuoteDto>> WITHOUT_QUOTE_SORT = Map.of(
-        "isin", SortHelper.text(d -> d.isin().value()),
+        "isin", SortHelper.text(dto -> dto.isin().value()),
         "name", SortHelper.text(YahooQuoteWithoutQuoteDto::name),
-        "tickerSymbol", SortHelper.text(d -> d.tickerSymbol() == null ? null : d.tickerSymbol().value())
+        "tickerSymbol", SortHelper.text(dto -> dto.tickerSymbol() == null ? null : dto.tickerSymbol().value())
     );
 
     private final YahooQuoteDataAccess dataAccess;
-    private final ExportService exportService;
     private final QuoteFetcher quoteFetcher;
+    private final ListOperations listOperations;
 
     public YahooQuotesController(YahooQuoteDataAccess dataAccess,
-                                 ExportService exportService,
-                                 QuoteFetcher quoteFetcher) {
+                                 QuoteFetcher quoteFetcher,
+                                 ListOperations listOperations) {
         this.dataAccess = requireNonNull(dataAccess);
-        this.exportService = requireNonNull(exportService);
         this.quoteFetcher = requireNonNull(quoteFetcher);
+        this.listOperations = requireNonNull(listOperations);
     }
 
     @PostMapping("/fetch")
@@ -86,13 +85,13 @@ class YahooQuotesController {
         int noQuote = 0;
 
         for (Object[] row : rows) {
-            YahooFetchResultDto r = processRow(row);
-            fetched += r.fetched();
-            noTicker += r.noTicker();
-            noQuote += r.noQuote();
+            YahooFetchResultDto result = processRow(row);
+            fetched += result.fetched();
+            noTicker += result.noTicker();
+            noQuote += result.noQuote();
         }
 
-        log.info("Yahoo quote fetch complete: total={} fetched={} noTicker={} noQuote={}",
+        LOG.info("Yahoo quote fetch complete: total={} fetched={} noTicker={} noQuote={}",
             total, fetched, noTicker, noQuote);
         return ResponseEntity.ok(new YahooFetchResultDto(total, fetched, noTicker, noQuote));
     }
@@ -105,14 +104,14 @@ class YahooQuotesController {
             @RequestParam(defaultValue = "asc") String sortDir,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(required = false) String isin,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String ticker,
-            @RequestParam(required = false) String currency) {
+            @RequestParam(required = false, defaultValue = "") String isin,
+            @RequestParam(required = false, defaultValue = "") String name,
+            @RequestParam(required = false, defaultValue = "") String ticker,
+            @RequestParam(required = false, defaultValue = "") String currency) {
         List<YahooQuoteWithQuoteDto> data = filterWithQuote(loadWithQuote(),
             new YahooQuoteFilter(isin, name, ticker), currency);
-        data = SortHelper.sort(data, new SortRequest(sortField, sortDir), WITH_QUOTE_SORT);
-        return ResponseEntity.ok(PaginationHelper.paginate(data, page, pageSize));
+        data = listOperations.sortHelper().sort(data, new SortRequest(sortField, sortDir), WITH_QUOTE_SORT);
+        return ResponseEntity.ok(listOperations.paginationHelper().paginate(data, page, pageSize));
     }
 
     @GetMapping("/with-quote/export")
@@ -122,14 +121,14 @@ class YahooQuotesController {
             @RequestParam(defaultValue = "csv") String format,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir,
-            @RequestParam(required = false) String isin,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String ticker,
-            @RequestParam(required = false) String currency) {
+            @RequestParam(required = false, defaultValue = "") String isin,
+            @RequestParam(required = false, defaultValue = "") String name,
+            @RequestParam(required = false, defaultValue = "") String ticker,
+            @RequestParam(required = false, defaultValue = "") String currency) {
         List<YahooQuoteWithQuoteDto> data = filterWithQuote(loadWithQuote(),
             new YahooQuoteFilter(isin, name, ticker), currency);
         if (sortField != null && !sortField.isBlank()) {
-            data = SortHelper.sort(data, new SortRequest(sortField, sortDir), WITH_QUOTE_SORT);
+            data = listOperations.sortHelper().sort(data, new SortRequest(sortField, sortDir), WITH_QUOTE_SORT);
         }
         List<ExportColumn<YahooQuoteWithQuoteDto>> columns = List.of(
             new ExportColumn<>("ISIN", YahooQuoteWithQuoteDto::getIsin),
@@ -140,7 +139,7 @@ class YahooQuotesController {
             new ExportColumn<>("Provider", YahooQuoteWithQuoteDto::getProvider),
             new ExportColumn<>("Fetched At", YahooQuoteWithQuoteDto::getFetchedAt)
         );
-        return exportService.export(new ExportRequest<>(data, columns, format, "quotes-with-quote"));
+        return listOperations.exportService().export(new ExportRequest<>(data, columns, format, "quotes-with-quote"));
     }
 
     @GetMapping("/without-quote")
@@ -151,13 +150,13 @@ class YahooQuotesController {
             @RequestParam(defaultValue = "asc") String sortDir,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(required = false) String isin,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String ticker) {
+            @RequestParam(required = false, defaultValue = "") String isin,
+            @RequestParam(required = false, defaultValue = "") String name,
+            @RequestParam(required = false, defaultValue = "") String ticker) {
         List<YahooQuoteWithoutQuoteDto> data = filterWithoutQuote(loadWithoutQuote(),
             new YahooQuoteFilter(isin, name, ticker));
-        data = SortHelper.sort(data, new SortRequest(sortField, sortDir), WITHOUT_QUOTE_SORT);
-        return ResponseEntity.ok(PaginationHelper.paginate(data, page, pageSize));
+        data = listOperations.sortHelper().sort(data, new SortRequest(sortField, sortDir), WITHOUT_QUOTE_SORT);
+        return ResponseEntity.ok(listOperations.paginationHelper().paginate(data, page, pageSize));
     }
 
     @GetMapping("/without-quote/export")
@@ -167,38 +166,38 @@ class YahooQuotesController {
             @RequestParam(defaultValue = "csv") String format,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir,
-            @RequestParam(required = false) String isin,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String ticker) {
+            @RequestParam(required = false, defaultValue = "") String isin,
+            @RequestParam(required = false, defaultValue = "") String name,
+            @RequestParam(required = false, defaultValue = "") String ticker) {
         List<YahooQuoteWithoutQuoteDto> data = filterWithoutQuote(loadWithoutQuote(),
             new YahooQuoteFilter(isin, name, ticker));
         if (sortField != null && !sortField.isBlank()) {
-            data = SortHelper.sort(data, new SortRequest(sortField, sortDir), WITHOUT_QUOTE_SORT);
+            data = listOperations.sortHelper().sort(data, new SortRequest(sortField, sortDir), WITHOUT_QUOTE_SORT);
         }
         List<ExportColumn<YahooQuoteWithoutQuoteDto>> columns = List.of(
             new ExportColumn<>("ISIN", YahooQuoteWithoutQuoteDto::isin),
             new ExportColumn<>("Name", YahooQuoteWithoutQuoteDto::name),
-            new ExportColumn<>("Ticker", d -> d.tickerSymbol() == null ? null : d.tickerSymbol().value())
+            new ExportColumn<>("Ticker", dto -> dto.tickerSymbol() == null ? null : dto.tickerSymbol().value())
         );
-        return exportService.export(new ExportRequest<>(data, columns, format, "quotes-without-quote"));
+        return listOperations.exportService().export(new ExportRequest<>(data, columns, format, "quotes-without-quote"));
     }
 
     private List<YahooQuoteWithQuoteDto> filterWithQuote(List<YahooQuoteWithQuoteDto> data,
             YahooQuoteFilter filter, String currency) {
         return data.stream()
-            .filter(d -> matches(d.getIsin() != null ? d.getIsin().value() : null, filter.isin()))
-            .filter(d -> matches(d.getName(), filter.name()))
-            .filter(d -> matches(d.getTickerSymbol(), filter.ticker()))
-            .filter(d -> matches(d.getCurrency(), currency))
+            .filter(dto -> matches(dto.getIsin() != null ? dto.getIsin().value() : null, filter.isinFragment()))
+            .filter(dto -> matches(dto.getName(), filter.nameFragment()))
+            .filter(dto -> matches(dto.getTickerSymbol(), filter.tickerFragment()))
+            .filter(dto -> matches(dto.getCurrency(), currency))
             .toList();
     }
 
     private List<YahooQuoteWithoutQuoteDto> filterWithoutQuote(List<YahooQuoteWithoutQuoteDto> data,
             YahooQuoteFilter filter) {
         return data.stream()
-            .filter(d -> matches(d.isin().value(), filter.isin()))
-            .filter(d -> matches(d.name(), filter.name()))
-            .filter(d -> matches(d.tickerSymbol() == null ? null : d.tickerSymbol().value(), filter.ticker()))
+            .filter(dto -> matches(dto.isin().value(), filter.isinFragment()))
+            .filter(dto -> matches(dto.name(), filter.nameFragment()))
+            .filter(dto -> matches(dto.tickerSymbol() == null ? null : dto.tickerSymbol().value(), filter.tickerFragment()))
             .toList();
     }
 
@@ -214,7 +213,7 @@ class YahooQuotesController {
         if (ticker == null || ticker.isBlank()) return new YahooFetchResultDto(0, 0, 1, 0);
         Optional<com.folio.domain.Quote> quote = quoteFetcher.fetchQuote(new TickerSymbol(ticker));
         if (quote.isEmpty()) {
-            log.debug("Yahoo Finance: no quote for ticker {} (ISIN {})", ticker, isinCode);
+            LOG.debug("Yahoo Finance: no quote for ticker {} (ISIN {})", ticker, isinCode);
             return new YahooFetchResultDto(0, 0, 0, 1);
         }
         upsertQuote(isinCode, quote.get().amount().value(), quote.get().amount().currency().name());
@@ -225,21 +224,21 @@ class YahooQuotesController {
         IsinEntity isin = dataAccess.isinRepository().findByIsin(isinCode).orElse(null);
         if (isin == null) return;
 
-        QuoteProviderEntity provider = dataAccess.quoteRepos().provider().findByName(PROVIDER_NAME)
-            .orElseGet(() -> dataAccess.quoteRepos().provider().save(
+        QuoteProviderEntity provider = dataAccess.quoteRepositories().provider().findByName(PROVIDER_NAME)
+            .orElseGet(() -> dataAccess.quoteRepositories().provider().save(
                 new QuoteProviderEntity(null, PROVIDER_NAME)
             ));
 
-        Optional<IsinQuoteEntity> existing = dataAccess.quoteRepos().isinQuote().findBySource_IsinId(isin.getId());
+        Optional<IsinQuoteEntity> existing = dataAccess.quoteRepositories().isinQuote().findBySource_IsinId(isin.getId());
         if (existing.isPresent()) {
-            IsinQuoteEntity q = existing.get();
-            q.setValue(price);
-            q.setCurrency(currency);
-            q.setQuoteProvider(provider);
-            q.setFetchedAt(LocalDateTime.now());
-            dataAccess.quoteRepos().isinQuote().save(q);
+            IsinQuoteEntity quoteEntity = existing.get();
+            quoteEntity.setValue(price);
+            quoteEntity.setCurrency(currency);
+            quoteEntity.setQuoteProvider(provider);
+            quoteEntity.setFetchedAt(LocalDateTime.now());
+            dataAccess.quoteRepositories().isinQuote().save(quoteEntity);
         } else {
-            dataAccess.quoteRepos().isinQuote().save(new IsinQuoteEntity(null,
+            dataAccess.quoteRepositories().isinQuote().save(new IsinQuoteEntity(null,
                 new com.folio.model.IsinQuoteSource(isin, provider),
                 new com.folio.model.IsinQuoteData(price, LocalDateTime.now(), currency)));
         }
@@ -247,7 +246,7 @@ class YahooQuotesController {
 
     @SuppressWarnings("unchecked")
     private List<Object[]> loadHeldIsinsWithTicker() {
-        return dataAccess.em().createNativeQuery("""
+        return dataAccess.entityManager().createNativeQuery("""
             SELECT i.isin,
                    (SELECT ts.symbol FROM isin_ticker it2
                     JOIN ticker_symbol ts ON ts.id = it2.ticker_symbol_id
@@ -265,7 +264,7 @@ class YahooQuotesController {
 
     @SuppressWarnings("unchecked")
     private List<YahooQuoteWithQuoteDto> loadWithQuote() {
-        List<Object[]> rows = dataAccess.em().createNativeQuery("""
+        List<Object[]> rows = dataAccess.entityManager().createNativeQuery("""
             SELECT i.isin,
                    (SELECT n.name FROM isin_name n WHERE n.isin_id = i.id ORDER BY n.id ASC LIMIT 1),
                    (SELECT ts.symbol FROM isin_ticker it2
@@ -288,14 +287,14 @@ class YahooQuotesController {
             """).getResultList();
 
         return rows.stream()
-            .map(r -> {
-                LocalDateTime rawFetchedAt = r[6] != null ? ((java.sql.Timestamp) r[6]).toLocalDateTime() : null;
+            .map(row -> {
+                LocalDateTime rawFetchedAt = row[6] != null ? ((java.sql.Timestamp) row[6]).toLocalDateTime() : null;
                 String formattedFetchedAt = rawFetchedAt != null
                     ? rawFetchedAt.format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
                     : null;
                 return new YahooQuoteWithQuoteDto(
-                    new com.folio.dto.SecurityIdentity(new Isin((String) r[0]), TickerSymbol.of((String) r[2]).orElse(null), (String) r[1]),
-                    new com.folio.dto.QuoteData(r[3] != null ? ((Number) r[3]).doubleValue() : null, (String) r[4], (String) r[5]),
+                    new com.folio.dto.SecurityIdentity(new Isin((String) row[0]), TickerSymbolFactory.of((String) row[2]).orElse(null), (String) row[1]),
+                    new com.folio.dto.QuoteData(row[3] != null ? ((Number) row[3]).doubleValue() : null, (String) row[4], (String) row[5]),
                     new com.folio.dto.QuoteTiming(formattedFetchedAt, rawFetchedAt));
             })
             .toList();
@@ -303,7 +302,7 @@ class YahooQuotesController {
 
     @SuppressWarnings("unchecked")
     private List<YahooQuoteWithoutQuoteDto> loadWithoutQuote() {
-        List<Object[]> rows = dataAccess.em().createNativeQuery("""
+        List<Object[]> rows = dataAccess.entityManager().createNativeQuery("""
             SELECT i.isin,
                    (SELECT n.name FROM isin_name n WHERE n.isin_id = i.id ORDER BY n.id ASC LIMIT 1),
                    (SELECT ts.symbol FROM isin_ticker it2
@@ -321,10 +320,10 @@ class YahooQuotesController {
             """).getResultList();
 
         return rows.stream()
-            .map(r -> new YahooQuoteWithoutQuoteDto(
-                    new Isin((String) r[0]),
-                    ofNullable((String) r[1]).orElse((String) r[0]),
-                    TickerSymbol.of((String) r[2]).orElseGet(() -> new TickerSymbol((String) r[0]))))
+            .map(row -> new YahooQuoteWithoutQuoteDto(
+                    new Isin((String) row[0]),
+                    ofNullable((String) row[1]).orElse((String) row[0]),
+                    TickerSymbolFactory.of((String) row[2]).orElseGet(() -> new TickerSymbol((String) row[0]))))
             .toList();
     }
 }

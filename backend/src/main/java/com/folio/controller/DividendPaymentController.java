@@ -8,8 +8,6 @@ import com.folio.dto.ExportColumn;
 import com.folio.dto.ExportRequest;
 import com.folio.dto.PaginatedResponseDto;
 import com.folio.service.DividendPaymentService;
-import com.folio.service.ExportService;
-import com.folio.service.PaginationHelper;
 import com.folio.service.SortHelper;
 import com.folio.service.SortRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,26 +33,26 @@ final class DividendPaymentController {
 
     private static final Map<String, Comparator<DividendPaymentDto>> SORT_FIELDS = Map.of(
         "timestamp", SortHelper.comparing(DividendPaymentDto::getRawTimestamp),
-        "isin", SortHelper.text(d -> d.getIsin() == null ? null : d.getIsin().value()),
+        "isin", SortHelper.text(dto -> dto.getIsin() == null ? null : dto.getIsin().value()),
         "name", SortHelper.text(DividendPaymentDto::getName),
         "depot", SortHelper.text(DividendPaymentDto::getDepot),
         "value", SortHelper.number(DividendPaymentDto::getValue)
     );
 
     private final DividendPaymentService dividendPaymentService;
-    private final ExportService exportService;
+    private final ListOperations listOperations;
 
-    public DividendPaymentController(DividendPaymentService dividendPaymentService, ExportService exportService) {
+    public DividendPaymentController(DividendPaymentService dividendPaymentService, ListOperations listOperations) {
         this.dividendPaymentService = requireNonNull(dividendPaymentService);
-        this.exportService = requireNonNull(exportService);
+        this.listOperations = requireNonNull(listOperations);
     }
 
     @GetMapping
     @Operation(summary = "Get all dividend payments with optional filters, sorting, and pagination")
     public ResponseEntity<DividendPaymentPaginatedResponseDto> getDividendPayments(
-            @RequestParam(required = false) String isin,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String depot,
+            @RequestParam(required = false, defaultValue = "") String isin,
+            @RequestParam(required = false, defaultValue = "") String name,
+            @RequestParam(required = false, defaultValue = "") String depot,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
             @RequestParam(required = false, defaultValue = "timestamp") String sortField,
@@ -65,11 +63,11 @@ final class DividendPaymentController {
         List<DividendPaymentDto> data = dividendPaymentService.getDividendPayments(
             new DividendPaymentFilter(isin, name, depot, fromDate, toDate));
 
-        data = SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
+        data = listOperations.sortHelper().sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
 
-        double sumValue = data.stream().mapToDouble(d -> d.getValue() != null ? d.getValue() : 0).sum();
+        double sumValue = data.stream().mapToDouble(payment -> payment.getValue() != null ? payment.getValue() : 0).sum();
 
-        PaginatedResponseDto<DividendPaymentDto> paginated = PaginationHelper.paginate(data, page, pageSize);
+        PaginatedResponseDto<DividendPaymentDto> paginated = listOperations.paginationHelper().paginate(data, page, pageSize);
 
         return ResponseEntity.ok(new DividendPaymentPaginatedResponseDto(
             paginated.getItems(), paginated.getPage(), paginated.getPageSize(),
@@ -82,7 +80,7 @@ final class DividendPaymentController {
     public ResponseEntity<DividendPaymentFiltersDto> getFilters() {
         List<DividendPaymentDto> all = dividendPaymentService.getDividendPayments(DividendPaymentFilter.none());
         List<String> depots = all.stream()
-            .map(DividendPaymentDto::getDepot).filter(d -> d != null && !d.isBlank())
+            .map(DividendPaymentDto::getDepot).filter(depot -> depot != null && !depot.isBlank())
             .distinct().sorted().toList();
         return ResponseEntity.ok(new DividendPaymentFiltersDto(depots));
     }
@@ -91,9 +89,9 @@ final class DividendPaymentController {
     @Operation(summary = "Export dividend payments as CSV or Excel")
     public ResponseEntity<byte[]> exportDividendPayments(
             @RequestParam(defaultValue = "csv") String format,
-            @RequestParam(required = false) String isin,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String depot,
+            @RequestParam(required = false, defaultValue = "") String isin,
+            @RequestParam(required = false, defaultValue = "") String name,
+            @RequestParam(required = false, defaultValue = "") String depot,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
             @RequestParam(required = false) String sortField,
@@ -103,7 +101,7 @@ final class DividendPaymentController {
             new DividendPaymentFilter(isin, name, depot, fromDate, toDate));
 
         if (sortField != null && !sortField.isBlank()) {
-            data = SortHelper.sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
+            data = listOperations.sortHelper().sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
         }
 
         List<ExportColumn<DividendPaymentDto>> columns = List.of(
@@ -114,6 +112,6 @@ final class DividendPaymentController {
                 new ExportColumn<>("Value (EUR)", DividendPaymentDto::getValue)
         );
 
-        return exportService.export(new ExportRequest<>(data, columns, format, "dividend-payments"));
+        return listOperations.exportService().export(new ExportRequest<>(data, columns, format, "dividend-payments"));
     }
 }

@@ -25,24 +25,24 @@ This skill provides guidelines and best practices for writing clean java code.
 
 Rules are organized by category in the `rules/` folder:
 
-- [R-001-general.md](rules/R-001-general.md)
-- [R-002-class-naming.md](rules/R-002-class-naming.md)
-- [R-003-class-design.md](rules/R-003-class-design.md)
-- [R-004-class-field.md](rules/R-004-class-field.md)
-- [R-005-interface-naming.md](rules/R-005-interface-naming.md)
-- [R-006-interface-design.md](rules/R-006-interface-design.md)
-- [R-007-record-naming.md](rules/R-007-record-naming.md)
-- [R-008-record-design.md](rules/R-008-record-design.md)
-- [R-009-enum.md](rules/R-009-enum.md)
-- [R-010-imports.md](rules/R-010-imports.md)
-- [R-011-programming-by-contract.md](rules/R-011-programming-by-contract.md)
-- [R-012-method-naming.md](rules/R-012-method-naming.md)
-- [R-013-method-design.md](rules/R-013-method-design.md)
-- [R-014-tiny-type.md](rules/R-014-tiny-type.md)
-- [R-015-package-and-file-naming.md](rules/R-015-package-and-file-naming.md)
-- [R-016-local-variable.md](rules/R-016-local-variable.md)
-- [R-017-comment.md](rules/R-017-comment.md)
-- [R-999-not-categorized.md](rules/R-999-not-categorized.md)
+- [R-001-class-naming](rules/R-001-class-naming.md)
+- [R-002-class-design](rules/R-002-class-design.md)
+- [R-003-class-field](rules/R-003-class-field.md)
+- [R-004-interface-naming](rules/R-004-interface-naming.md)
+- [R-005-interface-design](rules/R-005-interface-design.md)
+- [R-006-record-naming](rules/R-006-record-naming.md)
+- [R-007-record-design](rules/R-007-record-design.md)
+- [R-008-enum](rules/R-008-enum.md)
+- [R-009-imports](rules/R-009-imports.md)
+- [R-010-programming-by-contract](rules/R-010-programming-by-contract.md)
+- [R-011-method-naming](rules/R-011-method-naming.md)
+- [R-012-method-code](rules/R-012-method-code.md)
+- [R-013-method-design](rules/R-013-method-design.md)
+- [R-014-tiny-type](rules/R-014-tiny-type.md)
+- [R-015-package-and-file-naming](rules/R-015-package-and-file-naming.md)
+- [R-016-local-variable](rules/R-016-local-variable.md)
+- [R-017-comment](rules/R-017-comment.md)
+- [R-999-not-categorized](rules/R-999-not-categorized.md)
 
 ---
 
@@ -71,5 +71,3 @@ his section documents where the content in this skill comes.
 - personal experience and opinions of Markus Heumel
 - generated with heavy use of GitHub copilot and claude code
 - 
-
-

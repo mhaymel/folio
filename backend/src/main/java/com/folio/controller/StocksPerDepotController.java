@@ -6,11 +6,9 @@ import com.folio.dto.PaginatedResponseDto;
 import com.folio.dto.StockDto;
 import com.folio.dto.StockFiltersDto;
 import com.folio.dto.StockPaginatedResponseDto;
-import com.folio.service.ExportService;
-import com.folio.service.PaginationHelper;
+import com.folio.service.PortfolioService;
 import com.folio.service.SortHelper;
 import com.folio.service.SortRequest;
-import com.folio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -34,37 +32,37 @@ import static java.util.Objects.requireNonNull;
 final class StocksPerDepotController {
 
     private static final Map<String, Comparator<StockDto>> SORT_FIELDS = Map.ofEntries(
-        Map.entry("isin", SortHelper.text(s -> s.security().isin() == null ? null : s.security().isin().value())),
-        Map.entry("tickerSymbol", SortHelper.text(s -> s.security().tickerSymbol() == null ? null : s.security().tickerSymbol().value())),
-        Map.entry("name", SortHelper.text(s -> s.security().name())),
-        Map.entry("country", SortHelper.text(s -> s.classification().country())),
-        Map.entry("branch", SortHelper.text(s -> s.classification().branch())),
-        Map.entry("count", SortHelper.number(s -> s.metrics().position().count())),
-        Map.entry("depot", SortHelper.text(s -> s.classification().depot())),
-        Map.entry("avgEntryPrice", SortHelper.number(s -> s.metrics().position().avgEntryPrice())),
-        Map.entry("currentQuote", SortHelper.number(s -> s.metrics().position().currentQuote())),
-        Map.entry("performancePercent", SortHelper.number(s -> s.metrics().performance().performancePercent())),
-        Map.entry("dividendPerShare", SortHelper.number(s -> s.metrics().performance().dividendPerShare())),
-        Map.entry("estimatedAnnualIncome", SortHelper.number(s -> s.metrics().performance().estimatedAnnualIncome()))
+        Map.entry("isin", SortHelper.text(stock -> stock.security().isin() == null ? null : stock.security().isin().value())),
+        Map.entry("tickerSymbol", SortHelper.text(stock -> stock.security().tickerSymbol() == null ? null : stock.security().tickerSymbol().value())),
+        Map.entry("name", SortHelper.text(stock -> stock.security().name())),
+        Map.entry("country", SortHelper.text(stock -> stock.classification().country())),
+        Map.entry("branch", SortHelper.text(stock -> stock.classification().branch())),
+        Map.entry("count", SortHelper.number(stock -> stock.metrics().position().count())),
+        Map.entry("depot", SortHelper.text(stock -> stock.classification().depot())),
+        Map.entry("avgEntryPrice", SortHelper.number(stock -> stock.metrics().position().avgEntryPrice())),
+        Map.entry("currentQuote", SortHelper.number(stock -> stock.metrics().position().currentQuote())),
+        Map.entry("performancePercent", SortHelper.number(stock -> stock.metrics().performance().performancePercent())),
+        Map.entry("dividendPerShare", SortHelper.number(stock -> stock.metrics().performance().dividendPerShare())),
+        Map.entry("estimatedAnnualIncome", SortHelper.number(stock -> stock.metrics().performance().estimatedAnnualIncome()))
     );
 
     private final PortfolioService portfolioService;
-    private final ExportService exportService;
+    private final ListOperations listOperations;
 
-    public StocksPerDepotController(PortfolioService portfolioService, ExportService exportService) {
+    public StocksPerDepotController(PortfolioService portfolioService, ListOperations listOperations) {
         this.portfolioService = requireNonNull(portfolioService);
-        this.exportService = requireNonNull(exportService);
+        this.listOperations = requireNonNull(listOperations);
     }
 
     @GetMapping
     @Operation(summary = "Get current portfolio positions grouped by depot")
     public ResponseEntity<StockPaginatedResponseDto> getStocksPerDepot(
-            @RequestParam(required = false) String isin,
-            @RequestParam(required = false) String tickerSymbol,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String depot,
-            @RequestParam(required = false) String country,
-            @RequestParam(required = false) String branch,
+            @RequestParam(required = false, defaultValue = "") String isin,
+            @RequestParam(required = false, defaultValue = "") String tickerSymbol,
+            @RequestParam(required = false, defaultValue = "") String name,
+            @RequestParam(required = false, defaultValue = "") String depot,
+            @RequestParam(required = false, defaultValue = "") String country,
+            @RequestParam(required = false, defaultValue = "") String branch,
             @RequestParam(required = false, defaultValue = "isin") String sortField,
             @RequestParam(required = false, defaultValue = "asc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
@@ -72,8 +70,8 @@ final class StocksPerDepotController {
         List<StockDto> data = filterAndSort(portfolioService.getStocks(),
             new StockFilter(isin, tickerSymbol, name, depot, country, branch),
             new SortRequest(sortField, sortDir));
-        double sumCount = data.stream().mapToDouble(s -> s.metrics().position().count()).sum();
-        PaginatedResponseDto<StockDto> paginated = PaginationHelper.paginate(data, page, pageSize);
+        double sumCount = data.stream().mapToDouble(stock -> stock.metrics().position().count()).sum();
+        PaginatedResponseDto<StockDto> paginated = listOperations.paginationHelper().paginate(data, page, pageSize);
         return ResponseEntity.ok(new StockPaginatedResponseDto(
             paginated.getItems(), paginated.getPage(), paginated.getPageSize(),
             paginated.getTotalItems(), paginated.getTotalPages(), sumCount));
@@ -84,13 +82,13 @@ final class StocksPerDepotController {
     public ResponseEntity<StockFiltersDto> getStockFilters() {
         List<StockDto> stocks = portfolioService.getStocks();
         List<String> countries = stocks.stream()
-            .map(s -> s.classification().country()).filter(c -> c != null && !c.isBlank())
+            .map(stock -> stock.classification().country()).filter(country -> country != null && !country.isBlank())
             .distinct().sorted().toList();
         List<String> branches = stocks.stream()
-            .map(s -> s.classification().branch()).filter(b -> b != null && !b.isBlank())
+            .map(stock -> stock.classification().branch()).filter(branch -> branch != null && !branch.isBlank())
             .distinct().sorted().toList();
         List<String> depots = stocks.stream()
-            .map(s -> s.classification().depot()).filter(d -> d != null && !d.isBlank())
+            .map(stock -> stock.classification().depot()).filter(depot -> depot != null && !depot.isBlank())
             .distinct().sorted().toList();
         return ResponseEntity.ok(new StockFiltersDto(countries, branches, depots));
     }
@@ -99,12 +97,12 @@ final class StocksPerDepotController {
     @Operation(summary = "Export stocks per depot as CSV or Excel")
     public ResponseEntity<byte[]> exportStocks(
             @RequestParam(defaultValue = "csv") String format,
-            @RequestParam(required = false) String isin,
-            @RequestParam(required = false) String tickerSymbol,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String depot,
-            @RequestParam(required = false) String country,
-            @RequestParam(required = false) String branch,
+            @RequestParam(required = false, defaultValue = "") String isin,
+            @RequestParam(required = false, defaultValue = "") String tickerSymbol,
+            @RequestParam(required = false, defaultValue = "") String name,
+            @RequestParam(required = false, defaultValue = "") String depot,
+            @RequestParam(required = false, defaultValue = "") String country,
+            @RequestParam(required = false, defaultValue = "") String branch,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir) {
         List<StockDto> data = filterAndSort(portfolioService.getStocks(),
@@ -112,59 +110,59 @@ final class StocksPerDepotController {
             new SortRequest(sortField, sortDir));
 
         List<ExportColumn<StockDto>> columns = List.of(
-                new ExportColumn<>("ISIN", s -> s.security().isin()),
-                new ExportColumn<>("Ticker", s -> s.security().tickerSymbol() == null ? null : s.security().tickerSymbol().value()),
-                new ExportColumn<>("Name", s -> s.security().name()),
-                new ExportColumn<>("CountryEntity", s -> s.classification().country()),
-                new ExportColumn<>("BranchEntity", s -> s.classification().branch()),
-                new ExportColumn<>("DepotEntity", s -> s.classification().depot()),
-                new ExportColumn<>("Count", s -> s.metrics().position().count()),
-                new ExportColumn<>("Avg Price", s -> s.metrics().position().avgEntryPrice()),
-                new ExportColumn<>("Quote", s -> s.metrics().position().currentQuote()),
-                new ExportColumn<>("Perf %", s -> s.metrics().performance().performancePercent()),
-                new ExportColumn<>("Div/Share", s -> s.metrics().performance().dividendPerShare()),
-                new ExportColumn<>("Est. Income", s -> s.metrics().performance().estimatedAnnualIncome())
+                new ExportColumn<>("ISIN", stock -> stock.security().isin()),
+                new ExportColumn<>("Ticker", stock -> stock.security().tickerSymbol() == null ? null : stock.security().tickerSymbol().value()),
+                new ExportColumn<>("Name", stock -> stock.security().name()),
+                new ExportColumn<>("CountryEntity", stock -> stock.classification().country()),
+                new ExportColumn<>("BranchEntity", stock -> stock.classification().branch()),
+                new ExportColumn<>("DepotEntity", stock -> stock.classification().depot()),
+                new ExportColumn<>("Count", stock -> stock.metrics().position().count()),
+                new ExportColumn<>("Avg Price", stock -> stock.metrics().position().avgEntryPrice()),
+                new ExportColumn<>("Quote", stock -> stock.metrics().position().currentQuote()),
+                new ExportColumn<>("Perf %", stock -> stock.metrics().performance().performancePercent()),
+                new ExportColumn<>("Div/Share", stock -> stock.metrics().performance().dividendPerShare()),
+                new ExportColumn<>("Est. Income", stock -> stock.metrics().performance().estimatedAnnualIncome())
         );
 
-        return exportService.export(new ExportRequest<>(data, columns, format, "stocks-per-depot"));
+        return listOperations.exportService().export(new ExportRequest<>(data, columns, format, "stocks-per-depot"));
     }
 
-    private static Set<String> splitMultiValue(String param) {
+    private Set<String> splitMultiValue(String param) {
         if (param == null || param.isBlank()) return Set.of();
         return Arrays.stream(param.split(","))
             .map(String::trim)
-            .filter(s -> !s.isEmpty())
+            .filter(value -> !value.isEmpty())
             .collect(Collectors.toSet());
     }
 
-    private static List<StockDto> filterAndSort(List<StockDto> data, StockFilter filter,
+    private List<StockDto> filterAndSort(List<StockDto> data, StockFilter filter,
                                                  SortRequest sort) {
-        if (filter.isin() != null && !filter.isin().isBlank()) {
-            String lower = filter.isin().toLowerCase();
-            data = data.stream().filter(s -> s.security().isin() != null && s.security().isin().value().toLowerCase().contains(lower)).toList();
+        if (!filter.isinFragment().isBlank()) {
+            String lower = filter.isinFragment().toLowerCase();
+            data = data.stream().filter(stock -> stock.security().isin() != null && stock.security().isin().value().toLowerCase().contains(lower)).toList();
         }
-        if (filter.tickerSymbol() != null && !filter.tickerSymbol().isBlank()) {
-            String lower = filter.tickerSymbol().toLowerCase();
-            data = data.stream().filter(s -> s.security().tickerSymbol() != null && s.security().tickerSymbol().value().toLowerCase().contains(lower)).toList();
+        if (!filter.tickerSymbolFragment().isBlank()) {
+            String lower = filter.tickerSymbolFragment().toLowerCase();
+            data = data.stream().filter(stock -> stock.security().tickerSymbol() != null && stock.security().tickerSymbol().value().toLowerCase().contains(lower)).toList();
         }
-        if (filter.name() != null && !filter.name().isBlank()) {
-            String lower = filter.name().toLowerCase();
-            data = data.stream().filter(s -> s.security().name() != null && s.security().name().toLowerCase().contains(lower)).toList();
+        if (!filter.nameFragment().isBlank()) {
+            String lower = filter.nameFragment().toLowerCase();
+            data = data.stream().filter(stock -> stock.security().name() != null && stock.security().name().toLowerCase().contains(lower)).toList();
         }
-        Set<String> depots = splitMultiValue(filter.depot());
+        Set<String> depots = splitMultiValue(filter.depotFragment());
         if (!depots.isEmpty()) {
-            data = data.stream().filter(s -> depots.contains(s.classification().depot())).toList();
+            data = data.stream().filter(stock -> depots.contains(stock.classification().depot())).toList();
         }
-        Set<String> countries = splitMultiValue(filter.country());
+        Set<String> countries = splitMultiValue(filter.countryFragment());
         if (!countries.isEmpty()) {
-            data = data.stream().filter(s -> countries.contains(s.classification().country())).toList();
+            data = data.stream().filter(stock -> countries.contains(stock.classification().country())).toList();
         }
-        Set<String> branches = splitMultiValue(filter.branch());
+        Set<String> branches = splitMultiValue(filter.branchFragment());
         if (!branches.isEmpty()) {
-            data = data.stream().filter(s -> branches.contains(s.classification().branch())).toList();
+            data = data.stream().filter(stock -> branches.contains(stock.classification().branch())).toList();
         }
         if (sort.sortField() != null && !sort.sortField().isBlank()) {
-            data = SortHelper.sort(data, sort, SORT_FIELDS);
+            data = listOperations.sortHelper().sort(data, sort, SORT_FIELDS);
         }
         return data;
     }

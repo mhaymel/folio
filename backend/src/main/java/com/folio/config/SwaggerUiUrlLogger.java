@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 final class SwaggerUiUrlLogger {
 
-    private static final Logger log = getLogger(SwaggerUiUrlLogger.class);
+    private static final Logger LOG = getLogger(SwaggerUiUrlLogger.class);
 
     private final SwaggerUiConfigProperties properties;
     private String path;
@@ -48,6 +48,6 @@ final class SwaggerUiUrlLogger {
         if (isNull(path) || isNull(port)) {
             return;
         }
-        log.info("swagger-ui can be found here: http://localhost:{}{}", port, path);
+        LOG.info("swagger-ui can be found here: http://localhost:{}{}", port, path);
     }
 }

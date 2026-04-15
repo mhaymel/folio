@@ -54,28 +54,24 @@ public final class ExportService {
         return buildCsv(request.data(), request.columns(), request.filenameBase());
     }
 
-    // ── CSV ─────────────────────────────────────────────────────────────────
-
     private <T> ResponseEntity<byte[]> buildCsv(List<T> data, List<ExportColumn<T>> columns,
                                                  String filenameBase) {
-        var sb = new StringBuilder();
-        sb.append('\uFEFF'); // BOM
-        // Header
+        var builder = new StringBuilder();
+        builder.append('\uFEFF');
         for (int i = 0; i < columns.size(); i++) {
-            if (i > 0) sb.append(';');
-            sb.append(csvQuote(columns.get(i).header()));
+            if (i > 0) builder.append(';');
+            builder.append(csvQuote(columns.get(i).header()));
         }
-        sb.append("\r\n");
-        // Rows
+        builder.append("\r\n");
         for (T row : data) {
             for (int i = 0; i < columns.size(); i++) {
-                if (i > 0) sb.append(';');
-                Object val = columns.get(i).accessor().apply(row);
-                sb.append(csvQuote(formatForCsv(val)));
+                if (i > 0) builder.append(';');
+                Object cellValue = columns.get(i).accessor().apply(row);
+                builder.append(csvQuote(formatForCsv(cellValue)));
             }
-            sb.append("\r\n");
+            builder.append("\r\n");
         }
-        byte[] bytes = sb.toString().getBytes(StandardCharsets.UTF_8);
+        byte[] bytes = builder.toString().getBytes(StandardCharsets.UTF_8);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filenameBase + ".csv\"")
                 .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
@@ -83,39 +79,34 @@ public final class ExportService {
                 .body(bytes);
     }
 
-    private static String formatForCsv(Object val) {
-        if (val == null) return "";
-        if (val instanceof Number num) {
+    private String formatForCsv(Object cellValue) {
+        if (cellValue == null) return "";
+        if (cellValue instanceof Number number) {
             synchronized (DE_NF) {
-                return DE_NF.format(num.doubleValue());
+                return DE_NF.format(number.doubleValue());
             }
         }
-        return val.toString();
+        return cellValue.toString();
     }
 
-    private static String csvQuote(String value) {
+    private String csvQuote(String value) {
         return "\"" + value.replace("\"", "\"\"") + "\"";
     }
 
-    // ── Excel ───────────────────────────────────────────────────────────────
-
     private <T> ResponseEntity<byte[]> buildExcel(List<T> data, List<ExportColumn<T>> columns,
                                                    String filenameBase) {
-        try (Workbook wb = new XSSFWorkbook()) {
-            Sheet sheet = wb.createSheet(filenameBase);
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet(filenameBase);
 
-            // Bold header style
-            CellStyle headerStyle = wb.createCellStyle();
-            Font font = wb.createFont();
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font font = workbook.createFont();
             font.setBold(true);
             headerStyle.setFont(font);
 
-            // Numeric cell style — 2 decimal places
-            CellStyle numStyle = wb.createCellStyle();
-            DataFormat df = wb.createDataFormat();
-            numStyle.setDataFormat(df.getFormat("#,##0.00"));
+            CellStyle numStyle = workbook.createCellStyle();
+            DataFormat dataFormat = workbook.createDataFormat();
+            numStyle.setDataFormat(dataFormat.getFormat("#,##0.00"));
 
-            // Header row
             Row headerRow = sheet.createRow(0);
             for (int i = 0; i < columns.size(); i++) {
                 Cell cell = headerRow.createCell(i);
@@ -123,29 +114,27 @@ public final class ExportService {
                 cell.setCellStyle(headerStyle);
             }
 
-            // Data rows
-            for (int r = 0; r < data.size(); r++) {
-                Row row = sheet.createRow(r + 1);
-                T item = data.get(r);
-                for (int c = 0; c < columns.size(); c++) {
-                    Cell cell = row.createCell(c);
-                    Object val = columns.get(c).accessor().apply(item);
-                    if (val instanceof Number num) {
-                        cell.setCellValue(num.doubleValue());
+            for (int rowIndex = 0; rowIndex < data.size(); rowIndex++) {
+                Row row = sheet.createRow(rowIndex + 1);
+                T item = data.get(rowIndex);
+                for (int colIndex = 0; colIndex < columns.size(); colIndex++) {
+                    Cell cell = row.createCell(colIndex);
+                    Object cellValue = columns.get(colIndex).accessor().apply(item);
+                    if (cellValue instanceof Number number) {
+                        cell.setCellValue(number.doubleValue());
                         cell.setCellStyle(numStyle);
                     } else {
-                        cell.setCellValue(val != null ? val.toString() : "");
+                        cell.setCellValue(cellValue != null ? cellValue.toString() : "");
                     }
                 }
             }
 
-            // Auto-size columns
             for (int i = 0; i < columns.size(); i++) {
                 sheet.autoSizeColumn(i);
             }
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            wb.write(out);
+            workbook.write(out);
             byte[] bytes = out.toByteArray();
 
             return ResponseEntity.ok()
@@ -153,8 +142,8 @@ public final class ExportService {
                     .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                     .contentLength(bytes.length)
                     .body(bytes);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to generate Excel export", e);
+        } catch (IOException exception) {
+            throw new RuntimeException("Failed to generate Excel export", exception);
         }
     }
 }

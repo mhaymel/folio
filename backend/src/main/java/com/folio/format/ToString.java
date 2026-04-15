@@ -1,19 +1,20 @@
 package com.folio.format;
 
+import com.folio.precondition.Precondition;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import static com.folio.precondition.Precondition.nn;
+import static com.folio.precondition.Precondition.notNull;
 
 public final class ToString {
 
     private final Object object;
 
     public ToString(Object object) {
-        this.object = nn(object);
+        this.object = Precondition.notNull(object);
     }
 
     public static String asString(Object o) {
@@ -23,14 +24,14 @@ public final class ToString {
     public String asString() {
         ToStringHelper stringHelper = MoreObjects.toStringHelper(object);
         for (Field field : object.getClass().getDeclaredFields()) {
-            if (!isaStatic(field))
+            if (!isStatic(field))
                 add(stringHelper, field);
         }
 
         return stringHelper.toString();
     }
 
-    private static boolean isaStatic(Field field) {
+    private static boolean isStatic(Field field) {
         return Modifier.isStatic(field.getModifiers());
     }
 
@@ -44,7 +45,7 @@ public final class ToString {
     private Object value(Field field) {
         try {
             return field.get(object);
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException exception) {
             return "<illegal access exception>";
         }
     }
