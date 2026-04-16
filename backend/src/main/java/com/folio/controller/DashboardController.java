@@ -27,7 +27,7 @@ final class DashboardController {
     private final PortfolioService portfolioService;
     private final ExportService exportService;
 
-    public DashboardController(PortfolioService portfolioService, ExportService exportService) {
+    DashboardController(PortfolioService portfolioService, ExportService exportService) {
         this.portfolioService = requireNonNull(portfolioService);
         this.exportService = requireNonNull(exportService);
     }
@@ -35,13 +35,13 @@ final class DashboardController {
     @GetMapping
     @Operation(summary = "Get dashboard summary")
     public ResponseEntity<DashboardDto> getDashboard() {
-        return ResponseEntity.ok(portfolioService.getDashboard());
+        return ResponseEntity.ok(portfolioService.dashboard());
     }
 
     @GetMapping("/holdings/export")
     @Operation(summary = "Export top-5 holdings as CSV or Excel")
     public ResponseEntity<byte[]> exportHoldings(@RequestParam(defaultValue = "csv") String format) {
-        DashboardDto dto = portfolioService.getDashboard();
+        DashboardDto dto = portfolioService.dashboard();
         List<ExportColumn<HoldingDto>> columns = List.of(
                 new ExportColumn<>("ISIN", HoldingDto::getIsin),
                 new ExportColumn<>("Name", HoldingDto::getName),
@@ -53,7 +53,7 @@ final class DashboardController {
     @GetMapping("/dividends/export")
     @Operation(summary = "Export top-5 dividend sources as CSV or Excel")
     public ResponseEntity<byte[]> exportDividends(@RequestParam(defaultValue = "csv") String format) {
-        DashboardDto dto = portfolioService.getDashboard();
+        DashboardDto dto = portfolioService.dashboard();
         List<ExportColumn<DividendSourceDto>> columns = List.of(
                 new ExportColumn<>("ISIN", DividendSourceDto::isin),
                 new ExportColumn<>("Name", DividendSourceDto::name),

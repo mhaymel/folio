@@ -32,7 +32,7 @@ final class QuoteController {
     private final SettingRepository settingRepository;
     private final QuoteService quoteService;
 
-    public QuoteController(SettingRepository settingRepository, QuoteService quoteService) {
+    QuoteController(SettingRepository settingRepository, QuoteService quoteService) {
         this.settingRepository = requireNonNull(settingRepository);
         this.quoteService = requireNonNull(quoteService);
     }

@@ -49,7 +49,7 @@ final class StocksPerDepotController {
     private final PortfolioService portfolioService;
     private final ListOperations listOperations;
 
-    public StocksPerDepotController(PortfolioService portfolioService, ListOperations listOperations) {
+    StocksPerDepotController(PortfolioService portfolioService, ListOperations listOperations) {
         this.portfolioService = requireNonNull(portfolioService);
         this.listOperations = requireNonNull(listOperations);
     }
@@ -67,7 +67,7 @@ final class StocksPerDepotController {
             @RequestParam(required = false, defaultValue = "asc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
-        List<StockDto> data = filterAndSort(portfolioService.getStocks(),
+        List<StockDto> data = filterAndSort(portfolioService.stocks(),
             new StockFilter(isin, tickerSymbol, name, depot, country, branch),
             new SortRequest(sortField, sortDir));
         double sumCount = data.stream().mapToDouble(stock -> stock.metrics().position().count()).sum();
@@ -80,7 +80,7 @@ final class StocksPerDepotController {
     @GetMapping("/filters")
     @Operation(summary = "Get distinct filter options for stocks per depot")
     public ResponseEntity<StockFiltersDto> getStockFilters() {
-        List<StockDto> stocks = portfolioService.getStocks();
+        List<StockDto> stocks = portfolioService.stocks();
         List<String> countries = stocks.stream()
             .map(stock -> stock.classification().country()).filter(country -> country != null && !country.isBlank())
             .distinct().sorted().toList();
@@ -105,7 +105,7 @@ final class StocksPerDepotController {
             @RequestParam(required = false, defaultValue = "") String branch,
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        List<StockDto> data = filterAndSort(portfolioService.getStocks(),
+        List<StockDto> data = filterAndSort(portfolioService.stocks(),
             new StockFilter(isin, tickerSymbol, name, depot, country, branch),
             new SortRequest(sortField, sortDir));
 

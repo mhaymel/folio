@@ -44,7 +44,7 @@ final class TransactionController {
     private final PortfolioService portfolioService;
     private final ListOperations listOperations;
 
-    public TransactionController(PortfolioService portfolioService, ListOperations listOperations) {
+    TransactionController(PortfolioService portfolioService, ListOperations listOperations) {
         this.portfolioService = requireNonNull(portfolioService);
         this.listOperations = requireNonNull(listOperations);
     }
@@ -63,7 +63,7 @@ final class TransactionController {
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
 
-        List<TransactionDto> data = portfolioService.getTransactions(
+        List<TransactionDto> data = portfolioService.findTransactions(
             new TransactionFilter(isin, tickerSymbol, name, depot, fromDate, toDate));
 
         data = listOperations.sortHelper().sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
@@ -83,7 +83,7 @@ final class TransactionController {
     @GetMapping("/filters")
     @Operation(summary = "Get distinct filter options for transactions")
     public ResponseEntity<TransactionFiltersDto> getTransactionFilters() {
-        List<TransactionDto> allTransactions = portfolioService.getTransactions(TransactionFilter.none());
+        List<TransactionDto> allTransactions = portfolioService.findTransactions(TransactionFilter.none());
         List<String> depots = allTransactions.stream()
             .map(TransactionDto::getDepot).filter(depot -> depot != null && !depot.isBlank())
             .distinct().sorted().toList();
@@ -101,7 +101,7 @@ final class TransactionController {
             @RequestParam(required = false) String sortField,
             @RequestParam(defaultValue = "desc") String sortDir) {
 
-        List<TransactionDto> data = portfolioService.getTransactions(
+        List<TransactionDto> data = portfolioService.findTransactions(
             new TransactionFilter(isin, tickerSymbol, name, depot, null, null));
 
         if (sortField != null && !sortField.isBlank()) {

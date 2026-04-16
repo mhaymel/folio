@@ -33,7 +33,7 @@ final class CurrencyController {
     private final CurrencyRepository currencyRepository;
     private final ListOperations listOperations;
 
-    public CurrencyController(CurrencyRepository currencyRepository, ListOperations listOperations) {
+    CurrencyController(CurrencyRepository currencyRepository, ListOperations listOperations) {
         this.currencyRepository = requireNonNull(currencyRepository);
         this.listOperations = requireNonNull(listOperations);
     }

@@ -37,7 +37,7 @@ final class AnalyticsController {
     private final PortfolioService portfolioService;
     private final ListOperations listOperations;
 
-    public AnalyticsController(PortfolioService portfolioService, ListOperations listOperations) {
+    AnalyticsController(PortfolioService portfolioService, ListOperations listOperations) {
         this.portfolioService = requireNonNull(portfolioService);
         this.listOperations = requireNonNull(listOperations);
     }
@@ -49,7 +49,7 @@ final class AnalyticsController {
             @RequestParam(required = false, defaultValue = "desc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
-        List<DiversificationEntry> entries = portfolioService.getCountryDiversification().getEntries();
+        List<DiversificationEntry> entries = portfolioService.countryDiversification().getEntries();
         entries = listOperations.sortHelper().sort(entries, new SortRequest(sortField, sortDir), SORT_FIELDS);
         return ResponseEntity.ok(listOperations.paginationHelper().paginate(entries, page, pageSize));
     }
@@ -61,7 +61,7 @@ final class AnalyticsController {
             @RequestParam(required = false, defaultValue = "desc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
-        List<DiversificationEntry> entries = portfolioService.getBranchDiversification().getEntries();
+        List<DiversificationEntry> entries = portfolioService.branchDiversification().getEntries();
         entries = listOperations.sortHelper().sort(entries, new SortRequest(sortField, sortDir), SORT_FIELDS);
         return ResponseEntity.ok(listOperations.paginationHelper().paginate(entries, page, pageSize));
     }
@@ -75,8 +75,8 @@ final class AnalyticsController {
             @RequestParam(defaultValue = "asc") String sortDir) {
 
         DiversificationDto dto = "countries".equals(type)
-                ? portfolioService.getCountryDiversification()
-                : portfolioService.getBranchDiversification();
+                ? portfolioService.countryDiversification()
+                : portfolioService.branchDiversification();
 
         List<DiversificationEntry> data = dto.getEntries();
         if (sortField != null && !sortField.isBlank()) {

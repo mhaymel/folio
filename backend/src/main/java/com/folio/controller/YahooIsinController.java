@@ -41,7 +41,7 @@ class YahooIsinController {
     private final IsinTickerSearch isinTickerSearch;
     private final YahooIsinRepositories repositories;
 
-    public YahooIsinController(EntityManager entityManager, IsinTickerSearch isinTickerSearch,
+    YahooIsinController(EntityManager entityManager, IsinTickerSearch isinTickerSearch,
                                IsinRepository isinRepository, TickerSymbolRepository tickerSymbolRepository) {
         this.entityManager = requireNonNull(entityManager);
         this.isinTickerSearch = requireNonNull(isinTickerSearch);

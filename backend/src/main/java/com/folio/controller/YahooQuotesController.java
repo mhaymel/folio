@@ -66,7 +66,7 @@ class YahooQuotesController {
     private final QuoteFetcher quoteFetcher;
     private final ListOperations listOperations;
 
-    public YahooQuotesController(YahooQuoteDataAccess dataAccess,
+    YahooQuotesController(YahooQuoteDataAccess dataAccess,
                                  QuoteFetcher quoteFetcher,
                                  ListOperations listOperations) {
         this.dataAccess = requireNonNull(dataAccess);

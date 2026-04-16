@@ -42,7 +42,7 @@ class IsinController {
     private final EntityManager entityManager;
     private final ListOperations listOperations;
 
-    public IsinController(EntityManager entityManager, ListOperations listOperations) {
+    IsinController(EntityManager entityManager, ListOperations listOperations) {
         this.entityManager = requireNonNull(entityManager);
         this.listOperations = requireNonNull(listOperations);
     }

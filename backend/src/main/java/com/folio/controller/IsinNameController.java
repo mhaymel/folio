@@ -36,7 +36,7 @@ class IsinNameController {
     private final EntityManager entityManager;
     private final ListOperations listOperations;
 
-    public IsinNameController(EntityManager entityManager, ListOperations listOperations) {
+    IsinNameController(EntityManager entityManager, ListOperations listOperations) {
         this.entityManager = requireNonNull(entityManager);
         this.listOperations = requireNonNull(listOperations);
     }

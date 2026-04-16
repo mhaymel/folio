@@ -25,7 +25,7 @@ public class DividendPaymentService {
 
     private final EntityManager entityManager;
 
-    public DividendPaymentService(EntityManager entityManager) {
+    DividendPaymentService(EntityManager entityManager) {
         this.entityManager = requireNonNull(entityManager);
     }
 
@@ -69,7 +69,7 @@ public class DividendPaymentService {
             String formattedTimestamp = payment.getTimestamp().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
             return new DividendPaymentDto(
                 new DividendPaymentIdentity(payment.getId(), formattedTimestamp, payment.getTimestamp()),
-                new DividendPaymentSource(new Isin(payment.getIsin().getIsin()), getFirstName(payment.getIsin().getId()), payment.getDepot().getName()),
+                new DividendPaymentSource(new Isin(payment.getIsin().getIsin()), findFirstName(payment.getIsin().getId()), payment.getDepot().getName()),
                 payment.getValue());
         }).toList();
 
@@ -87,7 +87,7 @@ public class DividendPaymentService {
         return result;
     }
 
-    private String getFirstName(Integer isinId) {
+    private String findFirstName(Integer isinId) {
         try {
             return (String) entityManager.createQuery("SELECT n.name FROM IsinNameEntity n WHERE n.isin.id = :id ORDER BY n.id ASC")
                 .setParameter("id", isinId).setMaxResults(1).getSingleResult();

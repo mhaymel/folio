@@ -33,7 +33,7 @@ final class CountryController {
     private final CountryRepository countryRepository;
     private final ListOperations listOperations;
 
-    public CountryController(CountryRepository countryRepository, ListOperations listOperations) {
+    CountryController(CountryRepository countryRepository, ListOperations listOperations) {
         this.countryRepository = requireNonNull(countryRepository);
         this.listOperations = requireNonNull(listOperations);
     }

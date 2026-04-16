@@ -33,7 +33,7 @@ final class BranchController {
     private final BranchRepository branchRepository;
     private final ListOperations listOperations;
 
-    public BranchController(BranchRepository branchRepository, ListOperations listOperations) {
+    BranchController(BranchRepository branchRepository, ListOperations listOperations) {
         this.branchRepository = requireNonNull(branchRepository);
         this.listOperations = requireNonNull(listOperations);
     }

@@ -42,7 +42,7 @@ final class DividendPaymentController {
     private final DividendPaymentService dividendPaymentService;
     private final ListOperations listOperations;
 
-    public DividendPaymentController(DividendPaymentService dividendPaymentService, ListOperations listOperations) {
+    DividendPaymentController(DividendPaymentService dividendPaymentService, ListOperations listOperations) {
         this.dividendPaymentService = requireNonNull(dividendPaymentService);
         this.listOperations = requireNonNull(listOperations);
     }

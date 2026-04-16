@@ -7,13 +7,9 @@ import com.folio.model.QuoteProviderEntity;
 import com.folio.model.SettingEntity;
 import com.folio.quote.IsinsQuoteLoader;
 import com.folio.quote.QuoteResult;
-import com.folio.repository.QuoteRepositories;
-import jakarta.persistence.EntityManager;
+import com.folio.model.SettingEntity;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -21,15 +17,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.Integer.parseInt;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import static java.util.Objects.requireNonNull;
 
-@Service
 public final class QuoteService {
 
     private static final Logger LOG = getLogger(QuoteService.class);
@@ -38,18 +31,12 @@ public final class QuoteService {
     private final QuoteDataAccess dataAccess;
     private final FetchState fetchState;
 
-    private QuoteService(IsinsQuoteLoader quoteLoader, QuoteDataAccess dataAccess, FetchState fetchState) {
+    QuoteService(IsinsQuoteLoader quoteLoader, QuoteDataAccess dataAccess, FetchState fetchState) {
         this.quoteLoader = requireNonNull(quoteLoader);
         this.dataAccess = requireNonNull(dataAccess);
         this.fetchState = requireNonNull(fetchState);
     }
 
-    @Autowired
-    public QuoteService(IsinsQuoteLoader quoteLoader, QuoteRepositories repos, EntityManager entityManager,
-                        TransactionTemplate transactionTemplate) {
-        this(quoteLoader, new QuoteDataAccess(repos, entityManager, transactionTemplate),
-             new FetchState(new AtomicBoolean(false), new AtomicLong(0)));
-    }
 
     /**
      * Scheduled task that runs every minute and checks whether enough time has
@@ -61,7 +48,7 @@ public final class QuoteService {
             return; // quote fetching is turned off
         }
 
-        int intervalMinutes = getIntervalMinutes();
+        int intervalMinutes = intervalMinutes();
         long intervalMs = intervalMinutes * 60_000L;
         long elapsed = System.currentTimeMillis() - fetchState.lastScheduledFetch().get();
 
@@ -89,7 +76,7 @@ public final class QuoteService {
 
         try {
             // 1. Short read-only transaction: collect held ISINs
-            Set<Isin> heldIsins = dataAccess.transactionTemplate().execute(status -> getHeldIsins());
+            Set<Isin> heldIsins = dataAccess.transactionTemplate().execute(status -> findHeldIsins());
             if (heldIsins == null || heldIsins.isEmpty()) {
                 LOG.info("No held ISINs to fetch quotes for");
                 return 0;
@@ -125,7 +112,7 @@ public final class QuoteService {
         }
     }
 
-    private Set<Isin> getHeldIsins() {
+    private Set<Isin> findHeldIsins() {
         List<String> isins = dataAccess.entityManager().createQuery(
             "SELECT t.context.isin.isin FROM TransactionEntity t GROUP BY t.context.isin.isin HAVING SUM(t.values.count) > 0",
             String.class
@@ -166,7 +153,7 @@ public final class QuoteService {
         dataAccess.repos().setting().save(setting);
     }
 
-    private int getIntervalMinutes() {
+    private int intervalMinutes() {
         return dataAccess.repos().setting().findByKey("quote.fetch.interval.minutes")
             .map(setting -> {
                 try { return parseInt(setting.getValue()); }

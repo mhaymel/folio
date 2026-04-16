@@ -140,7 +140,7 @@ class PortfolioServiceTest {
 
     @Test
     void getStocksEmptyPortfolioReturnsEmptyList() {
-        assertThat(portfolioService.getStocks()).isEmpty();
+        assertThat(portfolioService.stocks()).isEmpty();
     }
 
     @Test
@@ -149,7 +149,7 @@ class PortfolioServiceTest {
         createIsinName(basf, "BASF SE");
         createTransaction(basf, depotDeGiro, 10, 50.0);
 
-        List<StockDto> stocks = portfolioService.getStocks();
+        List<StockDto> stocks = portfolioService.stocks();
 
         assertThat(stocks).hasSize(1);
         StockDto s = stocks.get(0);
@@ -167,7 +167,7 @@ class PortfolioServiceTest {
         createTransaction(apple, depotDeGiro, 5, 150.0);
         createTransaction(apple, depotZero, 3, 160.0);
 
-        List<StockDto> stocks = portfolioService.getStocks();
+        List<StockDto> stocks = portfolioService.stocks();
 
         assertThat(stocks).hasSize(2);
         assertThat(stocks).extracting(s -> s.classification().depot())
@@ -181,7 +181,7 @@ class PortfolioServiceTest {
         createTransaction(basf, depotDeGiro, 10, 50.0);   // buy
         createTransaction(basf, depotDeGiro, -10, 55.0);   // sell
 
-        assertThat(portfolioService.getStocks()).isEmpty();
+        assertThat(portfolioService.stocks()).isEmpty();
     }
 
     @Test
@@ -190,7 +190,7 @@ class PortfolioServiceTest {
         createTransaction(isin, depotDeGiro, 10, 100.0);  // cost = 1000
         createTransaction(isin, depotDeGiro, 10, 200.0);  // cost = 2000
 
-        StockDto s = portfolioService.getStocks().get(0);
+        StockDto s = portfolioService.stocks().get(0);
         // total 20 shares, total cost 3000, avg = 150
         assertThat(s.metrics().position().count()).isEqualTo(20.0);
         assertThat(s.metrics().position().avgEntryPrice()).isCloseTo(150.0, within(0.001));
@@ -202,7 +202,7 @@ class PortfolioServiceTest {
         createTransaction(isin, depotDeGiro, 10, 100.0);
         createQuote(isin, 120.0);
 
-        StockDto s = portfolioService.getStocks().get(0);
+        StockDto s = portfolioService.stocks().get(0);
         assertThat(s.metrics().position().currentQuote()).isEqualTo(120.0);
         // performance = (120 - 100) / 100 * 100 = 20%
         assertThat(s.metrics().performance().performancePercent()).isCloseTo(20.0, within(0.001));
@@ -214,7 +214,7 @@ class PortfolioServiceTest {
         createTransaction(isin, depotDeGiro, 10, 50.0);
         createDividend(isin, 3.40);
 
-        StockDto s = portfolioService.getStocks().get(0);
+        StockDto s = portfolioService.stocks().get(0);
         assertThat(s.metrics().performance().dividendPerShare()).isEqualTo(3.40);
         assertThat(s.metrics().performance().estimatedAnnualIncome()).isCloseTo(34.0, within(0.001));
     }
@@ -230,7 +230,7 @@ class PortfolioServiceTest {
         createTransaction(apple, depotDeGiro, 5, 150.0);
         createTransaction(apple, depotZero, 3, 160.0);
 
-        List<StockDto> stocks = portfolioService.getAggregatedStocks();
+        List<StockDto> stocks = portfolioService.aggregatedStocks();
 
         assertThat(stocks).hasSize(1);
         StockDto s = stocks.get(0);
@@ -248,7 +248,7 @@ class PortfolioServiceTest {
 
     @Test
     void getDashboardEmptyPortfolioReturnsZeros() {
-        DashboardDto d = portfolioService.getDashboard();
+        DashboardDto d = portfolioService.dashboard();
 
         assertThat(d.getStockCount()).isEqualTo(0);
         assertThat(d.getTotalPortfolioValue()).isEqualTo(0.0);
@@ -269,7 +269,7 @@ class PortfolioServiceTest {
         createTransaction(apple, depotDeGiro, 5, 150.0);
         createTransaction(apple, depotZero, 3, 160.0);
 
-        DashboardDto d = portfolioService.getDashboard();
+        DashboardDto d = portfolioService.dashboard();
 
         // Apple is in 2 depots but must be counted as 1 stock
         assertThat(d.getStockCount()).isEqualTo(1);
@@ -282,14 +282,14 @@ class PortfolioServiceTest {
         createTransaction(basf, depotDeGiro, 10, 50.0);
         createTransaction(apple, depotDeGiro, 5, 150.0);
 
-        DashboardDto d = portfolioService.getDashboard();
+        DashboardDto d = portfolioService.dashboard();
 
         assertThat(d.getStockCount()).isEqualTo(2);
     }
 
     @Test
     void getDashboardTwoDistinctStocksEachInTwoDepotsCountedAsTwoStocks() {
-        // 2 distinct ISINs × 2 depots = 4 stock rows, but only 2 distinct ISINs
+        // 2 distinct ISINs Ã— 2 depots = 4 stock rows, but only 2 distinct ISINs
         IsinEntity basf = createIsin("DE000BASF111");
         IsinEntity apple = createIsin("US0378331005");
         createTransaction(basf, depotDeGiro, 10, 50.0);
@@ -297,7 +297,7 @@ class PortfolioServiceTest {
         createTransaction(apple, depotDeGiro, 5, 150.0);
         createTransaction(apple, depotZero, 3, 160.0);
 
-        DashboardDto d = portfolioService.getDashboard();
+        DashboardDto d = portfolioService.dashboard();
 
         assertThat(d.getStockCount()).isEqualTo(2);
     }
@@ -310,7 +310,7 @@ class PortfolioServiceTest {
         createTransaction(basf, depotDeGiro, -10, 55.0);  // fully sold
         createTransaction(apple, depotDeGiro, 5, 150.0);
 
-        DashboardDto d = portfolioService.getDashboard();
+        DashboardDto d = portfolioService.dashboard();
 
         assertThat(d.getStockCount()).isEqualTo(1);
     }
@@ -322,7 +322,7 @@ class PortfolioServiceTest {
         createTransaction(basf, depotDeGiro, 10, 50.0);    // invested 500
         createTransaction(apple, depotZero, 5, 150.0);      // invested 750
 
-        DashboardDto d = portfolioService.getDashboard();
+        DashboardDto d = portfolioService.dashboard();
 
         // totalPortfolioValue = SUM(count * avgEntryPrice) = 500 + 750 = 1250
         assertThat(d.getTotalPortfolioValue()).isCloseTo(1250.0, within(0.001));
@@ -334,7 +334,7 @@ class PortfolioServiceTest {
         createTransaction(basf, depotDeGiro, 10, 50.0);   // invested 500
         createDividend(basf, 3.40);                         // annual income = 34
 
-        DashboardDto d = portfolioService.getDashboard();
+        DashboardDto d = portfolioService.dashboard();
 
         // ratio = (34 / 500) * 100 = 6.8%
         assertThat(d.getTotalDividendRatio()).isCloseTo(6.8, within(0.001));
@@ -353,7 +353,7 @@ class PortfolioServiceTest {
             createTransaction(isin, depotDeGiro, 10, prices[i]);
         }
 
-        DashboardDto d = portfolioService.getDashboard();
+        DashboardDto d = portfolioService.dashboard();
 
         assertThat(d.getTop5Holdings()).hasSize(5);
         // highest invested first: Stock6 (600), Stock5 (500), Stock4 (400), Stock3 (300), Stock2 (200)
@@ -375,7 +375,7 @@ class PortfolioServiceTest {
         createDividend(basf, 3.40);  // income = 34
         createDividend(apple, 0.96); // income = 4.8
 
-        DashboardDto d = portfolioService.getDashboard();
+        DashboardDto d = portfolioService.dashboard();
 
         assertThat(d.getTop5DividendSources()).hasSize(2);
         // BASF should be first (higher income)
@@ -390,7 +390,7 @@ class PortfolioServiceTest {
         s.setValue("2026-03-27T10:00:00");
         settingRepo.save(s);
 
-        DashboardDto d = portfolioService.getDashboard();
+        DashboardDto d = portfolioService.dashboard();
 
         assertThat(d.getLastQuoteFetchAt()).isEqualTo("27.03.2026 10:00");
     }
@@ -401,7 +401,7 @@ class PortfolioServiceTest {
 
     @Test
     void getCountryDiversificationEmptyPortfolio() {
-        DiversificationDto d = portfolioService.getCountryDiversification();
+        DiversificationDto d = portfolioService.countryDiversification();
 
         assertThat(d.getEntries()).isEmpty();
         assertThat(d.getTotalInvested()).isEqualTo(0.0);
@@ -418,7 +418,7 @@ class PortfolioServiceTest {
         insertCountry(basf.getId(), "Germany");
         insertCountry(apple.getId(), "USA");
 
-        DiversificationDto d = portfolioService.getCountryDiversification();
+        DiversificationDto d = portfolioService.countryDiversification();
 
         assertThat(d.getTotalInvested()).isCloseTo(1000.0, within(0.001));
         assertThat(d.getEntries()).hasSize(2);
@@ -460,11 +460,11 @@ class PortfolioServiceTest {
         insertBranch(basf.getId(), "Chemicals");
         insertBranch(apple.getId(), "Technology");
 
-        DiversificationDto d = portfolioService.getBranchDiversification();
+        DiversificationDto d = portfolioService.branchDiversification();
 
         assertThat(d.getTotalInvested()).isCloseTo(1500.0, within(0.001));
         assertThat(d.getEntries()).hasSize(2);
-        // Technology is 1000/1500 ≈ 66.67%, Chemicals is 500/1500 ≈ 33.33%
+        // Technology is 1000/1500 â‰ˆ 66.67%, Chemicals is 500/1500 â‰ˆ 33.33%
         // entries ordered by invested DESC
         assertThat(d.getEntries().get(0).getName()).isEqualTo("Technology");
         assertThat(d.getEntries().get(0).getPercentage()).isCloseTo(66.667, within(0.01));
@@ -481,7 +481,7 @@ class PortfolioServiceTest {
         createTransaction(basf, depotDeGiro, 10, 50.0);
         createTransaction(basf, depotDeGiro, 5, 55.0);
 
-        var txns = portfolioService.getTransactions(com.folio.dto.TransactionFilter.none());
+        var txns = portfolioService.findTransactions(com.folio.dto.TransactionFilter.none());
 
         assertThat(txns).hasSize(2);
     }
@@ -493,7 +493,7 @@ class PortfolioServiceTest {
         createTransaction(basf, depotZero, 5, 55.0);
 
         var filter = new com.folio.dto.TransactionFilter(null, null, null, "DeGiro", null, null);
-        var txns = portfolioService.getTransactions(filter);
+        var txns = portfolioService.findTransactions(filter);
 
         assertThat(txns).hasSize(1);
         assertThat(txns.get(0).getDepot()).isEqualTo("DeGiro");
@@ -509,7 +509,7 @@ class PortfolioServiceTest {
         createTransaction(apple, depotDeGiro, 5, 150.0);
 
         var filter = new com.folio.dto.TransactionFilter(null, null, "apple", null, null, null);
-        var txns = portfolioService.getTransactions(filter);
+        var txns = portfolioService.findTransactions(filter);
 
         assertThat(txns).hasSize(1);
         assertThat(txns.get(0).getIsin()).isEqualTo(new Isin("US0378331005"));

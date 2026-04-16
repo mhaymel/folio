@@ -33,7 +33,7 @@ final class DepotController {
     private final DepotRepository depotRepository;
     private final ListOperations listOperations;
 
-    public DepotController(DepotRepository depotRepository, ListOperations listOperations) {
+    DepotController(DepotRepository depotRepository, ListOperations listOperations) {
         this.depotRepository = requireNonNull(depotRepository);
         this.listOperations = requireNonNull(listOperations);
     }

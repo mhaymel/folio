@@ -37,7 +37,7 @@ class TickerSymbolController {
     private final EntityManager entityManager;
     private final ListOperations listOperations;
 
-    public TickerSymbolController(EntityManager entityManager, ListOperations listOperations) {
+    TickerSymbolController(EntityManager entityManager, ListOperations listOperations) {
         this.entityManager = requireNonNull(entityManager);
         this.listOperations = requireNonNull(listOperations);
     }

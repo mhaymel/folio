@@ -21,7 +21,7 @@ final class ImportController {
 
     private final ImportService importService;
 
-    public ImportController(ImportService importService) {
+    ImportController(ImportService importService) {
         this.importService = requireNonNull(importService);
     }
 
