@@ -307,7 +307,8 @@ final class UserService {
 
 ## R-003l
 
-Static fields must be `private static final`. Mutable static state (`static` without `final`) is forbidden ΓÇö it introduces hidden global state, breaks thread safety, and makes testing unreliable.
+Static fields must be `private` or `public`. Static fields must 
+be `final`. `protected` static fields are forbidden.
 
 **Bad:**
 
@@ -323,7 +324,7 @@ final class UserService {
 ```java
 final class UserService {
     private static final int MAX_RETRIES = 3;
-    private static final String DEFAULT_NAME = "Guest";
+    public static final String DEFAULT_NAME = "Guest";
 }
 ```
 

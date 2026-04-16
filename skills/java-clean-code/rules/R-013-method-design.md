@@ -738,7 +738,6 @@ final class Portfolio {
 }
 ```
 
-
 ---
 
 
@@ -776,3 +775,55 @@ final class ReportService {
 
 ---
 
+## R-013w
+
+Extract boolean conditions into private predicate methods (e.g. `isLoggedIn()`, `hasPermission()`, `isExpired()`). These methods serve as self-documenting code, replacing inline comments and improving readability. The method name **is** the comment.
+
+Name predicate methods with `is`, `has`, `can`, `should`, or `was` prefixes. Keep each predicate focused on a single condition. Visibility must be `private` (or package-private if reused within the package).
+
+**Bad:**
+
+```java
+final class OrderService {
+    void process(User user, Session session, Order order) {
+        // check if user is logged in and session is still valid
+        if (user.getToken() != null && !user.getToken().isBlank()
+                && session.getExpiry().isAfter(Instant.now())) {
+            // check if order qualifies for free shipping
+            if (order.getTotal().compareTo(FREE_SHIPPING_THRESHOLD) >= 0
+                    && order.getDestination().isInland()) {
+                // ...
+            }
+        }
+    }
+}
+```
+
+**Good:**
+
+```java
+final class OrderService {
+    void process(User user, Session session, Order order) {
+        if (isLoggedIn(user) && isSessionValid(session)) {
+            if (qualifiesForFreeShipping(order)) {
+                // ...
+            }
+        }
+    }
+
+    private boolean isLoggedIn(User user) {
+        return user.getToken() != null && !user.getToken().isBlank();
+    }
+
+    private boolean isSessionValid(Session session) {
+        return session.getExpiry().isAfter(Instant.now());
+    }
+
+    private boolean qualifiesForFreeShipping(Order order) {
+        return order.getTotal().compareTo(FREE_SHIPPING_THRESHOLD) >= 0
+                && order.getDestination().isInland();
+    }
+}
+```
+
+---

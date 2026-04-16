@@ -557,45 +557,6 @@ final class UserValidatorTest {
 
 ---
 
-## R-002q
-
-Do not use `continue` or `break` in loops. Extract the loop body to a private method and use `return` instead of `continue`. Do not invert the condition; do not add nesting.
-
-**Bad:**
-
-```java
-final class OrderProcessor {
-    void processOrders(List<Order> orders) {
-        for (Order order : orders) {
-            if (order.isCancelled()) {
-                continue;
-            }
-            ship(order);
-        }
-    }
-}
-```
-
-**Good:**
-
-```java
-final class OrderProcessor {
-    void processOrders(List<Order> orders) {
-        for (Order order : orders) {
-            processOrder(order);
-        }
-    }
-
-    private void processOrder(Order order) {
-        if (order.isCancelled()) {
-            return;
-        }
-        ship(order);
-    }
-}
-```
-
----
 
 ## R-002r
 

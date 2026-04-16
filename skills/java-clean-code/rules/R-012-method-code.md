@@ -80,4 +80,150 @@ final class PaymentProcessor {
 
 ---
 
+## R-012c
 
+Do not use `continue`. Extract the loop body to a private method and use `return` instead of `continue`.
+
+**Bad:**
+
+```java
+final class OrderProcessor {
+    void processOrders(List<Order> orders) {
+        for (Order order : orders) {
+            if (order.isCancelled()) {
+                continue;
+            }
+            ship(order);
+        }
+    }
+}
+```
+
+**Good:**
+
+```java
+final class OrderProcessor {
+    void processOrders(List<Order> orders) {
+        for (Order order : orders) {
+            processOrder(order);
+        }
+    }
+
+    private void processOrder(Order order) {
+        if (order.isCancelled()) {
+            return;
+        }
+        ship(order);
+    }
+}
+```
+
+---
+
+## R-012d
+
+`break` is forbidden. In a loop extract body to a private method and use `return` instead of `break`.
+
+**Exception:** `break` is allowed in `switch` statements/expressions, but you must still handle the `default` case and avoid fall-through.
+
+**Bad:**
+
+```java
+final class OrderSearcher {
+    Order findFirst(List<Order> orders) {
+        Order result = null;
+        for (Order order : orders) {
+            if (order.isPending()) {
+                result = order;
+                break;
+            }
+        }
+        return result;
+    }
+}
+```
+
+**Good:**
+
+```java
+final class OrderSearcher {
+    Order findFirst(List<Order> orders) {
+        for (Order order : orders) {
+            if (order.isPending()) {
+                return order;
+            }
+        }
+        return null;
+    }
+}
+```
+
+**Good (switch exception):**
+
+```java
+final class StatusMapper {
+    String label(Status status) {
+        switch (status) {
+            case PENDING:
+                return "Pending";
+            case SHIPPED:
+                return "Shipped";
+            default:
+                break;
+        }
+        return "Unknown";
+    }
+}
+```
+
+---
+
+## R-012e
+
+`return`, `break`, or `continue` inside a `finally` are forbidden.
+
+**Bad:**
+
+```java
+final class ResourceLoader {
+    String load(Path path) {
+        try {
+            return readFile(path);
+        } finally {
+            return ""; // silently swallows any exception from readFile
+        }
+    }
+}
+```
+
+**Bad:**
+
+```java
+final class BatchProcessor {
+    void process(List<Order> orders) {
+        for (Order order : orders) {
+            try {
+                handle(order);
+            } finally {
+                continue; // silently swallows any exception from handle
+            }
+        }
+    }
+}
+```
+
+**Good:**
+
+```java
+final class ResourceLoader {
+    String load(Path path) {
+        try {
+            return readFile(path);
+        } finally {
+            cleanup();
+        }
+    }
+}
+```
+
+---
