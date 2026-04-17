@@ -58,7 +58,24 @@ Follow these steps **in order** when applying clean code rules:
 5. **Report violations per file.** For each file, list every sub-rule that is violated. If a file passes all rules, state that explicitly. Present the results as a table: File | Violation | Sub-rule.
 6. **Fix all violations.** Apply changes for every violation found. After fixing a file, use `get_errors` to verify it compiles.
 7. **Compile and run tests.** Run `gradlew :backend:compileJava` and `gradlew :backend:test`. All must pass.
-8. **Verify completeness.** Re-read every file that was modified and confirm no sub-rule was missed. If a fix introduced a new violation (e.g. a new class was created), check that new file against all rules too.
+8. **Self-review (mandatory gate — do not skip).** Before declaring the task complete, produce an explicit evidence matrix. This step exists because rules read at step 1 are often forgotten by the time fixes are applied, and newly-created types (records, helper classes) are the most common miss.
+
+   For **every** file that was created or modified in step 6 — including files created *as a side effect* of a fix (new records, extracted classes, new tiny types):
+
+   1. Re-read the file with `read_file` (do not rely on your memory of what you wrote).
+   2. Determine its type: class, record, enum, interface.
+   3. Walk every applicable rule file and every sub-rule (a, b, c, …). Rules that apply to all types (R-001, R-009, R-010, R-011, R-015, R-017) must be checked for every file; type-specific rules (R-002/R-003 for classes, R-006/R-007 for records, R-008 for enums, R-004/R-005 for interfaces, R-014 for tiny types) only for matching types.
+   4. Emit one row per (file × sub-rule) as a markdown table:
+
+      | File | Rule | Sub-rule | Verdict | Note |
+      |------|------|----------|---------|------|
+      | `IsinNameDto.java` | R-007 | f (requireNonNull in compact ctor) | ok | `requireNonNull(isin); requireNonNull(name);` present |
+      | `IsinNameDto.java` | R-007 | g (components immutable) | ok | `Isin` and `String` are immutable |
+
+   5. If any verdict is `fail`, return to step 6 and fix it, then repeat step 8 for the affected files. Do **not** proceed past step 8 with any `fail` rows.
+   6. New files created during fixing must be added to the matrix — the set of files to review grows until no new files appear.
+
+   The skill is only complete when the matrix contains every modified file × every applicable sub-rule, and every verdict is `ok`.
 
 ## Data provenance & credits
 
