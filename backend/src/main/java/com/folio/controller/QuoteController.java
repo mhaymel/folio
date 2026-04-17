@@ -29,6 +29,9 @@ import static java.util.Objects.requireNonNull;
 @Tag(name = "Quotes", description = "Quote fetch management")
 final class QuoteController {
 
+    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    private static final int DEFAULT_INTERVAL_MINUTES = 60;
+
     private final SettingRepository settingRepository;
     private final QuoteService quoteService;
 
@@ -46,14 +49,14 @@ final class QuoteController {
 
         Integer interval = settingRepository.findByKey("quote.fetch.interval.minutes")
             .map(setting -> parseInt(setting.getValue()))
-            .orElse(60);
+            .orElse(DEFAULT_INTERVAL_MINUTES);
 
         LocalDateTime lastFetch = settingRepository.findByKey("quote.last.fetch.timestamp")
             .map(setting -> LocalDateTime.parse(setting.getValue()))
             .orElse(null);
 
         String lastFetchFormatted = lastFetch != null
-            ? lastFetch.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
+            ? lastFetch.format(DATE_TIME_FORMAT)
             : null;
 
         return ResponseEntity.ok(new QuoteSettingsDto(isEnabled, interval, lastFetchFormatted));

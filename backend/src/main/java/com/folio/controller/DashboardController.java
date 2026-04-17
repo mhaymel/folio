@@ -43,9 +43,9 @@ final class DashboardController {
     public ResponseEntity<byte[]> exportHoldings(@RequestParam(defaultValue = "csv") String format) {
         DashboardDto dto = portfolioService.dashboard();
         List<ExportColumn<HoldingDto>> columns = List.of(
-                new ExportColumn<>("ISIN", HoldingDto::getIsin),
-                new ExportColumn<>("Name", HoldingDto::getName),
-                new ExportColumn<>("Invested (EUR)", HoldingDto::getInvestedAmount)
+                new ExportColumn<>("ISIN", HoldingDto::isin),
+                new ExportColumn<>("Name", HoldingDto::name),
+                new ExportColumn<>("Invested (EUR)", HoldingDto::investedAmount)
         );
         return exportService.export(new ExportRequest<>(dto.getTop5Holdings(), columns, format, "top5-holdings"));
     }

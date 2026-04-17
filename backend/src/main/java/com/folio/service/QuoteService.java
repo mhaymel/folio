@@ -2,12 +2,14 @@ package com.folio.service;
 
 import com.folio.domain.Isin;
 import com.folio.domain.IsinFactory;
+import com.folio.model.IsinEntity;
+import com.folio.model.IsinQuoteData;
 import com.folio.model.IsinQuoteEntity;
+import com.folio.model.IsinQuoteSource;
 import com.folio.model.QuoteProviderEntity;
 import com.folio.model.SettingEntity;
 import com.folio.quote.IsinsQuoteLoader;
 import com.folio.quote.QuoteResult;
-import com.folio.model.SettingEntity;
 import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.lang.Integer.parseInt;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -26,6 +29,10 @@ import static java.util.Objects.requireNonNull;
 public final class QuoteService {
 
     private static final Logger LOG = getLogger(QuoteService.class);
+    private static final int DEFAULT_INTERVAL_MINUTES = 60;
+    private static final long SCHEDULE_CHECK_DELAY_MS = 60_000;
+    private static final long SCHEDULE_INITIAL_DELAY_MS = 30_000;
+    private static final long MS_PER_MINUTE = 60_000L;
 
     private final IsinsQuoteLoader quoteLoader;
     private final QuoteDataAccess dataAccess;
@@ -42,14 +49,14 @@ public final class QuoteService {
      * Scheduled task that runs every minute and checks whether enough time has
      * elapsed since the last fetch (based on the configured interval).
      */
-    @Scheduled(fixedDelay = 60_000, initialDelay = 30_000)
+    @Scheduled(fixedDelay = SCHEDULE_CHECK_DELAY_MS, initialDelay = SCHEDULE_INITIAL_DELAY_MS)
     public void scheduledFetch() {
         if (!isEnabled()) {
             return; // quote fetching is turned off
         }
 
         int intervalMinutes = intervalMinutes();
-        long intervalMs = intervalMinutes * 60_000L;
+        long intervalMs = intervalMinutes * MS_PER_MINUTE;
         long elapsed = System.currentTimeMillis() - fetchState.lastScheduledFetch().get();
 
         if (elapsed < intervalMs) {
@@ -119,7 +126,7 @@ public final class QuoteService {
         ).getResultList();
         return isins.stream()
             .flatMap(isinCode -> IsinFactory.of(isinCode).stream())
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private void upsertQuote(String isinCode, double price, String providerName) {
@@ -138,10 +145,10 @@ public final class QuoteService {
             quote.setFetchedAt(LocalDateTime.now());
             dataAccess.repos().isinQuote().save(quote);
         } else {
-            com.folio.model.IsinEntity isin = dataAccess.entityManager().find(com.folio.model.IsinEntity.class, isinId);
+            IsinEntity isin = dataAccess.entityManager().find(IsinEntity.class, isinId);
             IsinQuoteEntity quote = new IsinQuoteEntity(null,
-                new com.folio.model.IsinQuoteSource(isin, provider),
-                new com.folio.model.IsinQuoteData(price, LocalDateTime.now(), null));
+                new IsinQuoteSource(isin, provider),
+                new IsinQuoteData(price, LocalDateTime.now(), null));
             dataAccess.repos().isinQuote().save(quote);
         }
     }
@@ -155,11 +162,17 @@ public final class QuoteService {
 
     private int intervalMinutes() {
         return dataAccess.repos().setting().findByKey("quote.fetch.interval.minutes")
-            .map(setting -> {
-                try { return parseInt(setting.getValue()); }
-                catch (Exception exception) { return 60; }
-            })
-            .orElse(60);
+            .map(setting -> parseIntervalOrDefault(setting.getValue()))
+            .orElse(DEFAULT_INTERVAL_MINUTES);
+    }
+
+    private int parseIntervalOrDefault(String value) {
+        try {
+            return parseInt(value);
+        } catch (NumberFormatException exception) {
+            LOG.warn("Invalid interval minutes value '{}', using default", value);
+            return DEFAULT_INTERVAL_MINUTES;
+        }
     }
 
     private boolean isEnabled() {

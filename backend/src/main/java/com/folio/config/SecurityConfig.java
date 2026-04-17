@@ -18,7 +18,7 @@ import java.util.List;
 class SecurityConfig {
 
     @Value("${folio.security.enabled:false}")
-    private boolean securityEnabled;
+    private boolean isSecurityEnabled;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -27,7 +27,7 @@ class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 
-        if (securityEnabled) {
+        if (isSecurityEnabled) {
             http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/api/**").authenticated()

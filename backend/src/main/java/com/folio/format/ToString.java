@@ -17,8 +17,8 @@ public final class ToString {
         this.object = Precondition.notNull(object);
     }
 
-    public static String asString(Object o) {
-        return new ToString(o).asString();
+    public static String asString(Object object) {
+        return new ToString(object).asString();
     }
 
     public String asString() {

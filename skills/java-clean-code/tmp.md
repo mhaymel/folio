@@ -1,6 +1,12 @@
 this is just a scratchpad for possible rules to add to the skill, not yet organized or finalized
 
 
+IsinNameDto
+DiversificationEntry
+HoldingDto
+
+
+
 Names are searchable
 
 Unreachable code after return/throw/break/continue	Remove the unreachable statements

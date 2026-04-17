@@ -29,8 +29,8 @@ import static java.util.Objects.requireNonNull;
 class IsinNameController {
 
     private static final Map<String, Comparator<IsinNameDto>> SORT_FIELDS = Map.of(
-        "isin", SortHelper.text(dto -> dto.getIsin() == null ? null : dto.getIsin().value()),
-        "name", SortHelper.text(IsinNameDto::getName)
+        "isin", SortHelper.text(dto -> dto.isin() == null ? null : dto.isin().value()),
+        "name", SortHelper.text(IsinNameDto::name)
     );
 
     private final EntityManager entityManager;
@@ -65,8 +65,8 @@ class IsinNameController {
             data = listOperations.sortHelper().sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
         }
         List<ExportColumn<IsinNameDto>> columns = List.of(
-                new ExportColumn<>("ISIN", IsinNameDto::getIsin),
-                new ExportColumn<>("Name", IsinNameDto::getName)
+                new ExportColumn<>("ISIN", IsinNameDto::isin),
+                new ExportColumn<>("Name", IsinNameDto::name)
         );
         return listOperations.exportService().export(new ExportRequest<>(data, columns, format, "isin-names"));
     }

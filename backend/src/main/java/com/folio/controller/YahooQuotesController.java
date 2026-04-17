@@ -26,7 +26,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -45,6 +47,7 @@ class YahooQuotesController {
 
     private static final Logger LOG = getLogger(YahooQuotesController.class);
     private static final String PROVIDER_NAME = "Yahoo Finance";
+    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     private static final Map<String, Comparator<YahooQuoteWithQuoteDto>> WITH_QUOTE_SORT = Map.of(
         "isin", SortHelper.text(dto -> dto.getIsin() == null ? null : dto.getIsin().value()),
@@ -288,9 +291,9 @@ class YahooQuotesController {
 
         return rows.stream()
             .map(row -> {
-                LocalDateTime rawFetchedAt = row[6] != null ? ((java.sql.Timestamp) row[6]).toLocalDateTime() : null;
+                LocalDateTime rawFetchedAt = row[6] != null ? ((Timestamp) row[6]).toLocalDateTime() : null;
                 String formattedFetchedAt = rawFetchedAt != null
-                    ? rawFetchedAt.format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
+                    ? rawFetchedAt.format(DATE_TIME_FORMAT)
                     : null;
                 return new YahooQuoteWithQuoteDto(
                     new com.folio.dto.SecurityIdentity(new Isin((String) row[0]), TickerSymbolFactory.of((String) row[2]).orElse(null), (String) row[1]),

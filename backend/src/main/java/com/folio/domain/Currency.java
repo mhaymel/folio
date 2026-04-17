@@ -42,7 +42,7 @@ public final class Currency {
     public static final Currency USD = new Currency("USD");
     public static final Currency ZAR = new Currency("ZAR");
 
-    private static final Map<String, Currency> currencies = Map.ofEntries(
+    private static final Map<String, Currency> CURRENCIES = Map.ofEntries(
             Map.entry("AUD", AUD), Map.entry("BRL", BRL), Map.entry("CAD", CAD),
             Map.entry("CHF", CHF), Map.entry("CNY", CNY), Map.entry("CZK", CZK),
             Map.entry("DKK", DKK), Map.entry("EUR", EUR), Map.entry("GBP", GBP),
@@ -57,7 +57,7 @@ public final class Currency {
 
     public static Optional<Currency> currency(String name) {
         notEmpty(name);
-        return Optional.ofNullable(currencies.get(name.toUpperCase()));
+        return Optional.ofNullable(CURRENCIES.get(name.toUpperCase()));
     }
 
     public String name() {
@@ -69,9 +69,9 @@ public final class Currency {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Currency currency = (Currency) o;
+    public boolean equals(Object other) {
+        if (other == null || getClass() != other.getClass()) return false;
+        Currency currency = (Currency) other;
         return Objects.equals(name, currency.name);
     }
 

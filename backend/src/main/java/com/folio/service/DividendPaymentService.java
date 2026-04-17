@@ -10,6 +10,7 @@ import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,6 +23,8 @@ import static java.util.Objects.requireNonNull;
 
 @Service
 public class DividendPaymentService {
+
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     private final EntityManager entityManager;
 
@@ -57,7 +60,7 @@ public class DividendPaymentService {
         }
         if (filter.toDate() != null) {
             jpql.append(" AND dp.context.timestamp <= :toDate");
-            params.put("toDate", filter.toDate().atTime(23, 59, 59));
+            params.put("toDate", filter.toDate().atTime(LocalTime.MAX));
         }
         jpql.append(" ORDER BY dp.context.timestamp DESC");
 
@@ -66,7 +69,7 @@ public class DividendPaymentService {
         List<DividendPaymentEntity> payments = query.getResultList();
 
         List<DividendPaymentDto> result = payments.stream().map(payment -> {
-            String formattedTimestamp = payment.getTimestamp().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+            String formattedTimestamp = payment.getTimestamp().format(DATE_FORMAT);
             return new DividendPaymentDto(
                 new DividendPaymentIdentity(payment.getId(), formattedTimestamp, payment.getTimestamp()),
                 new DividendPaymentSource(new Isin(payment.getIsin().getIsin()), findFirstName(payment.getIsin().getId()), payment.getDepot().getName()),
@@ -88,11 +91,9 @@ public class DividendPaymentService {
     }
 
     private String findFirstName(Integer isinId) {
-        try {
-            return (String) entityManager.createQuery("SELECT n.name FROM IsinNameEntity n WHERE n.isin.id = :id ORDER BY n.id ASC")
-                .setParameter("id", isinId).setMaxResults(1).getSingleResult();
-        } catch (Exception exception) {
-            return null;
-        }
+        List<String> names = entityManager.createQuery(
+                "SELECT n.name FROM IsinNameEntity n WHERE n.isin.id = :id ORDER BY n.id ASC", String.class)
+            .setParameter("id", isinId).setMaxResults(1).getResultList();
+        return names.isEmpty() ? null : names.get(0);
     }
 }

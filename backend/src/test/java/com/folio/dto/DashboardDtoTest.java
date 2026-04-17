@@ -39,9 +39,9 @@ final class DashboardDtoTest {
         var dto = new HoldingDto(ISIN_ETF, "Test", 500.0);
 
         // then
-        assertThat(dto.getIsin()).isEqualTo(ISIN_ETF);
-        assertThat(dto.getName()).isEqualTo("Test");
-        assertThat(dto.getInvestedAmount()).isEqualTo(500.0);
+        assertThat(dto.isin()).isEqualTo(ISIN_ETF);
+        assertThat(dto.name()).isEqualTo("Test");
+        assertThat(dto.investedAmount()).isEqualTo(500.0);
     }
 
     @Test

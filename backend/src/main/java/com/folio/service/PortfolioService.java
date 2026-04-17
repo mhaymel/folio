@@ -20,6 +20,7 @@ import com.folio.dto.TransactionDto;
 import com.folio.dto.TransactionFilter;
 import com.folio.dto.TransactionIdentity;
 import com.folio.dto.TransactionTradeData;
+import com.folio.model.TransactionEntity;
 import com.folio.repository.SettingRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +42,11 @@ import static java.util.Objects.requireNonNull;
 
 @Service
 public class PortfolioService {
+
+    private static final int TOP_N = 5;
+    private static final int PERCENT = 100;
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    private static final DateTimeFormatter TRANSACTION_DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     private final EntityManager entityManager;
     private final SettingRepository settingRepository;
@@ -114,7 +121,7 @@ public class PortfolioService {
         if (currentQuote == null || avgEntryPrice <= 0) {
             return null;
         }
-        return (currentQuote - avgEntryPrice) / avgEntryPrice * 100;
+        return (currentQuote - avgEntryPrice) / avgEntryPrice * PERCENT;
     }
 
     private Double calculateEstimatedAnnualIncome(Double dividendPerShare, Double totalCount) {
@@ -131,7 +138,7 @@ public class PortfolioService {
         double totalValue = totalInvestedValue(allStocks);
         int stockCount = (int) allStocks.stream().map(stock -> stock.security().isin()).distinct().count();
         double totalDividendIncome = totalDividendIncome(allStocks);
-        double dividendRatio = totalValue > 0 ? (totalDividendIncome / totalValue) * 100 : 0;
+        double dividendRatio = totalValue > 0 ? (totalDividendIncome / totalValue) * PERCENT : 0;
 
         List<HoldingDto> top5Holdings = topHoldings(allStocks);
         List<DividendSourceDto> top5Dividends = topDividends(allStocks);
@@ -159,16 +166,16 @@ public class PortfolioService {
     private List<HoldingDto> topHoldings(List<StockDto> allStocks) {
         return allStocks.stream()
             .sorted(Comparator.comparingDouble((StockDto stock) -> stock.metrics().position().count() * stock.metrics().position().avgEntryPrice()).reversed())
-            .limit(5)
+            .limit(TOP_N)
             .map(stock -> new HoldingDto(stock.security().isin(), stock.security().name(), stock.metrics().position().count() * stock.metrics().position().avgEntryPrice()))
             .toList();
     }
 
     private List<DividendSourceDto> topDividends(List<StockDto> allStocks) {
         return allStocks.stream()
-            .filter(stock -> hasEstimatedAnnualIncome(stock))
+            .filter(this::hasEstimatedAnnualIncome)
             .sorted(Comparator.comparingDouble((StockDto stock) -> stock.metrics().performance().estimatedAnnualIncome()).reversed())
-            .limit(5)
+            .limit(TOP_N)
             .map(stock -> new DividendSourceDto(stock.security().isin(), stock.security().name() != null ? stock.security().name() : stock.security().isin().value(), stock.metrics().performance().estimatedAnnualIncome()))
             .toList();
     }
@@ -185,7 +192,7 @@ public class PortfolioService {
         if (lastFetch == null) {
             return null;
         }
-        return lastFetch.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+        return lastFetch.format(DATE_FORMAT);
     }
 
     @Transactional(readOnly = true)
@@ -221,7 +228,7 @@ public class PortfolioService {
             .map(row -> new DiversificationEntry(
                 (String) row[0],
                 ((Number) row[1]).doubleValue(),
-                total > 0 ? ((Number) row[1]).doubleValue() / total * 100 : 0))
+                total > 0 ? ((Number) row[1]).doubleValue() / total * PERCENT : 0))
             .toList();
 
         return new DiversificationDto(entries, total);
@@ -239,18 +246,18 @@ public class PortfolioService {
         appendDateFilters(jpql, params, filter);
         jpql.append(" ORDER BY t.context.date DESC");
 
-        var query = entityManager.createQuery(jpql.toString(), com.folio.model.TransactionEntity.class);
+        var query = entityManager.createQuery(jpql.toString(), TransactionEntity.class);
         params.forEach(query::setParameter);
-        List<com.folio.model.TransactionEntity> allTransactions = query.getResultList();
+        List<TransactionEntity> allTransactions = query.getResultList();
 
-        List<TransactionDto> result = allTransactions.stream().map(transaction -> toTransactionDto(transaction)).toList();
+        List<TransactionDto> result = allTransactions.stream().map(this::toTransactionDto).toList();
         result = filterByName(result, filter);
         result = filterByTickerSymbol(result, filter);
         return result;
     }
 
-    private TransactionDto toTransactionDto(com.folio.model.TransactionEntity transaction) {
-        String formattedDate = transaction.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+    private TransactionDto toTransactionDto(TransactionEntity transaction) {
+        String formattedDate = transaction.getDate().format(TRANSACTION_DATE_FORMAT);
         return new TransactionDto(
             new TransactionIdentity(transaction.getId(), formattedDate, transaction.getDate()),
             new SecurityIdentity(new Isin(transaction.getIsin().getIsin()), findTickerSymbol(transaction.getIsin().getId()), findFirstName(transaction.getIsin().getId())),
@@ -268,7 +275,7 @@ public class PortfolioService {
         if (filter.depotFragment() == null || filter.depotFragment().isBlank()) {
             return;
         }
-        List<String> depotValues = java.util.Arrays.stream(filter.depotFragment().split(","))
+        List<String> depotValues = Arrays.stream(filter.depotFragment().split(","))
             .map(String::trim).filter(value -> !value.isEmpty()).toList();
         if (depotValues.size() == 1) {
             jpql.append(" AND t.context.depot.name = :depot");

@@ -357,8 +357,8 @@ class PortfolioServiceTest {
 
         assertThat(d.getTop5Holdings()).hasSize(5);
         // highest invested first: Stock6 (600), Stock5 (500), Stock4 (400), Stock3 (300), Stock2 (200)
-        assertThat(d.getTop5Holdings().get(0).getIsin()).isEqualTo(new Isin("IE00B1XNT006"));
-        assertThat(d.getTop5Holdings().get(0).getInvestedAmount()).isCloseTo(600.0, within(0.001));
+        assertThat(d.getTop5Holdings().get(0).isin()).isEqualTo(new Isin("IE00B1XNT006"));
+        assertThat(d.getTop5Holdings().get(0).investedAmount()).isCloseTo(600.0, within(0.001));
         // Stock1 (100) should be excluded
         assertThat(d.getTop5Holdings()).extracting("isin")
                 .doesNotContain("IE00B1XNT001");
@@ -403,8 +403,8 @@ class PortfolioServiceTest {
     void getCountryDiversificationEmptyPortfolio() {
         DiversificationDto d = portfolioService.countryDiversification();
 
-        assertThat(d.getEntries()).isEmpty();
-        assertThat(d.getTotalInvested()).isEqualTo(0.0);
+        assertThat(d.entries()).isEmpty();
+        assertThat(d.totalInvested()).isEqualTo(0.0);
     }
 
     @Test
@@ -420,12 +420,12 @@ class PortfolioServiceTest {
 
         DiversificationDto d = portfolioService.countryDiversification();
 
-        assertThat(d.getTotalInvested()).isCloseTo(1000.0, within(0.001));
-        assertThat(d.getEntries()).hasSize(2);
-        assertThat(d.getEntries()).extracting("name")
+        assertThat(d.totalInvested()).isCloseTo(1000.0, within(0.001));
+        assertThat(d.entries()).hasSize(2);
+        assertThat(d.entries()).extracting("name")
                 .containsExactlyInAnyOrder("Germany", "USA");
         // Each is 50%
-        assertThat(d.getEntries().get(0).getPercentage()).isCloseTo(50.0, within(0.001));
+        assertThat(d.entries().get(0).percentage()).isCloseTo(50.0, within(0.001));
     }
 
     @Autowired
@@ -462,12 +462,12 @@ class PortfolioServiceTest {
 
         DiversificationDto d = portfolioService.branchDiversification();
 
-        assertThat(d.getTotalInvested()).isCloseTo(1500.0, within(0.001));
-        assertThat(d.getEntries()).hasSize(2);
+        assertThat(d.totalInvested()).isCloseTo(1500.0, within(0.001));
+        assertThat(d.entries()).hasSize(2);
         // Technology is 1000/1500 â‰ˆ 66.67%, Chemicals is 500/1500 â‰ˆ 33.33%
         // entries ordered by invested DESC
-        assertThat(d.getEntries().get(0).getName()).isEqualTo("Technology");
-        assertThat(d.getEntries().get(0).getPercentage()).isCloseTo(66.667, within(0.01));
+        assertThat(d.entries().get(0).name()).isEqualTo("Technology");
+        assertThat(d.entries().get(0).percentage()).isCloseTo(66.667, within(0.01));
     }
 
     // =========================================================================

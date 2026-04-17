@@ -84,7 +84,15 @@
       "Bash(rmdir C:/daten/dev/folio/backend/src/test/java/com/test)",
       "Bash(sed -e 's|^package com.util;|package com.folio.precondition;|' -e 's|^import static com.util.Assert.|import static com.folio.precondition.Assert.|g' C:/daten/dev/folio/backend/src/test/java/com/util/PreconditionTest.java)",
       "Bash(sed -e 's|^package com.util;|package com.folio.format;|' -e 's|^import static com.util.Assert.|import static com.folio.precondition.Assert.|g' C:/daten/dev/folio/backend/src/test/java/com/util/ToStringTest.java)",
-      "Bash(grep -rn --include='*.java' -E '\\\\bThread\\\\.sleep\\\\\\(|\\\\bawait.*\\\\\\(\\\\s*[0-9]+|= [0-9]{3,}[^;]*$|retry.*[0-9]|max.*= [0-9]' .)"
+      "Bash(grep -rn --include='*.java' -E '\\\\bThread\\\\.sleep\\\\\\(|\\\\bawait.*\\\\\\(\\\\s*[0-9]+|= [0-9]{3,}[^;]*$|retry.*[0-9]|max.*= [0-9]' .)",
+      "Bash(grep -rn \"^[[:space:]]*//.*\\(\" /c/daten/dev/folio/backend/src/main --include=\"*.java\")",
+      "Bash(python3)",
+      "Bash(./gradlew compileJava --no-daemon)",
+      "Bash(./gradlew compileJava -Pxlint)",
+      "Bash(./gradlew compileJava --no-daemon -Dorg.gradle.project.javac.args=\"-Xlint:all\")",
+      "Bash(./gradlew clean *)",
+      "Bash(./gradlew compileJava compileTestJava)",
+      "Bash(./gradlew compileJava compileTestJava test)"
     ]
   }
 }

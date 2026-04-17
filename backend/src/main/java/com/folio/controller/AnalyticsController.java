@@ -29,9 +29,9 @@ import static java.util.Objects.requireNonNull;
 final class AnalyticsController {
 
     private static final Map<String, Comparator<DiversificationEntry>> SORT_FIELDS = Map.of(
-        "name", SortHelper.text(DiversificationEntry::getName),
-        "investedAmount", SortHelper.number(DiversificationEntry::getInvestedAmount),
-        "percentage", SortHelper.number(DiversificationEntry::getPercentage)
+        "name", SortHelper.text(DiversificationEntry::name),
+        "investedAmount", SortHelper.number(DiversificationEntry::investedAmount),
+        "percentage", SortHelper.number(DiversificationEntry::percentage)
     );
 
     private final PortfolioService portfolioService;
@@ -49,7 +49,7 @@ final class AnalyticsController {
             @RequestParam(required = false, defaultValue = "desc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
-        List<DiversificationEntry> entries = portfolioService.countryDiversification().getEntries();
+        List<DiversificationEntry> entries = portfolioService.countryDiversification().entries();
         entries = listOperations.sortHelper().sort(entries, new SortRequest(sortField, sortDir), SORT_FIELDS);
         return ResponseEntity.ok(listOperations.paginationHelper().paginate(entries, page, pageSize));
     }
@@ -61,7 +61,7 @@ final class AnalyticsController {
             @RequestParam(required = false, defaultValue = "desc") String sortDir,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize) {
-        List<DiversificationEntry> entries = portfolioService.branchDiversification().getEntries();
+        List<DiversificationEntry> entries = portfolioService.branchDiversification().entries();
         entries = listOperations.sortHelper().sort(entries, new SortRequest(sortField, sortDir), SORT_FIELDS);
         return ResponseEntity.ok(listOperations.paginationHelper().paginate(entries, page, pageSize));
     }
@@ -78,7 +78,7 @@ final class AnalyticsController {
                 ? portfolioService.countryDiversification()
                 : portfolioService.branchDiversification();
 
-        List<DiversificationEntry> data = dto.getEntries();
+        List<DiversificationEntry> data = dto.entries();
         if (sortField != null && !sortField.isBlank()) {
             data = listOperations.sortHelper().sort(data, new SortRequest(sortField, sortDir), SORT_FIELDS);
         }
@@ -86,9 +86,9 @@ final class AnalyticsController {
         String label = "countries".equals(type) ? "CountryEntity" : "BranchEntity";
 
         List<ExportColumn<DiversificationEntry>> columns = List.of(
-                new ExportColumn<>(label, DiversificationEntry::getName),
-                new ExportColumn<>("Invested (EUR)", DiversificationEntry::getInvestedAmount),
-                new ExportColumn<>("%", DiversificationEntry::getPercentage)
+                new ExportColumn<>(label, DiversificationEntry::name),
+                new ExportColumn<>("Invested (EUR)", DiversificationEntry::investedAmount),
+                new ExportColumn<>("%", DiversificationEntry::percentage)
         );
 
         return listOperations.exportService().export(new ExportRequest<>(data, columns, format, type + "-diversification"));

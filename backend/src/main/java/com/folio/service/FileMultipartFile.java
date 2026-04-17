@@ -1,5 +1,6 @@
 package com.folio.service;
 
+import org.slf4j.Logger;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -10,12 +11,15 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 import static java.util.Objects.requireNonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Adapts a filesystem {@link Path} to the {@link MultipartFile} interface
  * so that the {@link ImportService} methods can be called with local files.
  */
 final class FileMultipartFile implements MultipartFile {
+
+    private static final Logger LOG = getLogger(FileMultipartFile.class);
 
     private final Path path;
 
@@ -30,7 +34,12 @@ final class FileMultipartFile implements MultipartFile {
 
     @Override
     public long getSize() {
-        try { return Files.size(path); } catch (IOException exception) { return 0; }
+        try {
+            return Files.size(path);
+        } catch (IOException exception) {
+            LOG.warn("Failed to read size of {}: {}", path, exception.getMessage());
+            return 0;
+        }
     }
 
     @Override

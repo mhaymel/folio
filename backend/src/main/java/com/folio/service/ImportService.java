@@ -62,6 +62,10 @@ import static java.util.Objects.requireNonNull;
 public class ImportService {
 
     private static final Logger LOG = getLogger(ImportService.class);
+    private static final DateTimeFormatter DATE_DASH_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    private static final DateTimeFormatter DATE_DOT_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    private static final DateTimeFormatter TIME_HM_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter TIME_HMS_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     /**
      * Serialises all import operations so that concurrent HTTP requests do not
@@ -256,8 +260,8 @@ public class ImportService {
 
         if (isinCode.isBlank()) return empty();
 
-        LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-        LocalTime time = LocalTime.parse(timeStr, DateTimeFormatter.ofPattern("HH:mm"));
+        LocalDate date = LocalDate.parse(dateStr, DATE_DASH_FORMAT);
+        LocalTime time = LocalTime.parse(timeStr, TIME_HM_FORMAT);
         LocalDateTime dateTime = LocalDateTime.of(date, time);
 
         double count = parseGermanDouble(countStr);
@@ -325,8 +329,8 @@ public class ImportService {
 
         if (isinCode.isBlank()) return empty();
 
-        LocalDate date = LocalDate.parse(execDate, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-        LocalTime time = LocalTime.parse(execTime, DateTimeFormatter.ofPattern("HH:mm:ss"));
+        LocalDate date = LocalDate.parse(execDate, DATE_DOT_FORMAT);
+        LocalTime time = LocalTime.parse(execTime, TIME_HMS_FORMAT);
         LocalDateTime dateTime = LocalDateTime.of(date, time);
 
         double count = parseGermanDouble(execCount);
@@ -396,7 +400,7 @@ public class ImportService {
 
         if (isinCode.isBlank()) return empty();
 
-        LocalDate date = LocalDate.parse(valuta, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        LocalDate date = LocalDate.parse(valuta, DATE_DASH_FORMAT);
         double amount = parseGermanDouble(amountStr);
 
         return Optional.of(new ParsedDividendPayment(date.atStartOfDay(), isinCode, currencyCode, amount));
@@ -455,7 +459,7 @@ public class ImportService {
         if (isinIdx < 0) return empty();
         String isinCode = purpose.substring(isinIdx + 5, isinIdx + 17);
 
-        LocalDate date = LocalDate.parse(valuta, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+        LocalDate date = LocalDate.parse(valuta, DATE_DOT_FORMAT);
         double amount = parseGermanDouble(amountStr);
 
         return Optional.of(new ParsedDividendPayment(date.atStartOfDay(), isinCode, "EUR", amount));
