@@ -1,8 +1,9 @@
 package com.folio.dto;
 
-/**
- * Groups aggregate statistics for the transaction list.
- */
-record TransactionAggregates(long filteredCount, Double sumCount) {
-}
+import static com.folio.precondition.Precondition.notNull;
 
+record TransactionAggregates(long filteredCount, Double sumCount) {
+    TransactionAggregates {
+        notNull(sumCount);
+    }
+}
