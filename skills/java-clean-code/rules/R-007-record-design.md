@@ -268,3 +268,45 @@ record UserSummary(UserId id, int age, boolean active) {
 
 ---
 
+## R-007j
+
+Record components must be declared with the most general interface that fits the usage. A concrete implementation class must not appear in a record header when an interface exposes the contract the component actually needs. The implementation is a caller concern; the record header only exposes the contract. Combine this with R-007g: for mutable inputs, copy through an unmodifiable wrapper in the compact canonical constructor.
+
+This applies to every type, not just collections. Common examples:
+
+| Use (interface) | Not (concrete) |
+|----|----|
+| `List`, `Set`, `Map`, `Collection`, `Iterable` | `ArrayList`, `HashSet`, `HashMap`, `LinkedHashMap`, `TreeMap` |
+| `Executor`, `ExecutorService` | `ThreadPoolExecutor` |
+| `InputStream`, `Reader` | `FileInputStream`, `BufferedReader` |
+| `Path` | `File` |
+| `Clock` | concrete clock |
+
+**Bad:**
+
+```java
+record Portfolio(String name,
+                 ArrayList<String> stocks,
+                 HashMap<String, Double> weights,
+                 File report) {
+}
+```
+
+**Good:**
+
+```java
+record Portfolio(String name,
+                 List<String> stocks,
+                 Map<String, Double> weights,
+                 Path report) {
+    Portfolio {
+        requireNonNull(name);
+        stocks = List.copyOf(requireNonNull(stocks));
+        weights = Map.copyOf(requireNonNull(weights));
+        requireNonNull(report);
+    }
+}
+```
+
+---
+

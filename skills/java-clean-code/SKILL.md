@@ -43,6 +43,7 @@ Rules are organized by category in the `rules/` folder:
 - [R-016-local-variable](rules/R-016-local-variable.md)
 - [R-017-comment](rules/R-017-comment.md)
 - [R-018-exception-handling](rules/R-018-exception-handling.md)
+- [R-019-concurrency](rules/R-019-concurrency.md)
 - [R-999-not-categorized](rules/R-999-not-categorized.md)
 
 ---

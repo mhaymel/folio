@@ -397,20 +397,17 @@ final class UserService {
 ```java
 import static java.util.Objects.requireNonNull;
 
-final class UserCredentials {
-    private final UserName userName;
-    private final Password password;
-
-    UserCredentials(UserName userName, Password password) {
-        this.userName = requireNonNull(userName);
-        this.password = requireNonNull(password);
+record UserCredentials(UserName userName, Password password) {
+    UserCredentials {
+        requireNonNull(userName);
+        requireNonNull(password);
     }
 }
 
 final class UserService {
 }
 ```
-
+ma
 ---
 
 ## R-002l
@@ -493,12 +490,12 @@ final class AdminUser extends User {
 
 ```java
 interface Identifiable {
-    long getId();
+    long id();
 }
 
 final class AdminUser implements Identifiable {
     @Override
-    public long getId() {
+    public long id() {
         return id;
     }
 }
@@ -508,7 +505,8 @@ final class AdminUser implements Identifiable {
 
 ## R-002o
 
-Methods must have at most 3 parameters; prefer 0 or 1. If more are needed, introduce a parameter object or rethink the design.
+Methods must have one or none parameters. If more are needed, 
+introduce a parameter object or rethink the design.
 
 **Bad:**
 
@@ -522,11 +520,18 @@ final class OrderService {
 **Good:**
 
 ```java
-record OrderRequest(String product, int quantity, BigDecimal price) {
+import static java.util.Objects.requireNonNull;
+
+record OrderRequest(Product product, int quantity, Money price) {
+    OrderRequest {
+        requireNonNull(product);
+        requireNonNull(price);
+    }
 }
 
 final class OrderService {
     void createOrder(OrderRequest request) {
+        requireNonNull(request);
     }
 }
 ```
@@ -610,7 +615,10 @@ var service = new UserService(new UserId(1), new UserName("Alice"));
 
 ## R-002s
 
-Avoid primitive obsession in fields and constructor parameters. When a field represents a domain concept, use a dedicated tiny type (record) instead of a raw primitive (`String`, `int`, `long`, `BigDecimal`, etc.). This makes the code self-documenting, prevents accidental misuse (e.g. swapping two `String` fields), and pushes validation into the type itself.
+Avoid primitive obsession in fields and constructor parameters. 
+When a field represents a domain concept, use a dedicated 
+tiny type (record) instead of a raw primitive (`String`, `int`, 
+`long`, `BigDecimal`, etc.). 
 
 **Bad:**
 
@@ -634,23 +642,29 @@ final class Portfolio {
 import static java.util.Objects.requireNonNull;
 
 record Isin(String value) {
+    Isin {
+        requireNonNull(value);
+    }
 }
 
 record PortfolioName(String value) {
+    PortfolioName {
+        requireNonNull(value);
+    }
 }
 
 record Money(BigDecimal amount, Currency currency) {
+    Money {
+        requireNonNull(amount);
+        requireNonNull(currency);
+    }
 }
 
-final class Portfolio {
-    private final Isin isin;
-    private final PortfolioName name;
-    private final Money marketValue;
-
-    Portfolio(Isin isin, PortfolioName name, Money marketValue) {
-        this.isin = requireNonNull(isin);
-        this.name = requireNonNull(name);
-        this.marketValue = requireNonNull(marketValue);
+record Portfolio(Isin isin, PortfolioName name, Money marketValue) {
+    Portfolio {
+        requireNonNull(isin);
+        requireNonNull(name);
+        requireNonNull(marketValue);
     }
 }
 ```

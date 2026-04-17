@@ -154,7 +154,6 @@ final class UserService {
 
 ## R-003f
 
-
 Non-static field names must use `lowerCamelCase`.
 
 **Bad:**
@@ -375,4 +374,62 @@ final class UserService {
 ```
 
 f**Note:** `UPPER_SNAKE_CASE` applies only to `static final` fields. Non-static fields must always use `lowerCamelCase` ([R-003f](#r-003f)).
+
+---
+
+## R-003o
+
+Fields must be declared with the most general interface that fits the usage. 
+A concrete implementation class must not appear as a field type when an interface 
+exposes the contract the field actually needs. 
+
+This applies to every type, not just collections. Common examples:
+
+| Use (interface) | Not (concrete) |
+|----|----|
+| `List`, `Set`, `Map`, `Collection`, `Iterable`, `Queue`, `Deque` | `ArrayList`, `LinkedList`, `HashSet`, `LinkedHashSet`, `TreeSet`, `HashMap`, `LinkedHashMap`, `TreeMap`, `ArrayDeque` |
+| `Executor`, `ExecutorService`, `ScheduledExecutorService` | `ThreadPoolExecutor`, `ScheduledThreadPoolExecutor` |
+| `InputStream`, `OutputStream`, `Reader`, `Writer` | `FileInputStream`, `BufferedReader`, `PrintWriter`, `ByteArrayOutputStream` |
+| `Path` | `File` |
+| `Clock` | `SystemClock` / custom concrete clock |
+| `Charset` | `StandardCharsets.UTF_8`-typed holders |
+| Your own interface (e.g. `UserRepository`) | Its implementation (`JpaUserRepository`) |
+
+Only use the concrete type when behavior available **only** on that concrete type is actually required (e.g. a `LinkedHashMap`'s insertion order for a predictable iteration contract you actually depend on). Document that dependency or push it behind a dedicated interface.
+
+**Bad:**
+
+```java
+final class ReportService {
+    private final ArrayList<Row> rows;
+    private final ThreadPoolExecutor executor;
+    private final File outputFile;
+
+    ReportService(ArrayList<Row> rows,
+                  ThreadPoolExecutor executor,
+                  File outputFile) {
+        this.rows = requireNonNull(rows);
+        this.executor = requireNonNull(executor);
+        this.outputFile = requireNonNull(outputFile);
+    }
+}
+```
+
+**Good:**
+
+```java
+final class ReportService {
+    private final List<Row> rows;
+    private final Executor executor;
+    private final Path outputFile;
+
+    ReportService(List<Row> rows,
+                  Executor executor,
+                  Path outputFile) {
+        this.rows = requireNonNull(rows);
+        this.executor = requireNonNull(executor);
+        this.outputFile = requireNonNull(outputFile);
+    }
+}
+```
 

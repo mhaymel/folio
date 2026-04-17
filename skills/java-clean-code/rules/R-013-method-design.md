@@ -827,3 +827,72 @@ final class OrderService {
 ```
 
 ---
+
+## R-013x
+
+Method and constructor parameters, as well as method return types, must use the most general interface that fits the usage. A concrete implementation class must not appear in a method or constructor signature when an interface exposes the contract actually needed. Pinning a signature to a concrete class leaks an implementation decision, blocks callers from passing alternative implementations, and couples the API to a single class hierarchy.
+
+This applies to every type, not just collections. Common examples:
+
+| Use (interface) | Not (concrete) |
+|----|----|
+| `List`, `Set`, `Map`, `Collection`, `Iterable`, `Queue`, `Deque` | `ArrayList`, `LinkedList`, `HashSet`, `LinkedHashSet`, `TreeSet`, `HashMap`, `LinkedHashMap`, `TreeMap`, `ArrayDeque` |
+| `Executor`, `ExecutorService`, `ScheduledExecutorService` | `ThreadPoolExecutor`, `ScheduledThreadPoolExecutor` |
+| `InputStream`, `OutputStream`, `Reader`, `Writer` | `FileInputStream`, `BufferedReader`, `PrintWriter`, `ByteArrayOutputStream` |
+| `Path` | `File` |
+| `Clock` | concrete clock |
+| Your own interface (e.g. `UserRepository`) | Its implementation (`JpaUserRepository`) |
+
+Only use the concrete type when behavior available **only** on that concrete type is actually required.
+
+**Bad:**
+
+```java
+final class ReportService {
+    private final ArrayList<Row> rows;
+    private final ThreadPoolExecutor executor;
+
+    ReportService(ArrayList<Row> rows, ThreadPoolExecutor executor) {
+        this.rows = requireNonNull(rows);
+        this.executor = requireNonNull(executor);
+    }
+
+    ArrayList<Row> activeRows() {
+        return rows;
+    }
+
+    void addAll(HashSet<Row> newRows) {
+        rows.addAll(newRows);
+    }
+
+    void writeTo(FileOutputStream out) {
+        // ...
+    }
+}
+```
+
+**Good:**
+
+```java
+final class ReportService {
+    private final List<Row> rows;
+    private final Executor executor;
+
+    ReportService(List<Row> rows, Executor executor) {
+        this.rows = requireNonNull(rows);
+        this.executor = requireNonNull(executor);
+    }
+
+    List<Row> activeRows() {
+        return rows;
+    }
+
+    void addAll(Set<Row> newRows) {
+        rows.addAll(newRows);
+    }
+
+    void writeTo(OutputStream out) {
+        // ...
+    }
+}
+```
