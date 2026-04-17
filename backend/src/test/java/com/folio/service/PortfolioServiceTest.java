@@ -250,11 +250,11 @@ class PortfolioServiceTest {
     void getDashboardEmptyPortfolioReturnsZeros() {
         DashboardDto d = portfolioService.dashboard();
 
-        assertThat(d.getStockCount()).isEqualTo(0);
-        assertThat(d.getTotalPortfolioValue()).isEqualTo(0.0);
-        assertThat(d.getTotalDividendRatio()).isEqualTo(0.0);
-        assertThat(d.getTop5Holdings()).isEmpty();
-        assertThat(d.getTop5DividendSources()).isEmpty();
+        assertThat(d.getSummary().stockCount()).isEqualTo(0);
+        assertThat(d.getSummary().totalPortfolioValue()).isEqualTo(0.0);
+        assertThat(d.getSummary().totalDividendRatio()).isEqualTo(0.0);
+        assertThat(d.getLists().top5Holdings()).isEmpty();
+        assertThat(d.getLists().top5DividendSources()).isEmpty();
         assertThat(d.getLastQuoteFetchAt()).isNull();
     }
 
@@ -272,7 +272,7 @@ class PortfolioServiceTest {
         DashboardDto d = portfolioService.dashboard();
 
         // Apple is in 2 depots but must be counted as 1 stock
-        assertThat(d.getStockCount()).isEqualTo(1);
+        assertThat(d.getSummary().stockCount()).isEqualTo(1);
     }
 
     @Test
@@ -284,7 +284,7 @@ class PortfolioServiceTest {
 
         DashboardDto d = portfolioService.dashboard();
 
-        assertThat(d.getStockCount()).isEqualTo(2);
+        assertThat(d.getSummary().stockCount()).isEqualTo(2);
     }
 
     @Test
@@ -299,7 +299,7 @@ class PortfolioServiceTest {
 
         DashboardDto d = portfolioService.dashboard();
 
-        assertThat(d.getStockCount()).isEqualTo(2);
+        assertThat(d.getSummary().stockCount()).isEqualTo(2);
     }
 
     @Test
@@ -312,7 +312,7 @@ class PortfolioServiceTest {
 
         DashboardDto d = portfolioService.dashboard();
 
-        assertThat(d.getStockCount()).isEqualTo(1);
+        assertThat(d.getSummary().stockCount()).isEqualTo(1);
     }
 
     @Test
@@ -325,7 +325,7 @@ class PortfolioServiceTest {
         DashboardDto d = portfolioService.dashboard();
 
         // totalPortfolioValue = SUM(count * avgEntryPrice) = 500 + 750 = 1250
-        assertThat(d.getTotalPortfolioValue()).isCloseTo(1250.0, within(0.001));
+        assertThat(d.getSummary().totalPortfolioValue()).isCloseTo(1250.0, within(0.001));
     }
 
     @Test
@@ -337,7 +337,7 @@ class PortfolioServiceTest {
         DashboardDto d = portfolioService.dashboard();
 
         // ratio = (34 / 500) * 100 = 6.8%
-        assertThat(d.getTotalDividendRatio()).isCloseTo(6.8, within(0.001));
+        assertThat(d.getSummary().totalDividendRatio()).isCloseTo(6.8, within(0.001));
     }
 
     @Test
@@ -355,12 +355,12 @@ class PortfolioServiceTest {
 
         DashboardDto d = portfolioService.dashboard();
 
-        assertThat(d.getTop5Holdings()).hasSize(5);
+        assertThat(d.getLists().top5Holdings()).hasSize(5);
         // highest invested first: Stock6 (600), Stock5 (500), Stock4 (400), Stock3 (300), Stock2 (200)
-        assertThat(d.getTop5Holdings().get(0).isin()).isEqualTo(new Isin("IE00B1XNT006"));
-        assertThat(d.getTop5Holdings().get(0).investedAmount()).isCloseTo(600.0, within(0.001));
+        assertThat(d.getLists().top5Holdings().get(0).isin()).isEqualTo(new Isin("IE00B1XNT006"));
+        assertThat(d.getLists().top5Holdings().get(0).investedAmount()).isCloseTo(600.0, within(0.001));
         // Stock1 (100) should be excluded
-        assertThat(d.getTop5Holdings()).extracting("isin")
+        assertThat(d.getLists().top5Holdings()).extracting("isin")
                 .doesNotContain("IE00B1XNT001");
     }
 
@@ -377,10 +377,10 @@ class PortfolioServiceTest {
 
         DashboardDto d = portfolioService.dashboard();
 
-        assertThat(d.getTop5DividendSources()).hasSize(2);
+        assertThat(d.getLists().top5DividendSources()).hasSize(2);
         // BASF should be first (higher income)
-        assertThat(d.getTop5DividendSources().get(0).isin()).isEqualTo(new Isin("DE000BASF111"));
-        assertThat(d.getTop5DividendSources().get(0).estimatedAnnualIncome()).isCloseTo(34.0, within(0.001));
+        assertThat(d.getLists().top5DividendSources().get(0).isin()).isEqualTo(new Isin("DE000BASF111"));
+        assertThat(d.getLists().top5DividendSources().get(0).estimatedAnnualIncome()).isCloseTo(34.0, within(0.001));
     }
 
     @Test

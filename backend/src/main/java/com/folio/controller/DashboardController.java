@@ -47,7 +47,7 @@ final class DashboardController {
                 new ExportColumn<>("Name", HoldingDto::name),
                 new ExportColumn<>("Invested (EUR)", HoldingDto::investedAmount)
         );
-        return exportService.export(new ExportRequest<>(dto.getTop5Holdings(), columns, format, "top5-holdings"));
+        return exportService.export(new ExportRequest<>(dto.getLists().top5Holdings(), columns, format, "top5-holdings"));
     }
 
     @GetMapping("/dividends/export")
@@ -59,6 +59,8 @@ final class DashboardController {
                 new ExportColumn<>("Name", DividendSourceDto::name),
                 new ExportColumn<>("Est. Annual Income (EUR)", DividendSourceDto::estimatedAnnualIncome)
         );
-        return exportService.export(new ExportRequest<>(dto.getTop5DividendSources(), columns, format, "top5-dividends"));
+        return exportService.export(
+                new ExportRequest<>(
+                        dto.getLists().top5DividendSources(), columns, format, "top5-dividends"));
     }
 }

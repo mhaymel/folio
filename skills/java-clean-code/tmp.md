@@ -702,3 +702,7 @@ This skill is based on Robert C. Martin's seminal guide to software craftsmanshi
 "The Clean Coder: A Code of Conduct for Professional Programmers" by Robert C. Martin
 "Clean Architecture: A Craftsman's Guide to Software Structure and Design" by Robert C. Martin
 "Refactoring: Improving the Design of Existing Code" by Martin Fowler
+
+
+
+

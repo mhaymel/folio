@@ -1,4 +1,4 @@
 package com.folio.dto;
 
-public record DashboardSummary(Double totalPortfolioValue, Integer stockCount, Double totalDividendRatio) {
+public record DashboardSummary(double totalPortfolioValue, double stockCount, double totalDividendRatio) {
 }

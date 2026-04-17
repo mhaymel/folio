@@ -25,11 +25,11 @@ final class DashboardDtoTest {
                 "27.03.2026 10:00");
 
         // then
-        assertThat(dto.getTotalPortfolioValue()).isEqualTo(5000.0);
-        assertThat(dto.getStockCount()).isEqualTo(3);
-        assertThat(dto.getTotalDividendRatio()).isEqualTo(2.5);
-        assertThat(dto.getTop5Holdings()).hasSize(1);
-        assertThat(dto.getTop5DividendSources()).isEmpty();
+        assertThat(dto.getSummary().totalPortfolioValue()).isEqualTo(5000.0);
+        assertThat(dto.getSummary().stockCount()).isEqualTo(3);
+        assertThat(dto.getSummary().totalDividendRatio()).isEqualTo(2.5);
+        assertThat(dto.getLists().top5Holdings()).hasSize(1);
+        assertThat(dto.getLists().top5DividendSources()).isEmpty();
         assertThat(dto.getLastQuoteFetchAt()).isEqualTo("27.03.2026 10:00");
     }
 

@@ -183,8 +183,7 @@ record Portfolio(String name, List<String> stocks) {
 record Portfolio(String name, List<String> stocks) {
     Portfolio {
         requireNonNull(name);
-        requireNonNull(stocks);
-        stocks = List.copyOf(stocks);
+        stocks = List.copyOf(requireNonNull(stocks));
     }
 }
 ```
@@ -203,6 +202,36 @@ record Snapshot(String label, Instant takenAt) {
     Snapshot {
         requireNonNull(label);
         requireNonNull(takenAt);
+    }
+}
+```
+
+---
+
+## R-007h
+
+Compose null-checks and defensive copies into a single expression rather than writing them as separate statements. Pipe the component through `requireNonNull` directly into `List.copyOf` (or any other wrapper). The result reads as a single transformation — "normalize this component" — instead of two sequentially coupled side-effects on the same name.
+
+**Bad:**
+
+```java
+record DashboardLists(List<HoldingDto> top5Holdings, List<DividendSourceDto> top5DividendSources) {
+    DashboardLists {
+        requireNonNull(top5Holdings);
+        requireNonNull(top5DividendSources);
+        top5Holdings = List.copyOf(top5Holdings);
+        top5DividendSources = List.copyOf(top5DividendSources);
+    }
+}
+```
+
+**Good:**
+
+```java
+record DashboardLists(List<HoldingDto> top5Holdings, List<DividendSourceDto> top5DividendSources) {
+    DashboardLists {
+        top5Holdings = List.copyOf(requireNonNull(top5Holdings));
+        top5DividendSources = List.copyOf(requireNonNull(top5DividendSources));
     }
 }
 ```
