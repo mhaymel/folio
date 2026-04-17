@@ -255,7 +255,7 @@ class PortfolioServiceTest {
         assertThat(d.getSummary().totalDividendRatio()).isEqualTo(0.0);
         assertThat(d.getLists().top5Holdings()).isEmpty();
         assertThat(d.getLists().top5DividendSources()).isEmpty();
-        assertThat(d.getLastQuoteFetchAt()).isNull();
+        assertThat(d.getLastQuoteFetchAt()).isEqualTo("n/a");
     }
 
     @Test

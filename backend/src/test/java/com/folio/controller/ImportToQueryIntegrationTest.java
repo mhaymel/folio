@@ -141,7 +141,7 @@ final class ImportToQueryIntegrationTest {
     void step10VerifyDashboardEmptyWithoutTransactions() throws Exception {
         mockMvc.perform(get("/api/dashboard"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.stockCount", is(0)))
+            .andExpect(jsonPath("$.stockCount", is(0.0)))
             .andExpect(jsonPath("$.totalPortfolioValue", is(0.0)));
     }
 

@@ -110,7 +110,7 @@ class DividendPaymentServiceTest {
         createPayment(basf, depotDeGiro, 34.0, LocalDateTime.of(2026, 3, 15, 10, 0));
         createPayment(apple, depotDeGiro, 10.0, LocalDateTime.of(2026, 3, 16, 10, 0));
 
-        var filter = new DividendPaymentFilter("BASF", null, null, null, null);
+        var filter = new DividendPaymentFilter("BASF", "", "", null, null);
         List<DividendPaymentDto> result = dividendPaymentService.getDividendPayments(filter);
 
         assertThat(result).hasSize(1);
@@ -123,7 +123,7 @@ class DividendPaymentServiceTest {
         createPayment(basf, depotDeGiro, 34.0, LocalDateTime.of(2026, 3, 15, 10, 0));
         createPayment(basf, depotZero, 17.0, LocalDateTime.of(2026, 3, 16, 10, 0));
 
-        var filter = new DividendPaymentFilter(null, null, "DeGiro", null, null);
+        var filter = new DividendPaymentFilter("", "", "DeGiro", null, null);
         List<DividendPaymentDto> result = dividendPaymentService.getDividendPayments(filter);
 
         assertThat(result).hasSize(1);
@@ -136,7 +136,7 @@ class DividendPaymentServiceTest {
         createPayment(basf, depotDeGiro, 34.0, LocalDateTime.of(2026, 3, 15, 10, 0));
         createPayment(basf, depotZero, 17.0, LocalDateTime.of(2026, 3, 16, 10, 0));
 
-        var filter = new DividendPaymentFilter(null, null, "DeGiro,ZERO", null, null);
+        var filter = new DividendPaymentFilter("", "", "DeGiro,ZERO", null, null);
         List<DividendPaymentDto> result = dividendPaymentService.getDividendPayments(filter);
 
         assertThat(result).hasSize(2);
@@ -151,7 +151,7 @@ class DividendPaymentServiceTest {
         createPayment(basf, depotDeGiro, 34.0, LocalDateTime.of(2026, 3, 15, 10, 0));
         createPayment(apple, depotDeGiro, 10.0, LocalDateTime.of(2026, 3, 16, 10, 0));
 
-        var filter = new DividendPaymentFilter(null, "Apple", null, null, null);
+        var filter = new DividendPaymentFilter("", "Apple", "", null, null);
         List<DividendPaymentDto> result = dividendPaymentService.getDividendPayments(filter);
 
         assertThat(result).hasSize(1);
@@ -165,7 +165,7 @@ class DividendPaymentServiceTest {
         createPayment(basf, depotDeGiro, 17.0, LocalDateTime.of(2026, 6, 15, 10, 0));
         createPayment(basf, depotDeGiro, 20.0, LocalDateTime.of(2026, 12, 15, 10, 0));
 
-        var filter = new DividendPaymentFilter(null, null, null,
+        var filter = new DividendPaymentFilter("", "", "",
                 LocalDate.of(2026, 3, 1), LocalDate.of(2026, 9, 30));
         List<DividendPaymentDto> result = dividendPaymentService.getDividendPayments(filter);
 

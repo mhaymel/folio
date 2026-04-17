@@ -39,7 +39,7 @@ final class DashboardControllerTest {
         mockMvc.perform(get("/api/dashboard"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.totalPortfolioValue", is(0.0)))
-            .andExpect(jsonPath("$.stockCount", is(0)))
+            .andExpect(jsonPath("$.stockCount", is(0.0)))
             .andExpect(jsonPath("$.top5Holdings", hasSize(0)))
             .andExpect(jsonPath("$.top5DividendSources", hasSize(0)));
     }
@@ -48,7 +48,7 @@ final class DashboardControllerTest {
     void getDashboardLastQuoteFetchAtNullWhenNoFetch() throws Exception {
         mockMvc.perform(get("/api/dashboard"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.lastQuoteFetchAt").doesNotExist());
+            .andExpect(jsonPath("$.lastQuoteFetchAt", is("n/a")));
     }
 
     @Test

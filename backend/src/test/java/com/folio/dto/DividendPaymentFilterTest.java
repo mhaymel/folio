@@ -29,9 +29,9 @@ final class DividendPaymentFilterTest {
         var filter = DividendPaymentFilter.none();
 
         // then
-        assertThat(filter.isinFragment()).isNull();
-        assertThat(filter.nameFragment()).isNull();
-        assertThat(filter.depotFragment()).isNull();
+        assertThat(filter.isinFragment()).isEmpty();
+        assertThat(filter.nameFragment()).isEmpty();
+        assertThat(filter.depotFragment()).isEmpty();
         assertThat(filter.fromDate()).isNull();
         assertThat(filter.toDate()).isNull();
     }

@@ -1,11 +1,11 @@
 package com.folio.dto;
 
+import com.folio.precondition.Precondition;
+
 import java.time.LocalDate;
 
-/**
- * Filter criteria for querying dividend payments. Every component is nullable —
- * a null value means "no constraint on that field" (see {@link #none()}).
- */
+import static com.folio.precondition.Precondition.notNull;
+
 public record DividendPaymentFilter(
     String isinFragment,
     String nameFragment,
@@ -13,7 +13,12 @@ public record DividendPaymentFilter(
     LocalDate fromDate,
     LocalDate toDate
 ) {
+    public DividendPaymentFilter {
+        notNull(isinFragment);
+        notNull(nameFragment);
+        notNull(depotFragment);
+    }
     public static DividendPaymentFilter none() {
-        return new DividendPaymentFilter(null, null, null, null, null);
+        return new DividendPaymentFilter("", "", "", null, null);
     }
 }

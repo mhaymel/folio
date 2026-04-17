@@ -137,7 +137,7 @@ Object parameters in records must not be null. Validate non-null constraints in 
 **Bad:**
 
 ```java
-record UserSummary(Long id, String name) {
+record UserSummary(String name, Instant createdAt) {
 }
 ```
 
@@ -146,10 +146,10 @@ record UserSummary(Long id, String name) {
 ```java
 import static java.util.Objects.requireNonNull;
 
-record UserSummary(Long id, String name) {
+record UserSummary(String name, Instant createdAt) {
     UserSummary {
-        requireNonNull(id);
         requireNonNull(name);
+        requireNonNull(createdAt);
     }
 }
 ```
@@ -233,6 +233,36 @@ record DashboardLists(List<HoldingDto> top5Holdings, List<DividendSourceDto> top
         top5Holdings = List.copyOf(requireNonNull(top5Holdings));
         top5DividendSources = List.copyOf(requireNonNull(top5DividendSources));
     }
+}
+```
+
+---
+
+## R-007i
+
+Boxed primitive types (`Integer`, `Long`, `Short`, `Byte`, `Float`, `Double`, `Boolean`, `Character`) must not be used as record components. Use the corresponding primitive (`int`, `long`, etc.) instead. Boxed types introduce unnecessary allocation, allow accidental `null` values, and hide the intent that the component holds a simple scalar. If a domain meaning is attached to the value, wrap the primitive in a dedicated tiny type (see R-014).
+
+**Bad:**
+
+```java
+record UserSummary(Long id, Integer age, Boolean active) {
+}
+```
+
+**Good:**
+
+```java
+record UserSummary(long id, int age, boolean active) {
+}
+```
+
+**Good (with tiny types):**
+
+```java
+record UserId(long value) {
+}
+
+record UserSummary(UserId id, int age, boolean active) {
 }
 ```
 

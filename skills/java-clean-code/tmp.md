@@ -1,7 +1,9 @@
 this is just a scratchpad for possible rules to add to the skill, not yet organized or finalized
 
 
-IsinNameDto
+number of classes, records, interfaces and enums in one 
+package should be limited to 10
+
 DiversificationEntry
 HoldingDto
 

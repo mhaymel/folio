@@ -56,6 +56,13 @@ public class PortfolioService {
         this.settingRepository = requireNonNull(settingRepository);
     }
 
+    private static HoldingDto holdingsDto(StockDto stock) {
+        return new HoldingDto(
+                stock.security().isin(),
+                stock.security().name(),
+                stock.metrics().position().count() * stock.metrics().position().avgEntryPrice());
+    }
+
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<StockDto> stocks() {
@@ -167,7 +174,7 @@ public class PortfolioService {
         return allStocks.stream()
             .sorted(Comparator.comparingDouble((StockDto stock) -> stock.metrics().position().count() * stock.metrics().position().avgEntryPrice()).reversed())
             .limit(TOP_N)
-            .map(stock -> new HoldingDto(stock.security().isin(), stock.security().name(), stock.metrics().position().count() * stock.metrics().position().avgEntryPrice()))
+            .map(PortfolioService::holdingsDto)
             .toList();
     }
 
@@ -190,7 +197,7 @@ public class PortfolioService {
             .map(setting -> LocalDateTime.parse(setting.getValue()))
             .orElse(null);
         if (lastFetch == null) {
-            return null;
+            return "n/a";
         }
         return lastFetch.format(DATE_FORMAT);
     }
