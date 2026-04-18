@@ -1,5 +1,32 @@
 this is just a scratchpad for possible rules to add to the skill, not yet organized or finalized
 
+
+https://github.com/ertugrul-dmr/clean-code-skills/blob/main/skills/clean-comments/SKILL.md
+https://github.com/ertugrul-dmr/clean-code-skills/blob/main/skills/clean-general/SKILL.md
+------------------------------
+donot add checked exceptions to method signatures. create an uncecked exception and throw it 
+instead. checked exceptions are a leaky abstraction that force callers to catch or declare 
+them, even if they can't do anything about them. unchecked exceptions can be caught 
+if needed, but don't pollute the API with them.
+------------------------------
+int[] arr = new int[10];
+for (int i = 0; i < arr.length; i++) {
+   arr[i] = i * 2;
+}
+
+for(int num : arr) {
+   System.out.println(num);
+}
+------------------------------
+early returns, guard clauses
+if (x == null) return;
+if (!x.isValid()) return;
+if (!x.isActive()) return;
+// main logic here
+------------------------------   
+
+
+
 R-006-record-naming.md use tiny types
 R-014 tiny types
 R-011 tiny types
