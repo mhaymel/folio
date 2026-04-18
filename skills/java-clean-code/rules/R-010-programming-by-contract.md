@@ -2,7 +2,8 @@
 
 ## R-010a
 
-All parameters to public methods and constructors must be checked for nullity using `requireNonNull`. Use `requireNonNull` with one parameter only ΓÇö no message string.
+All parameters to public methods and constructors must be checked for nullity using `requireNonNull`. 
+Use `requireNonNull` with one parameter only — no message string.
 
 **Bad:**
 
@@ -43,8 +44,8 @@ Do not pass a message string to `requireNonNull`. Use the single-parameter form 
 ```java
 import static java.util.Objects.requireNonNull;
 
-final class ExampleBad {
-    void m(String name) {
+final class Example {
+    void greet(String name) {
         requireNonNull(name, "name must not be null");
     }
 }
@@ -55,8 +56,8 @@ final class ExampleBad {
 ```java
 import static java.util.Objects.requireNonNull;
 
-final class ExampleGood {
-    void m(String name) {
+final class Example {
+    void greet(String name) {
         requireNonNull(name);
     }
 }

@@ -313,7 +313,7 @@ final class UserService {
     private final UserId userId;
     private final UserName userName;
 
-    private UserService(UserId userId, UserName userName) { // private ΓÇö userName is internal state
+    private UserService(UserId userId, UserName userName) { // private — userName is internal state
         this.userId = requireNonNull(userId);
         this.userName = requireNonNull(userName);
     }
@@ -407,7 +407,7 @@ record UserCredentials(UserName userName, Password password) {
 final class UserService {
 }
 ```
-ma
+
 ---
 
 ## R-002l

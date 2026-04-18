@@ -67,7 +67,7 @@ final class UserService {
 import static java.util.Objects.requireNonNull;
 
 final class UserService {
-    private UserId userId;
+    private final UserId userId;
     private final List<UserName> users;
 
     UserService(UserId userId, List<UserName> users) { // primary constructor
@@ -98,7 +98,13 @@ final class UserService {
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 record UserCredentials(UserName userName, Password password) {
+    UserCredentials {
+        requireNonNull(userName);
+        requireNonNull(password);
+    }
 }
 
 final class UserService {
@@ -204,7 +210,7 @@ final class UserService {
 
 ## R-003h
 
-Field names must be **meaningful** and clearly describe what they hold ΓÇö a reader should understand the field's purpose without looking at surrounding code.
+Field names must be **meaningful** and clearly describe what they hold — a reader should understand the field's purpose without looking at surrounding code.
 
 **Bad:**
 
@@ -349,9 +355,12 @@ final class HttpStatus {
 ---
 
 ## R-003n
+Static final fields (constants) must use `UPPER_SNAKE_CASE` — all uppercase 
+letters with words separated by underscores. This is the only place where 
+uppercase letters and underscores are allowed in field names.
 
-
-Static final fields (constants) must use `UPPER_SNAKE_CASE` ΓÇö all uppercase letters with words separated by underscores. This is the only place where uppercase letters and underscores are allowed in field names.
+**Note:** `UPPER_SNAKE_CASE` applies only to `static final` fields.
+Non-static fields must always use `lowerCamelCase` ([R-003f](#r-003f)).
 
 **Bad:**
 
@@ -372,8 +381,6 @@ final class UserService {
     private static final long TIMEOUT_MS = 5000L;
 }
 ```
-
-f**Note:** `UPPER_SNAKE_CASE` applies only to `static final` fields. Non-static fields must always use `lowerCamelCase` ([R-003f](#r-003f)).
 
 ---
 

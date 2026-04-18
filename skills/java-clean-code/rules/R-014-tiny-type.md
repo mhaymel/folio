@@ -7,11 +7,13 @@ Tiny types must be implemented as Java records.
 **Bad:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 final class Isin {
     private final String value;
 
     Isin(String value) {
-        this.value = value;
+        this.value = requireNonNull(value);
     }
 
     String value() {
@@ -36,12 +38,20 @@ record Isin(String value) {
 
 ## R-014b
 
-A tiny type must wrap exactly one value. If more than one field is needed, it is no longer a tiny type ΓÇö model it as a regular record or class instead.
+A tiny type must wrap exactly one value. If more than one field is needed, 
+it is no longer a tiny type - model it as a regular record or class instead.
 
 **Bad:**
 
 ```java
+import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
+
 record Money(BigDecimal amount, String currency) {
+    Money {
+        requireNonNull(amount);
+        requireNotEmpty(currency);
+    }
 }
 ```
 
@@ -49,6 +59,7 @@ record Money(BigDecimal amount, String currency) {
 
 ```java
 import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 record Currency(String value) {
     Currency {
@@ -57,6 +68,16 @@ record Currency(String value) {
 }
 
 record Amount(BigDecimal value) {
+    Amount {
+        requireNonNull(value);
+    }
+}
+
+record Money(Amount amount, Currency currency) {
+    Money {
+        requireNonNull(amount);
+        requireNonNull(currency);
+    }
 }
 ```
 
@@ -69,7 +90,12 @@ The wrapped field must be named `value`.
 **Bad:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 record Isin(String isin) {
+    Isin {
+        requireNonNull(isin);
+    }
 }
 
 record PortfolioId(long id) {
@@ -95,17 +121,14 @@ record PortfolioId(long value) {
 
 ## R-014d
 
-A tiny type must validate its value in a compact constructor. Reject `null` and any domain-invalid state at construction time. This ensures that once a tiny type instance exists, it is always valid.
+A tiny type must validate its value in a compact constructor. Reject `null` 
+and any domain-invalid state at construction time. This ensures that once 
+a tiny type instance exists, it is always valid.
 
 **Bad:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
-
 record Isin(String value) {
-    Isin {
-        requireNotEmpty(value);
-    }
 }
 ```
 

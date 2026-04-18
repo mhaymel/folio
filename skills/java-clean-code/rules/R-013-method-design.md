@@ -56,12 +56,16 @@ Return early to reduce nesting. Do not use `else` after `return` or `throw`.
 
 ```java
 final class DiscountService {
+    private static final BigDecimal PREMIUM_DISCOUNT_RATE = BigDecimal.valueOf(0.2);
+    private static final BigDecimal LARGE_ORDER_DISCOUNT_RATE = BigDecimal.valueOf(0.1);
+    private static final BigDecimal LARGE_ORDER_THRESHOLD = BigDecimal.valueOf(100);
+
     BigDecimal discount(Order order) {
         if (order.isPremium()) {
-            return order.amount().multiply(BigDecimal.valueOf(0.2));
+            return order.amount().multiply(PREMIUM_DISCOUNT_RATE);
         } else {
-            if (order.amount().compareTo(BigDecimal.valueOf(100)) > 0) {
-                return order.amount().multiply(BigDecimal.valueOf(0.1));
+            if (order.amount().compareTo(LARGE_ORDER_THRESHOLD) > 0) {
+                return order.amount().multiply(LARGE_ORDER_DISCOUNT_RATE);
             } else {
                 return BigDecimal.ZERO;
             }
@@ -74,12 +78,16 @@ final class DiscountService {
 
 ```java
 final class DiscountService {
+    private static final BigDecimal PREMIUM_DISCOUNT_RATE = BigDecimal.valueOf(0.2);
+    private static final BigDecimal LARGE_ORDER_DISCOUNT_RATE = BigDecimal.valueOf(0.1);
+    private static final BigDecimal LARGE_ORDER_THRESHOLD = BigDecimal.valueOf(100);
+
     BigDecimal discount(Order order) {
         if (order.isPremium()) {
-            return order.amount().multiply(BigDecimal.valueOf(0.2));
+            return order.amount().multiply(PREMIUM_DISCOUNT_RATE);
         }
-        if (order.amount().compareTo(BigDecimal.valueOf(100)) > 0) {
-            return order.amount().multiply(BigDecimal.valueOf(0.1));
+        if (order.amount().compareTo(LARGE_ORDER_THRESHOLD) > 0) {
+            return order.amount().multiply(LARGE_ORDER_DISCOUNT_RATE);
         }
         return BigDecimal.ZERO;
     }
@@ -95,11 +103,12 @@ Avoid boolean parameters (flag arguments). A boolean parameter signals that the 
 **Bad:**
 
 ```java
-final class InvoiceService {
-    void send(Invoice invoice, boolean withCopy) {
-        mailer.send(invoice);
-        if (withCopy) {
-            archiver.archive(invoice);
+final class UserService {
+    void setActive(boolean isActive) {
+        if (isActive) {
+            enable();
+        } else {
+            disable();
         }
     }
 }
@@ -108,14 +117,13 @@ final class InvoiceService {
 **Good:**
 
 ```java
-final class InvoiceService {
-    void send(Invoice invoice) {
-        mailer.send(invoice);
+final class UserService {
+    void activate() {
+        enable();
     }
 
-    void sendAndArchive(Invoice invoice) {
-        send(invoice);
-        archiver.archive(invoice);
+    void deactivate() {
+        disable();
     }
 }
 ```
@@ -124,14 +132,16 @@ final class InvoiceService {
 
 ## R-013e
 
-Do not use output parameters ΓÇö do not modify an object passed as a parameter to communicate a result. Return a value instead.
+Do not use output parameters -  do not modify an object passed as a parameter to communicate a result. Return a value instead.
 
 **Bad:**
 
 ```java
 final class PriceCalculator {
+    private static final BigDecimal DISCOUNT_MULTIPLIER = BigDecimal.valueOf(0.9);
+
     void applyDiscount(Order order) {
-        order.setPrice(order.price().multiply(BigDecimal.valueOf(0.9)));
+        order.setPrice(order.price().multiply(DISCOUNT_MULTIPLIER));
     }
 }
 ```
@@ -140,8 +150,10 @@ final class PriceCalculator {
 
 ```java
 final class PriceCalculator {
-    BigDecimal discountedPrice(BigDecimal price) {
-        return price.multiply(BigDecimal.valueOf(0.9));
+    private static final BigDecimal DISCOUNT_MULTIPLIER = BigDecimal.valueOf(0.9);
+
+    BigDecimal discountedPrice(Order order) {
+        return order.price().multiply(DISCOUNT_MULTIPLIER);
     }
 }
 ```
@@ -152,7 +164,10 @@ final class PriceCalculator {
 
 Public methods that that may not produce a result must return `Optional`.  
 
-**Exception:** `Optional` produces an additional object. If object churn matters `null` can be used as a return value. In this case a comment should be added why Optional was not used and the method name should make it clear that `null` is a possible return value.
+**Exception:** `Optional` produces an additional object. If object churn 
+matters `null` can be used as a return value. In this case a comment should 
+be added why Optional was not used and the method name should make it clear 
+that `null` is a possible return value.
 
 **Bad:**
 
@@ -167,7 +182,7 @@ public final class UserRepository {
 **Good:**
 
 ```java
-final class UserRepository {
+public final class UserRepository {
     public Optional<User> findByEmail(Email email) {
         // returns Optional.empty() when not found
     }
@@ -180,14 +195,20 @@ final class UserRepository {
 
 Package private methods which may not produce a result can either return an `Optional` or `null`.
 
-**Good:**
+**Good (returning `null`):**
 
 ```java
 final class UserRepository {
     User findByEmail(Email email) {
         // returns null when not found
     }
+}
+```
 
+**Good (returning `Optional`):**
+
+```java
+final class UserRepository {
     Optional<User> findByEmail(Email email) {
         // returns Optional.empty() when not found
     }
@@ -204,11 +225,11 @@ Private methods must not return `Optional`.
 
 ```java
 final class UserService {
-    private Optional<User> lookupUser(String email) {
+    private Optional<User> lookupUser(Email email) {
         // ...
     }
 
-    Optional<User> findByEmail(String email) {
+    Optional<User> findByEmail(Email email) {
         return lookupUser(email);
     }
 }
@@ -218,11 +239,11 @@ final class UserService {
 
 ```java
 final class UserService {
-    private User lookupUser(String email) {
+    private User lookupUser(Email email) {
         // returns null when not found
     }
 
-    Optional<User> findByEmail(String email) {
+    Optional<User> findByEmail(Email email) {
         return Optional.ofNullable(lookupUser(email));
     }
 }
@@ -427,7 +448,7 @@ final class UserService {
 
 ## R-013n
 
-Keep methods short ΓÇö aim for at most 15 lines of logic (excluding blank lines and braces). Long methods are hard to read and test. Extract helper methods instead.
+Keep methods short -  aim for at most 15 lines of logic (excluding blank lines and braces). Long methods are hard to read and test. Extract helper methods instead.
 
 **Bad:**
 
@@ -481,8 +502,10 @@ final class ReportService {
 
 ```java
 final class TaxCalculator {
-    static BigDecimal calculateTax(BigDecimal amount) {
-        return amount.multiply(BigDecimal.valueOf(0.19));
+    private static final BigDecimal TAX_RATE = BigDecimal.valueOf(0.19);
+
+    static Money calculateTax(Money amount) {
+        // ...
     }
 }
 ```
@@ -491,8 +514,10 @@ final class TaxCalculator {
 
 ```java
 final class TaxCalculator {
-    BigDecimal calculateTax(BigDecimal amount) {
-        return amount.multiply(BigDecimal.valueOf(0.19));
+    private static final BigDecimal TAX_RATE = BigDecimal.valueOf(0.19);
+
+    Money calculateTax(Money amount) {
+        // ...
     }
 }
 ```
@@ -502,14 +527,14 @@ final class TaxCalculator {
 ## R-013p
 
 `Optional` must not be used as a method parameter. `Optional` was designed 
-for return types to signal that a result may be absent ΓÇö not for inputs. 
+for return types to signal that a result may be absent -  not for inputs. 
 An `Optional` parameter forces every caller to wrap values and makes the method harder to read. Use method overloading or pass `null` with a `@Nullable` annotation instead.
 
 **Bad:**
 
 ```java
 final class UserService {
-    List<User> findUsers(Optional<String> nameFilter) {
+    List<User> findUsers(Optional<NameFilter> nameFilter) {
         if (nameFilter.isPresent()) {
             return repository.findByName(nameFilter.get());
         }
@@ -526,7 +551,7 @@ final class UserService {
         return repository.findAll();
     }
 
-    List<User> findUsers(String nameFilter) {
+    List<User> findUsers(NameFilter nameFilter) {
         return repository.findByName(nameFilter);
     }
 }
@@ -536,31 +561,32 @@ final class UserService {
 
 ## R-013q
 
-A method must have **zero or one** parameter. Multiple parameters are hard to read, 
-easy to swap by accident, and signal that the method is doing too much. 
-Group related parameters into a record, an object, or ΓÇö when the parameters are of 
-the same type and represent a collection of similar elements ΓÇö a `List`.
+A method must have **zero or one** parameter. Group related 
+parameters into a record or — when the parameters are of the same 
+type and represent a collection of similar elements — a List. This 
+is the method-scoped companion to R-005e.
 
-**Bad:**
+**Bad (group into a record):**
 
 ```java
 final class OrderService {
-    void placeOrder(String product, int quantity, BigDecimal price, String currency) {
-        // ...
-    }
-}
-
-final class NotificationService {
-    void notifyUsers(String user1, String user2, String user3) {
+    void placeOrder(Product product, Quantity quantity, Price price) {
         // ...
     }
 }
 ```
 
-**Good:**
+**Good (group into a record):**
 
 ```java
-record OrderRequest(String product, int quantity, BigDecimal price, String currency) {
+import static java.util.Objects.requireNonNull;
+
+record OrderRequest(Product product, Quantity quantity, Price price) {
+    OrderRequest {
+        requireNonNull(product);
+        requireNonNull(quantity);
+        requireNonNull(price);
+    }
 }
 
 final class OrderService {
@@ -568,9 +594,23 @@ final class OrderService {
         // ...
     }
 }
+```
 
+**Bad (group into a list):**
+
+```java
 final class NotificationService {
-    void notifyUsers(List<String> users) {
+    void notifyUsers(Email user1, Email user2, Email user3) {
+        // ...
+    }
+}
+```
+
+**Good (group into a list):**
+
+```java
+final class NotificationService {
+    void notifyUsers(List<Email> users) {
         // ...
     }
 }
@@ -580,7 +620,13 @@ final class NotificationService {
 
 ## R-013r
 
-Avoid primitive obsession in method parameters. Do not pass raw primitive types (`String`, `int`, `long`, `BigDecimal`, etc.) when the value represents a domain concept. Wrap it in a dedicated tiny type (record) instead. This prevents accidental misuse, makes the API self-documenting, and lets the compiler catch mistakes that primitive types cannot. Although R-013q already limits methods to one parameter, this rule still applies: even a single `String` that represents an ISIN, email address, or currency code should be a typed wrapper.
+Avoid primitive obsession in method parameter. Do not pass raw primitive 
+types (`String`, `int`, `long`, `BigDecimal`, etc.) when the value represents a 
+domain concept. Wrap it in a dedicated tiny type (record) instead. This 
+prevents accidental misuse, makes the API self-documenting, and lets the 
+compiler catch mistakes that primitive types cannot. Although R-013q already 
+limits methods to one parameter, this rule still applies: even a single `String` 
+that represents an ISIN, email address, or currency code should be a typed wrapper.
 
 **Bad:**
 
@@ -601,7 +647,12 @@ final class PaymentService {
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 record Isin(String value) {
+    Isin {
+        requireNonNull(value);
+    }
 }
 
 final class PortfolioService {
@@ -611,6 +662,10 @@ final class PortfolioService {
 }
 
 record Money(BigDecimal amount, Currency currency) {
+    Money {
+        requireNonNull(amount);
+        requireNonNull(currency);
+    }
 }
 
 final class PaymentService {
@@ -624,9 +679,7 @@ final class PaymentService {
 
 ## R-013s
 
-Method parameters must not be declared `final`.
-
-Declaring a parameter `final` is unnecessary noise: it does not change the public API and clutters signatures. If immutability is desired for intermediate values, prefer using local `final` variables inside the method body. Keep parameter lists concise and free of modifiers.
+Method parameter must not be declared `final`.
 
 **Bad:**
 
@@ -654,7 +707,7 @@ This rule applies to all method-like declarations (regular methods, constructors
 
 ## R-013t
 
-Setter methods are forbidden. Objects should be immutable ΓÇö set all state through the constructor. Mutable setters make objects harder to reason about, break thread-safety, and invite temporal coupling (the caller must remember to call setters in the right order).
+Setter methods are forbidden. Objects should be immutable -  set all state through the constructor. Mutable setters make objects harder to reason about, break thread-safety, and invite temporal coupling (the caller must remember to call setters in the right order).
 
 **Exception:** setters are allowed only when technically unavoidable, e.g. when a framework requires them for deserialization (Jackson without `@JsonCreator`, JPA entities, etc.). In those cases, keep the setter package-private and document why it exists.
 
@@ -680,18 +733,15 @@ final class User {
 ```java
 import static java.util.Objects.requireNonNull;
 
-final class User {
-    private final Name name;
-    private final Email email;
-
-    User(Name name, Email email) {
-        this.name = requireNonNull(name);
-        this.email = requireNonNull(email);
+record User(Name name, Email email) {
+    User {
+        requireNonNull(name);
+        requireNonNull(email);
     }
 }
 ```
 
-**Good (framework exception ΓÇö JPA entity):**
+**Good (framework exception -  JPA entity):**
 
 ```java
 import static java.util.Objects.requireNonNull;
@@ -719,7 +769,7 @@ final class Portfolio {
     private final List<Position> positions;
     private boolean accessed;
 
-    List<Position> getPositions() {
+    List<Position> positions() {
         accessed = true; // mutates state
         return positions;
     }
@@ -732,7 +782,7 @@ final class Portfolio {
 final class Portfolio {
     private final List<Position> positions;
 
-    List<Position> getPositions() {
+    List<Position> positions() {
         return positions;
     }
 }
@@ -754,7 +804,7 @@ final class ReportService {
         // implementation...
     }
 
-    // unused private helper ΓÇö should be removed
+    // unused private helper -  should be removed
     private void formatAsCsv() {
         // leftover from previous implementation, not referenced anywhere
     }
@@ -785,13 +835,13 @@ Name predicate methods with `is`, `has`, `can`, `should`, or `was` prefixes. Kee
 
 ```java
 final class OrderService {
-    void process(User user, Session session, Order order) {
+    void process(OrderContext context) {
         // check if user is logged in and session is still valid
-        if (user.getToken() != null && !user.getToken().isBlank()
-                && session.getExpiry().isAfter(Instant.now())) {
+        if (context.user().getToken() != null && !context.user().getToken().isBlank()
+                && context.session().getExpiry().isAfter(Instant.now())) {
             // check if order qualifies for free shipping
-            if (order.getTotal().compareTo(FREE_SHIPPING_THRESHOLD) >= 0
-                    && order.getDestination().isInland()) {
+            if (context.order().getTotal().compareTo(FREE_SHIPPING_THRESHOLD) >= 0
+                    && context.order().getDestination().isInland()) {
                 // ...
             }
         }
@@ -803,9 +853,9 @@ final class OrderService {
 
 ```java
 final class OrderService {
-    void process(User user, Session session, Order order) {
-        if (isLoggedIn(user) && isSessionValid(session)) {
-            if (qualifiesForFreeShipping(order)) {
+    void process(OrderContext context) {
+        if (isLoggedIn(context.user()) && isSessionValid(context.session())) {
+            if (qualifiesForFreeShipping(context.order())) {
                 // ...
             }
         }
@@ -896,3 +946,40 @@ final class ReportService {
     }
 }
 ```
+
+---
+
+## R-013y
+
+Method and constructor parameter must not be reassigned. Treat every 
+the parameter as effectively final. If a different value is needed, 
+introduce a new local variable with a descriptive name. This is the 
+parameter-scoped companion to [R-016i](R-016-local-variable.md#r-016i).
+
+**Note:** Reassignment *inside a compact canonical constructor* of a 
+record is an exception — it is the idiomatic way to apply defensive copies 
+(e.g. `stocks = List.copyOf(requireNonNull(stocks));`, see R-007g and R-007h).
+
+**Bad:**
+
+```java
+final class PriceService {
+    Money applyDiscount(Money price, Discount discount) {
+        price = price.subtract(discount.amount());
+        return price;
+    }
+}
+```
+
+**Good:**
+
+```java
+final class PriceService {
+    Money applyDiscount(Money price, Discount discount) {
+        Money discountedPrice = price.subtract(discount.amount());
+        return discountedPrice;
+    }
+}
+```
+
+---

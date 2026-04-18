@@ -18,7 +18,7 @@ Do not duplicate existing rules. Before adding an uncategorized rule, search the
 
 ## R-999c
 
-All identifiers ΓÇö class names, interface names, record names, enum names, method names, field names, parameter names, local variable names, and package names ΓÇö must be in English. Do not use German or any other non-English language.
+All identifiers — class names, interface names, record names, enum names, method names, field names, parameter names, local variable names, and package names — must be in English. Do not use German or any other non-English language.
 
 **Bad:**
 

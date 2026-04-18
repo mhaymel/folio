@@ -32,7 +32,8 @@ final class OrderService {
 
 ## R-011b
 
-Method names must be a verb or verb phrase that describes the action performed.
+Method names must be a verb or verb phrase that describes the action 
+performed.
 
 **Bad:**
 
@@ -62,7 +63,9 @@ final class OrderService {
 
 ## R-011c
 
-Method names must be **meaningful** and clearly describe what the method does ΓÇö a reader should immediately understand the method's purpose from its name alone.
+Method names must be **meaningful** and clearly describe what the 
+method does. A reader should immediately understand the method's 
+purpose from its name alone.
 
 **Bad:**
 
@@ -157,8 +160,14 @@ Getter-style methods for non-boolean properties must not use the `get` prefix. U
 **Bad:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 final class User {
     private final String name;
+
+    User(String name) {
+        this.name = requireNonNull(name);
+    }
 
     String getName() {
         return name;
@@ -169,8 +178,14 @@ final class User {
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 final class User {
     private final String name;
+
+    User(String name) {
+        this.name = requireNonNull(name);
+    }
 
     String name() {
         return name;
@@ -184,11 +199,11 @@ final class User {
 
 Boolean query (predicate) methods must start with one of the prefixes `is`, `has`, `can`, `should`, or `contains`. Choose the prefix that best expresses the question being asked:
 
-- `is` ΓÇö state or identity checks (e.g. `isEmpty()`, `isCancelled()`)
-- `has` ΓÇö ownership or presence checks (e.g. `hasPermission(User user)`, `hasItems()`)
-- `can` ΓÇö capability or permission checks (e.g. `canRetry()`, `canAccess()`)
-- `should` ΓÇö policy or recommendation checks (e.g. `shouldNotify()`, `shouldRetry()`)
-- `contains` ΓÇö containment checks (e.g. `containsKey(Key key)`, `containsValue(Value value)`)
+- `is` -  state or identity checks (e.g. `isEmpty()`, `isCancelled()`)
+- `has` -  ownership or presence checks (e.g. `hasPermission(User user)`, `hasItems()`)
+- `can` -  capability or permission checks (e.g. `canRetry()`, `canAccess()`)
+- `should` -  policy or recommendation checks (e.g. `shouldNotify()`, `shouldRetry()`)
+- `contains` -  containment checks (e.g. `containsKey(Key key)`, `containsValue(Value value)`)
 
 **Bad:**
 

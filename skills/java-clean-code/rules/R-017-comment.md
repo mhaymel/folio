@@ -12,7 +12,7 @@ final class Calculator {
         return a + b;
     }
 
-    // old implementation ΓÇö commented out, left behind
+    // old implementation — commented out, left behind
     // private int addOld(int a, int b) {
     //     // complex legacy behavior
     //     return computeLegacy(a, b);

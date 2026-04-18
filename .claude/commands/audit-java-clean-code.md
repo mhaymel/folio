@@ -23,7 +23,13 @@ This audit exists because rule examples are hand-written in isolation and drift 
    - its label (`Bad`, `Good`, `Good (restore the flag)`, etc.)
    - the type(s) it declares: class / record / enum / interface / tiny type
 
-3. **Determine applicable rules per block.** Rules that apply to every type: R-001, R-009, R-010, R-011, R-015, R-017. Type-specific: R-002/R-003 for classes, R-006/R-007 for records, R-008 for enums, R-004/R-005 for interfaces, R-014 for tiny types. R-012, R-013, R-016, R-018, R-019 apply based on the code's content (methods, local variables, exceptions, concurrency primitives).
+3. **Determine applicable rules per block.** Derive applicability from the topic of each rule file (read from its title/heading, not its filename or ID), then match against what the snippet declares:
+
+   - **Universal** (apply to every block): class naming, imports, programming-by-contract, method naming, package/file naming, comments.
+   - **Type-specific** (apply only when the block declares that type): class-design and class-field rules for classes; record-naming and record-design rules for records; enum rules for enums; interface-naming and interface-design rules for interfaces; tiny-type rules for tiny types.
+   - **Content-driven** (apply when the snippet contains the relevant construct): method-code and method-design rules when methods are present; local-variable rules when local variables are used; exception-handling rules when `throw`/`catch`/`try` is present; concurrency rules when threads, locks, atomics, or executors are used; unit-test rules when test classes/methods are present.
+
+   Sub-rule IDs are only known after reading the files — do not hardcode them here, as rule file names and IDs may change.
 
    Snippets are *illustrative*. Ignore violations that only exist because the snippet is stripped down — missing package declarations, omitted imports, elided method bodies, abbreviated classes with no companion files. Only flag a violation when the snippet as written, taken on its own, breaks a sub-rule.
 

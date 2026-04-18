@@ -16,7 +16,12 @@ final class UserSummary {
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 record UserSummary(long id, String name) {
+    UserSummary {
+        requireNonNull(name);
+    }
 }
 ```
 
@@ -29,30 +34,11 @@ Records must be package-private by default. Make records public only if they mus
 **Bad:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 public record UserSummary(long id, String name) {
-}
-```
-
-**Good:**
-
-```java
-record UserSummary(long id, String name) {
-}
-```
-
----
-
-## R-007c
-
-Nested records must not be used. Use top-level records instead.
-
-Java records nested inside a class are implicitly `static`, but nesting them still increases coupling and hides types. Declare them at the top level.
-
-**Bad:**
-
-```java
-final class UserService {
-    record Credentials(String userName, String password) {
+    UserSummary {
+        requireNonNull(name);
     }
 }
 ```
@@ -60,7 +46,46 @@ final class UserService {
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
+record UserSummary(long id, String name) {
+    UserSummary {
+        requireNonNull(name);
+    }
+}
+```
+
+---
+
+## R-007c
+
+Nested records are forbidden. Use top-level records instead.
+
+**Bad:**
+
+```java
+import static java.util.Objects.requireNonNull;
+
+final class UserService {
+    record Credentials(String userName, String password) {
+        Credentials {
+            requireNonNull(userName);
+            requireNonNull(password);
+        }
+    }
+}
+```
+
+**Good:**
+
+```java
+import static java.util.Objects.requireNonNull;
+
 record Credentials(String userName, String password) {
+    Credentials {
+        requireNonNull(userName);
+        requireNonNull(password);
+    }
 }
 
 final class UserService {
@@ -69,30 +94,39 @@ final class UserService {
 
 ## R-007d
 
-Consider keeping the number of fields in a record to rather low eg. 3 fields. If a record has more than 3 fields, it may indicate that the record is modeling too much data and should be split into multiple records.
+Keep record fields to at most 3. Split larger records into smaller ones.
 
 **Bad:**
 
 ```java
-final record UserService {
-    private final int userId;
-    private final String userName;
-    private final String password;
-    private final String email;
+import static java.util.Objects.requireNonNull;
+
+record UserAccount(int userId, String userName, String password, Email email) {
+    UserAccount {
+        requireNonNull(userName);
+        requireNonNull(password);
+        requireNonNull(email);
+    }
 }
 ```
 
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 record UserCredentials(String userName, String password) {
+    UserCredentials {
+        requireNonNull(userName);
+        requireNonNull(password);
+    }
 }
 
-final record UserService {
-    private final int userId;
-    private final UserCredentials credentials;
-    private final String email;
-
+record UserService(int userId, UserCredentials credentials, Email email) {
+    UserService {
+        requireNonNull(credentials);
+        requireNonNull(email);
+    }
 }
 ```
 
@@ -105,7 +139,12 @@ Records do not need builders; use the canonical constructor directly.
 **Bad:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 record UserSummary(long id, String name) {
+    UserSummary {
+        requireNonNull(name);
+    }
 }
 
 final class UserSummaryBuilder {
@@ -113,7 +152,7 @@ final class UserSummaryBuilder {
     private String name;
 
     UserSummaryBuilder id(long id) { this.id = id; return this; }
-    UserSummaryBuilder name(String name) { this.name = name; return this; }
+    UserSummaryBuilder name(String name) { this.name = requireNonNull(name); return this; }
     UserSummary build() { return new UserSummary(id, name); }
 }
 ```
@@ -121,7 +160,12 @@ final class UserSummaryBuilder {
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 record UserSummary(long id, String name) {
+    UserSummary {
+        requireNonNull(name);
+    }
 }
 
 // usage:
@@ -173,7 +217,13 @@ in the compact canonical constructor.
 **Bad:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 record Portfolio(String name, List<String> stocks) {
+    Portfolio {
+        requireNonNull(name);
+        requireNonNull(stocks);
+    }
 }
 ```
 
@@ -191,7 +241,13 @@ record Portfolio(String name, List<String> stocks) {
 **Bad:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 record Snapshot(String label, Date takenAt) {
+    Snapshot {
+        requireNonNull(label);
+        requireNonNull(takenAt);
+    }
 }
 ```
 
@@ -240,7 +296,7 @@ record DashboardLists(List<HoldingDto> top5Holdings, List<DividendSourceDto> top
 
 ## R-007i
 
-Boxed primitive types (`Integer`, `Long`, `Short`, `Byte`, `Float`, `Double`, `Boolean`, `Character`) must not be used as record components. Use the corresponding primitive (`int`, `long`, etc.) instead. Boxed types introduce unnecessary allocation, allow accidental `null` values, and hide the intent that the component holds a simple scalar. If a domain meaning is attached to the value, wrap the primitive in a dedicated tiny type (see R-014).
+Boxed primitive types (`Integer`, `Long`, `Short`, `Byte`, `Float`, `Double`, `Boolean`, `Character`) must not be used as record components. Use the corresponding primitive (`int`, `long`, etc.) instead.
 
 **Bad:**
 
@@ -252,17 +308,22 @@ record UserSummary(Long id, Integer age, Boolean active) {
 **Good:**
 
 ```java
-record UserSummary(long id, int age, boolean active) {
+record UserSummary(long id, int age, boolean isActive) {
 }
 ```
 
 **Good (with tiny types):**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 record UserId(long value) {
 }
 
-record UserSummary(UserId id, int age, boolean active) {
+record UserSummary(UserId id, int age, boolean isActive) {
+    UserSummary {
+        requireNonNull(id);
+    }
 }
 ```
 
@@ -270,9 +331,7 @@ record UserSummary(UserId id, int age, boolean active) {
 
 ## R-007j
 
-Record components must be declared with the most general interface that fits the usage. A concrete implementation class must not appear in a record header when an interface exposes the contract the component actually needs. The implementation is a caller concern; the record header only exposes the contract. Combine this with R-007g: for mutable inputs, copy through an unmodifiable wrapper in the compact canonical constructor.
-
-This applies to every type, not just collections. Common examples:
+Declare record components with the most general interface. Never use a concrete type in the header. For mutable inputs, combine with R-007g and copy through an unmodifiable wrapper.
 
 | Use (interface) | Not (concrete) |
 |----|----|
@@ -285,10 +344,16 @@ This applies to every type, not just collections. Common examples:
 **Bad:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 record Portfolio(String name,
                  ArrayList<String> stocks,
-                 HashMap<String, Double> weights,
-                 File report) {
+                 HashMap<String, Double> weights) {
+    Portfolio {
+        requireNonNull(name);
+        stocks = List.copyOf(requireNonNull(stocks));
+        weights = Map.copyOf(requireNonNull(weights));
+    }
 }
 ```
 
@@ -297,13 +362,11 @@ record Portfolio(String name,
 ```java
 record Portfolio(String name,
                  List<String> stocks,
-                 Map<String, Double> weights,
-                 Path report) {
+                 Map<String, Double> weights) {
     Portfolio {
         requireNonNull(name);
         stocks = List.copyOf(requireNonNull(stocks));
         weights = Map.copyOf(requireNonNull(weights));
-        requireNonNull(report);
     }
 }
 ```

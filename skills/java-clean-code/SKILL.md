@@ -22,6 +22,7 @@ This skill provides guidelines and best practices for writing clean java code.
 
 ## Rules
 
+Rule files state the rule and show **Bad** / **Good** examples. They typically do **not** explain *why* something is bad or *why* something is good. A rationale is included only when it is necessary to understand the transformation from Bad to Good.
 
 Rules are organized by category in the `rules/` folder:
 
@@ -44,6 +45,7 @@ Rules are organized by category in the `rules/` folder:
 - [R-017-comment](rules/R-017-comment.md)
 - [R-018-exception-handling](rules/R-018-exception-handling.md)
 - [R-019-concurrency](rules/R-019-concurrency.md)
+- [R-020-unit-test](rules/R-020-unit-test.md)
 - [R-999-not-categorized](rules/R-999-not-categorized.md)
 
 ---

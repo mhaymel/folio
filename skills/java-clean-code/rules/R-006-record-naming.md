@@ -14,8 +14,20 @@ record orderDTO(String id) { }
 **Good:**
 
 ```java
-record UserProfile(String name, String email) { }
-record OrderDto(String id) { }
+import static java.util.Objects.requireNonNull;
+
+record UserProfile(String name, String email) {
+    UserProfile {
+        requireNonNull(name);
+        requireNonNull(email);
+    }
+}
+
+record OrderDto(String id) {
+    OrderDto {
+        requireNonNull(id);
+    }
+}
 ```
 
 ---
@@ -34,8 +46,21 @@ record ProcessPayment(String id, BigDecimal amount) { }
 **Good:**
 
 ```java
-record UserRegistration(String name, String email) { }
-record PaymentRequest(String id, BigDecimal amount) { }
+import static java.util.Objects.requireNonNull;
+
+record UserRegistration(String name, String email) {
+    UserRegistration {
+        requireNonNull(name);
+        requireNonNull(email);
+    }
+}
+
+record PaymentRequest(String id, BigDecimal amount) {
+    PaymentRequest {
+        requireNonNull(id);
+        requireNonNull(amount);
+    }
+}
 ```
 
 ---
@@ -55,9 +80,28 @@ record Info(String text) { }
 **Good:**
 
 ```java
-record CustomerAddress(String street, String city) { }
-record InvoiceSummary(String invoiceId, BigDecimal total) { }
-record LoginCredentials(String username, String password) { }
+import static java.util.Objects.requireNonNull;
+
+record CustomerAddress(String street, String city) {
+    CustomerAddress {
+        requireNonNull(street);
+        requireNonNull(city);
+    }
+}
+
+record InvoiceSummary(String invoiceId, BigDecimal total) {
+    InvoiceSummary {
+        requireNonNull(invoiceId);
+        requireNonNull(total);
+    }
+}
+
+record LoginCredentials(String username, String password) {
+    LoginCredentials {
+        requireNonNull(username);
+        requireNonNull(password);
+    }
+}
 ```
 
 ---
@@ -76,7 +120,15 @@ record X(int id) { }
 **Good:**
 
 ```java
-record Account(String value) { }
-record XmlEntry(int id) { }
+import static java.util.Objects.requireNonNull;
+
+record Account(String value) {
+    Account {
+        requireNonNull(value);
+    }
+}
+
+record XmlEntry(int id) {
+}
 ```
 

@@ -42,11 +42,11 @@ final class PriceCache {
 ```java
 record PriceSnapshot(Map<Isin, BigDecimal> prices) {
     PriceSnapshot {
-        requireNonNull(prices);
-        prices = Map.copyOf(prices);
+        prices = Map.copyOf(requireNonNull(prices));
     }
 
     BigDecimal price(Isin isin) {
+        requireNonNull(isin);
         return prices.get(isin);
     }
 }
@@ -63,6 +63,7 @@ final class PriceCache {
     }
 
     BigDecimal price(Isin isin) {
+        requireNonNull(isin);
         return snapshot.get().price(isin);
     }
 }
@@ -105,9 +106,13 @@ final class FetchTracker {
     private final AtomicBoolean inProgress;
     private final AtomicLong lastScheduledFetch;
 
+    private FetchTracker(AtomicBoolean inProgress, AtomicLong lastScheduledFetch) {
+        this.inProgress = requireNonNull(inProgress);
+        this.lastScheduledFetch = requireNonNull(lastScheduledFetch);
+    }
+
     FetchTracker() {
-        this.inProgress = new AtomicBoolean(false);
-        this.lastScheduledFetch = new AtomicLong(0);
+        this(new AtomicBoolean(false), new AtomicLong(0));
     }
 
     boolean tryStart(long now) {
@@ -153,15 +158,27 @@ final class QuoteRegistry {
 **Good:**
 
 ```java
+record QuoteEntry(Isin isin, Quote quote) {
+    QuoteEntry {
+        requireNonNull(isin);
+        requireNonNull(quote);
+    }
+}
+
 final class QuoteRegistry {
     private final Map<Isin, Quote> quotes;
 
-    QuoteRegistry() {
-        this.quotes = new ConcurrentHashMap<>();
+    private QuoteRegistry(Map<Isin, Quote> quotes) {
+        this.quotes = requireNonNull(quotes);
     }
 
-    void put(Isin isin, Quote quote) {
-        quotes.put(requireNonNull(isin), requireNonNull(quote));
+    QuoteRegistry() {
+        this(new ConcurrentHashMap<>());
+    }
+
+    void put(QuoteEntry entry) {
+        requireNonNull(entry);
+        quotes.put(entry.isin(), entry.quote());
     }
 
     Quote get(Isin isin) {
@@ -207,9 +224,13 @@ final class ExportService {
     private final StringBuilder buffer;
     private final Object bufferLock;
 
+    private ExportService(StringBuilder buffer, Object bufferLock) {
+        this.buffer = requireNonNull(buffer);
+        this.bufferLock = requireNonNull(bufferLock);
+    }
+
     ExportService() {
-        this.buffer = new StringBuilder();
-        this.bufferLock = new Object();
+        this(new StringBuilder(), new Object());
     }
 
     void append(String row) {
@@ -281,6 +302,8 @@ final class ReportRunner {
 
 ```java
 final class ReportRunner implements AutoCloseable {
+    private static final long SHUTDOWN_TIMEOUT_SECONDS = 10;
+
     private final ExecutorService executor;
 
     ReportRunner(ExecutorService executor) {
@@ -294,7 +317,7 @@ final class ReportRunner implements AutoCloseable {
     @Override
     public void close() throws InterruptedException {
         executor.shutdown();
-        executor.awaitTermination(10, TimeUnit.SECONDS);
+        executor.awaitTermination(SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 }
 ```
@@ -425,8 +448,12 @@ final class JobCoordinator {
 final class JobCoordinator {
     private final CountDownLatch ready;
 
+    private JobCoordinator(CountDownLatch ready) {
+        this.ready = requireNonNull(ready);
+    }
+
     JobCoordinator() {
-        this.ready = new CountDownLatch(1);
+        this(new CountDownLatch(1));
     }
 
     void awaitReady() throws InterruptedException {
@@ -443,7 +470,9 @@ final class JobCoordinator {
 
 ## R-019j
 
-Do not implement double-checked locking for lazy initialization. It is easy to get wrong (missing `volatile`, partial publication) and unnecessary. Use the static-holder idiom for class-level singletons, or `AtomicReference.updateAndGet` for instance-level lazy values.
+Do not implement double-checked locking for lazy initialization. It is easy 
+to get wrong (missing `volatile`, partial publication) and unnecessary. 
+Use `AtomicReference.updateAndGet` for instance-level lazy values.
 
 **Bad:**
 
@@ -464,31 +493,18 @@ final class ExchangeRates {
 }
 ```
 
-**Good (static-holder idiom):**
-
-```java
-final class ExchangeRates {
-    private ExchangeRates() {
-    }
-
-    private static final class Holder {
-        private static final ExchangeRates INSTANCE = new ExchangeRates();
-    }
-
-    static ExchangeRates get() {
-        return Holder.INSTANCE;
-    }
-}
-```
-
 **Good (instance-level lazy value):**
 
 ```java
 final class QuoteClient {
     private final AtomicReference<HttpClient> httpClient;
 
+    private QuoteClient(AtomicReference<HttpClient> httpClient) {
+        this.httpClient = requireNonNull(httpClient);
+    }
+
     QuoteClient() {
-        this.httpClient = new AtomicReference<>();
+        this(new AtomicReference<>());
     }
 
     HttpClient client() {

@@ -42,7 +42,7 @@ final class DataProcessor { }
 
 ## R-001c
 
-Class names must be **meaningful** and clearly describe the class's single responsibility ΓÇö a reader should immediately understand what the class does from its name alone.
+Class names must be **meaningful** and clearly describe the class's single responsibility — a reader should immediately understand what the class does from its name alone.
 
 **Bad:**
 

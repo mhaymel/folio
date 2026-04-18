@@ -2,7 +2,7 @@
 
 ## R-009a
 
-No unused imports. Remove all unused imports from Java files. IDEs (IntelliJ, VS Code) provide quick-fix commands to clean imports ΓÇö use them before committing code.
+No unused imports. Remove all unused imports from Java files. 
 
 **Bad:**
 
@@ -10,8 +10,14 @@ No unused imports. Remove all unused imports from Java files. IDEs (IntelliJ, VS
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNull;
+
 final class UserService {
-    private final List<String> names = List.of("Alice");
+    private final List<String> names;
+
+    UserService(List<String> names) {
+        this.names = requireNonNull(names);
+    }
 }
 ```
 
@@ -20,8 +26,14 @@ final class UserService {
 ```java
 import java.util.List;
 
+import static java.util.Objects.requireNonNull;
+
 final class UserService {
-    private final List<String> names = List.of("Alice");
+    private final List<String> names;
+
+    UserService(List<String> names) {
+        this.names = requireNonNull(names);
+    }
 }
 ```
 
@@ -29,7 +41,8 @@ final class UserService {
 
 ## R-009b
 
-No wildcard imports (`import java.util.*;`). Always use explicit, fully-qualified imports. This makes dependencies clear and avoids name collisions. IDEs can auto-organize imports ΓÇö use them.
+No wildcard imports (`import java.util.*;`). 
+Always use explicit, fully-qualified imports. 
 
 **Bad:**
 
@@ -48,7 +61,7 @@ import java.util.Map;
 
 ## R-009c
 
-Use static imports for static method calls where unambiguous (e.g. `getLogger(ΓÇª)` instead of `LoggerFactory.getLogger(ΓÇª)`, `requireNonNull(ΓÇª)` instead of `Objects.requireNonNull(ΓÇª)`). When two static-imported names collide (e.g. `List.of` vs `Map.of`), keep one qualified to avoid ambiguity.
+Use static imports for static method calls where unambiguous (e.g. `getLogger(...)` instead of `LoggerFactory.getLogger(...)`, `requireNonNull(...)` instead of `Objects.requireNonNull(...)`). When two static-imported names collide (e.g. `List.of` vs `Map.of`), keep one qualified to avoid ambiguity.
 
 **Bad:**
 

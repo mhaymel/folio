@@ -1,5 +1,8 @@
 this is just a scratchpad for possible rules to add to the skill, not yet organized or finalized
 
+R-006-record-naming.md use tiny types
+R-014 tiny types
+R-011 tiny types
 
 number of classes, records, interfaces and enums in one 
 package should be limited to 10

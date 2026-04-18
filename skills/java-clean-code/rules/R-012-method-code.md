@@ -1,4 +1,4 @@
-# Method Code Quality Rules
+# Method Code Rules
 
 ## R-012a
 
@@ -8,13 +8,11 @@ Unreachable code is forbidden. Remove all statements that cannot be executed bec
 
 ```java
 final class PaymentService {
-    void processPayment(Invoice invoice) {
-        if (invoice.isPaid()) {
-            return;
+    BigDecimal refund(Invoice invoice) {
+        if (true) {
+            throw new UnsupportedOperationException("refunds not supported yet");
         }
-        // Code below is unreachable when invoice is paid
-        invoice.setStatus("pending");
-        saveToDatabase(invoice);
+        return invoice.amount(); // unreachable at runtime
     }
 }
 ```
@@ -23,12 +21,8 @@ final class PaymentService {
 
 ```java
 final class PaymentService {
-    void processPayment(Invoice invoice) {
-        if (invoice.isPaid()) {
-            return;
-        }
-        invoice.setStatus("pending");
-        saveToDatabase(invoice);
+    BigDecimal refund(Invoice invoice) {
+        throw new UnsupportedOperationException("refunds not supported yet");
     }
 }
 ```
@@ -46,7 +40,7 @@ final class PaymentProcessor {
     void process(Payment payment) {
         try {
             validatePayment(payment);
-        } catch (ValidationException e) {
+        } catch (ValidationException exception) {
             // empty catch block — silently ignores errors
         }
 
@@ -65,10 +59,10 @@ final class PaymentProcessor {
     void process(Payment payment) {
         try {
             validatePayment(payment);
-        } catch (ValidationException e) {
+        } catch (ValidationException exception) {
             // Validation errors for optional payments are acceptable
             // and should not prevent processing
-            logWarning("Optional payment validation failed", e);
+            logWarning("Optional payment validation failed", exception);
         }
 
         if (!payment.isOptional()) {
