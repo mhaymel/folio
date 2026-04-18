@@ -16,14 +16,32 @@ record orderDTO(String id) { }
 ```java
 import static java.util.Objects.requireNonNull;
 
-record UserProfile(String name, String email) {
+record Name(String value) {
+    Name {
+        requireNonNull(value);
+    }
+}
+
+record Email(String value) {
+    Email {
+        requireNonNull(value);
+    }
+}
+
+record OrderId(String value) {
+    OrderId {
+        requireNonNull(value);
+    }
+}
+
+record UserProfile(Name name, Email email) {
     UserProfile {
         requireNonNull(name);
         requireNonNull(email);
     }
 }
 
-record OrderDto(String id) {
+record OrderDto(OrderId id) {
     OrderDto {
         requireNonNull(id);
     }
@@ -48,14 +66,39 @@ record ProcessPayment(String id, BigDecimal amount) { }
 ```java
 import static java.util.Objects.requireNonNull;
 
-record UserRegistration(String name, String email) {
+record Name(String value) {
+    Name {
+        requireNonNull(value);
+    }
+}
+
+record Email(String value) {
+    Email {
+        requireNonNull(value);
+    }
+}
+
+record PaymentId(String value) {
+    PaymentId {
+        requireNonNull(value);
+    }
+}
+
+record Money(BigDecimal amount, Currency currency) {
+    Money {
+        requireNonNull(amount);
+        requireNonNull(currency);
+    }
+}
+
+record UserRegistration(Name name, Email email) {
     UserRegistration {
         requireNonNull(name);
         requireNonNull(email);
     }
 }
 
-record PaymentRequest(String id, BigDecimal amount) {
+record PaymentRequest(PaymentId id, Money amount) {
     PaymentRequest {
         requireNonNull(id);
         requireNonNull(amount);
@@ -82,21 +125,58 @@ record Info(String text) { }
 ```java
 import static java.util.Objects.requireNonNull;
 
-record CustomerAddress(String street, String city) {
+record Street(String value) {
+    Street {
+        requireNonNull(value);
+    }
+}
+
+record City(String value) {
+    City {
+        requireNonNull(value);
+    }
+}
+
+record InvoiceId(String value) {
+    InvoiceId {
+        requireNonNull(value);
+    }
+}
+
+record Money(BigDecimal amount, Currency currency) {
+    Money {
+        requireNonNull(amount);
+        requireNonNull(currency);
+    }
+}
+
+record Username(String value) {
+    Username {
+        requireNonNull(value);
+    }
+}
+
+record Password(String value) {
+    Password {
+        requireNonNull(value);
+    }
+}
+
+record CustomerAddress(Street street, City city) {
     CustomerAddress {
         requireNonNull(street);
         requireNonNull(city);
     }
 }
 
-record InvoiceSummary(String invoiceId, BigDecimal total) {
+record InvoiceSummary(InvoiceId invoiceId, Money total) {
     InvoiceSummary {
         requireNonNull(invoiceId);
         requireNonNull(total);
     }
 }
 
-record LoginCredentials(String username, String password) {
+record LoginCredentials(Username username, Password password) {
     LoginCredentials {
         requireNonNull(username);
         requireNonNull(password);
@@ -128,7 +208,7 @@ record Account(String value) {
     }
 }
 
-record XmlEntry(int id) {
+record XmlEntry(int value) {
 }
 ```
 

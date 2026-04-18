@@ -1,52 +1,73 @@
-# java-clean-code Rule Audit Report
+# java-clean-code audit report
 
 ## Summary
 
-~160 Good blocks audited, 11 failing. 2 Bad blocks flagged as muddy. 6 rule-text issues noted.
+~140 Good blocks audited across 20 rule files; 22 failing. 2 Bad blocks flagged as muddy.
+
+Dominant failure modes:
+- Method names that are nouns, violating R-011b (verb phrase).
+- Good blocks that use 2+ method parameters, violating R-013q.
+- Record/class Good blocks that expose raw `String`/`BigDecimal`/`long`/`int` for domain concepts, violating R-002s / R-013r / R-014i.
+- Single-field records named with `id`/`isin`/etc. components instead of the mandatory `value` component (R-014c).
+- Test Good blocks missing `// given // when // then` markers (R-020d).
+- Use of `getXxx()` accessors in a Good example that post-dates the R-011f prohibition.
 
 ## Good-block violations
 
 | File | Sub-rule illustrated | Violates | Note |
 |------|---------------------|----------|------|
-| R-003-class-field.md | R-003c Good (UserService) | R-003b | `private UserId userId` is not declared `final`; could be final since ctor assigns once via `requireNonNull` |
-| R-003-class-field.md | R-003d Good (UserCredentials) | R-007f | record `UserCredentials(UserName userName, Password password)` has no compact ctor with `requireNonNull(userName); requireNonNull(password);` |
-| R-005-interface-design.md | R-005e Good (notifyUsers) | R-013r | `notifyUsers(List<String> users)` — should be `List<Email>` since emails are a domain concept (aligns with R-013q Good list example) |
-| R-007-record-design.md | R-007d Good (UserService record) | R-006b, R-006c | record named `UserService` — not a data-model noun; should be something like `UserAccount` or `UserRegistration` |
-| R-010-programming-by-contract.md | R-010b Good (ExampleGood) | R-001c | class name `ExampleGood` is not meaningful (does not describe responsibility) |
-| R-013-method-design.md | R-013f Good (UserRepository) | R-013a | `public Optional<User> findByEmail(Email email)` in pkg-private class — the class was demoted from public but `public` stayed on the method |
-| R-013-method-design.md | R-013y Good (applyDiscount) | R-013q | `applyDiscount(Money price, Discount discount)` has 2 parameters; should be a single grouping record or overload |
-| R-017-comment.md | R-017a Good (Calculator.add) | R-013q, R-999f | `int add(int a, int b)` has 2 params; `a`/`b` are single-letter unsearchable names |
-| R-017-comment.md | R-017c Good (priceWithTax) | R-013q | `priceWithTax(BigDecimal price, BigDecimal taxRate)` has 2 parameters |
-| R-017-comment.md | R-017e Good (cache field) | R-003c | `private final Map<String, Value> cache = new ConcurrentHashMap<>();` initializes a field at declaration instead of in the primary constructor |
-| R-019-concurrency.md | R-019j Good (static-holder) | R-002k, R-013o | `private static final class Holder` is an inner class (R-002k forbids inner classes); `static ExchangeRates get()` is a static method (R-013o forbids static methods) |
+| R-006-record-naming.md | R-006a `UserProfile`, `OrderDto` | R-002s, R-013r, R-014i | record components `String name`, `String email`, `String id` represent domain concepts but use raw `String`; should wrap in tiny types |
+| R-006-record-naming.md | R-006b `UserRegistration`, `PaymentRequest` | R-002s, R-013r, R-014i | `String name`, `String email`, `String id`, `BigDecimal amount` — raw primitives for domain concepts |
+| R-006-record-naming.md | R-006c `CustomerAddress`, `InvoiceSummary`, `LoginCredentials` | R-002s, R-013r, R-014i | all components declared as `String`/`BigDecimal` rather than domain-specific tiny types |
+| R-006-record-naming.md | R-006d `XmlEntry(int id)` | R-014c | tiny type component must be named `value`, not `id` |
+| R-007-record-design.md | R-007a `record UserSummary(long id, String name)` | R-002s, R-013r, R-014i | `String name` is a domain concept; should be `Name` tiny type |
+| R-007-record-design.md | R-007b, R-007c, R-007e, R-007f, R-007g, R-007h, R-007i, R-007j | R-002s, R-013r, R-014i | every Good example declares `String name`, `String label`, `String userName`, `String password`, `List<String> stocks`, `Map<String, Double>` etc. instead of tiny types |
+| R-007-record-design.md | R-007i Good (with tiny types) `record UserSummary(UserId id, int age, boolean isActive)` | R-014i | `int age` still primitive; should be `Age` tiny type |
+| R-010-programming-by-contract.md | R-010b `class Example`, `greet(String name)` | R-001c, R-013r | `Example` is a generic/meaningless class name (same family as `Thing`, `Helper`); `String name` is primitive obsession |
+| R-010-programming-by-contract.md | R-010c `UserProcessor.normalizeName(String name)` | R-013r | `String name` parameter and `String` return are primitive obsession |
+| R-011-method-naming.md | R-011f `User.name()` | R-013r | field `String name` is primitive obsession; should be `Name` tiny type |
+| R-011-method-naming.md | R-011g `Order.containsKey(String key)` | R-013r | `String key` parameter is primitive obsession when `key` represents a domain concept |
+| R-012-method-code.md | R-012a `BigDecimal refund(Invoice invoice)` | R-013r | returns raw `BigDecimal`; should return `Money` |
+| R-012-method-code.md | R-012d Good (switch) `String label(Status status)` | R-011b | method name `label` is a noun, not a verb phrase; should be `toLabel`/`formatLabel` |
+| R-013-method-design.md | R-013c `discount(Order order)` | R-011b, R-013r | method name `discount` is a noun; returns raw `BigDecimal` |
+| R-013-method-design.md | R-013e `discountedPrice(Order order)` | R-011b, R-013r | method name `discountedPrice` is a noun; returns raw `BigDecimal` |
+| R-013-method-design.md | R-013w `isLoggedIn`, `isSessionValid`, `qualifiesForFreeShipping` | R-011f, R-011g | example bodies call `user.getToken()`, `session.getExpiry()`, `order.getTotal()`, `order.getDestination()` — R-011f forbids `get` prefix; predicate `qualifiesForFreeShipping` does not start with any of the mandated prefixes `is`/`has`/`can`/`should`/`contains` |
+| R-013-method-design.md | R-013y `applyDiscount(Money price, Discount discount)` | R-013q | method has **two** parameters; R-013q says exactly zero or one. Group into a record. |
+| R-017-comment.md | R-017a `Calculator.add(int a, int b)` | R-013q, R-013r, R-999f | two parameters; both raw `int`; both single-letter names |
+| R-017-comment.md | R-017c `priceWithTax(BigDecimal price, BigDecimal taxRate)` | R-011b, R-013q, R-013r | method name `priceWithTax` is a noun; two parameters; both raw `BigDecimal` |
+| R-017-comment.md | R-017e TODO example | R-003c | `private final Map<String, Value> cache = new ConcurrentHashMap<>();` initializes a field at the point of declaration — R-003c forbids this |
+| R-019-concurrency.md | R-019a `PriceSnapshot.price(Isin isin)` and `PriceCache.price(Isin isin)` | R-011b, R-013r | method name `price` is a noun; returns raw `BigDecimal` in a `Map<Isin, BigDecimal>` |
+| R-019-concurrency.md | R-019b `FetchTracker.tryStart(long now)` | R-013r | parameter `long now` is primitive obsession for a timestamp (should be `Instant` or a dedicated tiny type) |
+| R-019-concurrency.md | R-019c `QuoteRegistry.get(Isin isin)` | R-011f | returns `Quote` (a non-boolean property-style lookup); the generic `get` name is the exact getter-style prefix R-011f discourages — prefer `quote(Isin isin)` or `find(Isin isin)` |
+| R-019-concurrency.md | R-019j `QuoteClient.client()` | R-011f | method exposes the `httpClient` field; should be named `httpClient()` (R-011f: "Use the property name directly") rather than `client()` |
+| R-020-unit-test.md | R-020g Good (both test methods `shouldAddStock`, `shouldStartEmpty`) | R-020d | test method bodies lack the mandatory `// given` / `// when` / `// then` comment markers |
+| R-999-not-categorized.md | R-999g `record TickerSymbolFilter(String isinFragment, String tickerSymbolFragment, String nameFragment)` | R-007f | record has three object (non-primitive) components but no compact canonical constructor with `requireNonNull` checks |
 
 ## Bad-block incidental issues
 
 | File | Sub-rule illustrated | Incidental issue | Note |
 |------|---------------------|------------------|------|
-| R-013-method-design.md | R-013y Bad (applyDiscount) | R-013q | 2 parameters muddies whether the example teaches parameter reassignment or parameter count |
-| R-017-comment.md | R-017a Bad (Calculator.add) | R-013q, R-999f | same 2-param + single-letter names as the Good block; reader can't tell which aspect the rule is about |
+| R-019-concurrency.md | R-019g Bad `QuoteFetcher.await(Duration timeout)` | R-019h | the Bad block calls `Thread.sleep(timeout.toMillis())`, which is also what the Good blocks below do — the Bad block is teaching the interrupt-handling issue, not R-019h, but a reader comparing Bad→Good may confuse the lesson |
+| R-013-method-design.md | R-013y Bad `applyDiscount(Money price, Discount discount)` | R-013q | Bad already has 2 parameters (the rule being taught is parameter reassignment, but the 2-param shape means the example also violates R-013q — a reader may conflate the two lessons) |
 
 ## Rule-text issues
 
-- **R-014d** — Bad and Good blocks are literally identical (`record Isin(String value) { Isin { requireNotEmpty(value); } }`). The example does not demonstrate a contrast. The Bad should show a record without validation (or without the compact ctor altogether) so the Good's validation is the distinguishing feature.
-- **R-016k Good (local constants)** — uses `final int STATUS_PENDING = 5;` and `final String ROLE_ADMIN = "A";` as local variables. This directly contradicts R-016j ("Local variables must not be declared `final`"). Either drop `final` from the locals in R-016k, or teach class-level constants only.
-- **R-019j Good (static-holder)** — the static-holder idiom structurally requires an inner static class and a static accessor method, which R-002k and R-013o explicitly forbid. The rule and its example cannot both be correct as written; add an explicit exception to R-002k/R-013o for this idiom or remove the static-holder Good block and rely on the `AtomicReference.updateAndGet` variant.
-- **R-003n** — line 376 has a stray leading `f` immediately before `**Note:**`.
-- **R-002-class-design.md** — line 410 has a stray `ma` after the closing fence of R-002k's Good block.
-- **Mojibake (`ΓÇö` for `—`, `ΓåÆ` for arrow)** still present in: R-001c line 45, R-002i Good comment (line 316), R-003h line 207, R-003n line 354, R-015e lines 105/107/113/115 (`ΓåÆ`). A previous pass cleaned R-010 but not the rest.
+- **R-014 preconditions import.** R-014 Good examples use `requireNotEmpty` from `com.dynatrace.deus.util.preconditions.Preconditions`. That utility is not defined anywhere in this skill and its existence is implicit. A reader outside the Dynatrace codebase cannot apply the example verbatim. Either ship a sample implementation or change the examples to use `requireNonNull` + an inline blank check.
+- **R-011g vs R-013w prefix list.** R-011g lists `is, has, can, should, contains`. R-013w lists `is, has, can, should, was`. `contains` vs `was` are inconsistent between the two rule files. The R-013w Good example also uses `qualifiesForFreeShipping`, which matches *neither* list.
+- **R-013q vs constructors.** R-013q says "a method must have zero or one parameter," but R-002f mandates that the primary constructor takes one parameter per field, and R-003d allows up to three fields. That implies constructors are exempt from R-013q. R-013s explicitly clarifies the opposite scope ("applies to all method-like declarations"). R-013q should state its scope explicitly (methods only, or methods + constructors) to remove ambiguity.
+- **R-020g missing Given/When/Then.** Both Good blocks in R-020g omit the markers that R-020d makes mandatory. Either R-020g Good blocks should add the markers, or R-020d should note that trivial tests may omit them.
+- **R-003m `public static final int OK = 200;`.** Numeric HTTP codes are domain concepts that other rules (R-002s, R-013r, R-014i) would push toward a tiny type. R-003m reads as a blanket exception for "constants", which conflicts with the tiny-type rules. Clarify whether `public static final int` constants are a carve-out from R-014i.
 
 ## Clean files
 
-- R-001-class-naming.md — all blocks ok (mojibake aside)
-- R-002-class-design.md — all blocks ok (mojibake + stray `ma` aside)
+- R-001-class-naming.md — all blocks ok
+- R-002-class-design.md — all blocks ok (3-field + 3-param constructors sit at the R-003d / R-002f limits, not over; empty classes in `R-002k` / `R-002l` Good blocks accepted as stripped-down illustrations of the extraction)
+- R-003-class-field.md — all blocks ok (missing constructors in several field-focused Good blocks accepted as stripped-down illustrations)
 - R-004-interface-naming.md — all blocks ok
-- R-006-record-naming.md — all blocks ok
+- R-005-interface-design.md — all blocks ok
 - R-008-enum.md — all blocks ok
 - R-009-imports.md — all blocks ok
-- R-011-method-naming.md — all blocks ok
-- R-012-method-code.md — all blocks ok
-- R-015-package-and-file-naming.md — all blocks ok (mojibake aside; no Java code)
-- R-018-exception-handling.md — all blocks ok
-- R-020-unit-test.md — all blocks ok
-- R-999-not-categorized.md — all blocks ok
+- R-014-tiny-type.md — all blocks ok (primitive wrapping is the point of tiny types)
+- R-015-package-and-file-naming.md — all blocks ok (file uses prose/text examples, no Java blocks needing cross-check)
+- R-016-local-variable.md — all blocks ok (raw `BigDecimal`/`String` locals accepted — these examples are about variable *naming*, not type choice)
+- R-018-exception-handling.md — all blocks ok (custom exceptions using `String message` accepted as conventional for `RuntimeException` subclasses)

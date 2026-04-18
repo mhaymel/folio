@@ -55,19 +55,28 @@ Return early to reduce nesting. Do not use `else` after `return` or `throw`.
 **Bad:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
+record Money(BigDecimal amount, Currency currency) {
+    Money {
+        requireNonNull(amount);
+        requireNonNull(currency);
+    }
+}
+
 final class DiscountService {
     private static final BigDecimal PREMIUM_DISCOUNT_RATE = BigDecimal.valueOf(0.2);
     private static final BigDecimal LARGE_ORDER_DISCOUNT_RATE = BigDecimal.valueOf(0.1);
     private static final BigDecimal LARGE_ORDER_THRESHOLD = BigDecimal.valueOf(100);
 
-    BigDecimal discount(Order order) {
+    Money computeDiscount(Order order) {
         if (order.isPremium()) {
             return order.amount().multiply(PREMIUM_DISCOUNT_RATE);
         } else {
-            if (order.amount().compareTo(LARGE_ORDER_THRESHOLD) > 0) {
+            if (order.amount().value().compareTo(LARGE_ORDER_THRESHOLD) > 0) {
                 return order.amount().multiply(LARGE_ORDER_DISCOUNT_RATE);
             } else {
-                return BigDecimal.ZERO;
+                return order.amount().zero();
             }
         }
     }
@@ -77,19 +86,28 @@ final class DiscountService {
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
+record Money(BigDecimal amount, Currency currency) {
+    Money {
+        requireNonNull(amount);
+        requireNonNull(currency);
+    }
+}
+
 final class DiscountService {
     private static final BigDecimal PREMIUM_DISCOUNT_RATE = BigDecimal.valueOf(0.2);
     private static final BigDecimal LARGE_ORDER_DISCOUNT_RATE = BigDecimal.valueOf(0.1);
     private static final BigDecimal LARGE_ORDER_THRESHOLD = BigDecimal.valueOf(100);
 
-    BigDecimal discount(Order order) {
+    Money computeDiscount(Order order) {
         if (order.isPremium()) {
             return order.amount().multiply(PREMIUM_DISCOUNT_RATE);
         }
-        if (order.amount().compareTo(LARGE_ORDER_THRESHOLD) > 0) {
+        if (order.amount().value().compareTo(LARGE_ORDER_THRESHOLD) > 0) {
             return order.amount().multiply(LARGE_ORDER_DISCOUNT_RATE);
         }
-        return BigDecimal.ZERO;
+        return order.amount().zero();
     }
 }
 ```
@@ -149,10 +167,19 @@ final class PriceCalculator {
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
+record Money(BigDecimal amount, Currency currency) {
+    Money {
+        requireNonNull(amount);
+        requireNonNull(currency);
+    }
+}
+
 final class PriceCalculator {
     private static final BigDecimal DISCOUNT_MULTIPLIER = BigDecimal.valueOf(0.9);
 
-    BigDecimal discountedPrice(Order order) {
+    Money computeDiscountedPrice(Order order) {
         return order.price().multiply(DISCOUNT_MULTIPLIER);
     }
 }

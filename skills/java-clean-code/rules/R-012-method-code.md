@@ -20,8 +20,17 @@ final class PaymentService {
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
+record Money(BigDecimal amount, Currency currency) {
+    Money {
+        requireNonNull(amount);
+        requireNonNull(currency);
+    }
+}
+
 final class PaymentService {
-    BigDecimal refund(Invoice invoice) {
+    Money refund(Invoice invoice) {
         throw new UnsupportedOperationException("refunds not supported yet");
     }
 }
@@ -156,7 +165,7 @@ final class OrderSearcher {
 
 ```java
 final class StatusMapper {
-    String label(Status status) {
+    String formatLabel(Status status) {
         switch (status) {
             case PENDING:
                 return "Pending";

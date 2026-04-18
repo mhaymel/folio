@@ -251,8 +251,14 @@ final class Order {
         return preferences.emailEnabled();
     }
 
-    boolean containsKey(String key) {
+    boolean containsKey(Key key) {
         return map.containsKey(key);
+    }
+}
+
+record Key(String value) {
+    Key {
+        requireNonNull(value);
     }
 }
 ```

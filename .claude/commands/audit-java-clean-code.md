@@ -37,7 +37,7 @@ This audit exists because rule examples are hand-written in isolation and drift 
 
 5. **Check each Bad block lightly.** Confirm it violates the sub-rule it illustrates. Flag only *incidental* violations that would confuse the reader about what the example is teaching.
 
-6. **Emit one report.** Do not fix anything. The output is a single markdown report with this structure:
+6. **Emit one report.** Do not fix anything. Write the report to `skills/java-clean-code/audit-report.md` (overwrite if it exists) and also output it in the chat. The report is a single markdown document with this structure:
 
    ```
    ## Summary

@@ -56,8 +56,14 @@ final class Example {
 ```java
 import static java.util.Objects.requireNonNull;
 
-final class Example {
-    void greet(String name) {
+record Name(String value) {
+    Name {
+        requireNonNull(value);
+    }
+}
+
+final class Greeter {
+    void greet(Name name) {
         requireNonNull(name);
     }
 }
@@ -88,15 +94,23 @@ final class UserProcessor {
 ```java
 import static java.util.Objects.requireNonNull;
 
+record Name(String value) {
+    Name {
+        requireNonNull(value);
+    }
+}
+
 final class UserProcessor {
-    UserProcessor(String name) {
+    private final Name name;
+
+    UserProcessor(Name name) {
         // validate at public boundary
         this.name = requireNonNull(name);
     }
 
-    private String normalizeName(String name) {
+    private Name normalizeName(Name name) {
         // private helper assumes callers validated nullity
-        return name.trim();
+        return new Name(name.value().trim());
     }
 }
 ```

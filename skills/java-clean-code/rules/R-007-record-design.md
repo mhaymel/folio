@@ -48,7 +48,13 @@ public record UserSummary(long id, String name) {
 ```java
 import static java.util.Objects.requireNonNull;
 
-record UserSummary(long id, String name) {
+record Name(String value) {
+    Name {
+        requireNonNull(value);
+    }
+}
+
+record UserSummary(long id, Name name) {
     UserSummary {
         requireNonNull(name);
     }
@@ -81,7 +87,19 @@ final class UserService {
 ```java
 import static java.util.Objects.requireNonNull;
 
-record Credentials(String userName, String password) {
+record Username(String value) {
+    Username {
+        requireNonNull(value);
+    }
+}
+
+record Password(String value) {
+    Password {
+        requireNonNull(value);
+    }
+}
+
+record Credentials(Username userName, Password password) {
     Credentials {
         requireNonNull(userName);
         requireNonNull(password);
@@ -162,14 +180,20 @@ final class UserSummaryBuilder {
 ```java
 import static java.util.Objects.requireNonNull;
 
-record UserSummary(long id, String name) {
+record Name(String value) {
+    Name {
+        requireNonNull(value);
+    }
+}
+
+record UserSummary(long id, Name name) {
     UserSummary {
         requireNonNull(name);
     }
 }
 
 // usage:
-var summary = new UserSummary(1L, "Alice");
+var summary = new UserSummary(1L, new Name("Alice"));
 ```
 
 ---
@@ -190,7 +214,13 @@ record UserSummary(String name, Instant createdAt) {
 ```java
 import static java.util.Objects.requireNonNull;
 
-record UserSummary(String name, Instant createdAt) {
+record Name(String value) {
+    Name {
+        requireNonNull(value);
+    }
+}
+
+record UserSummary(Name name, Instant createdAt) {
     UserSummary {
         requireNonNull(name);
         requireNonNull(createdAt);
@@ -230,7 +260,21 @@ record Portfolio(String name, List<String> stocks) {
 **Good:**
 
 ```java
-record Portfolio(String name, List<String> stocks) {
+import static java.util.Objects.requireNonNull;
+
+record PortfolioName(String value) {
+    PortfolioName {
+        requireNonNull(value);
+    }
+}
+
+record StockSymbol(String value) {
+    StockSymbol {
+        requireNonNull(value);
+    }
+}
+
+record Portfolio(PortfolioName name, List<StockSymbol> stocks) {
     Portfolio {
         requireNonNull(name);
         stocks = List.copyOf(requireNonNull(stocks));
@@ -254,7 +298,15 @@ record Snapshot(String label, Date takenAt) {
 **Good:**
 
 ```java
-record Snapshot(String label, Instant takenAt) {
+import static java.util.Objects.requireNonNull;
+
+record Label(String value) {
+    Label {
+        requireNonNull(value);
+    }
+}
+
+record Snapshot(Label label, Instant takenAt) {
     Snapshot {
         requireNonNull(label);
         requireNonNull(takenAt);
@@ -320,9 +372,13 @@ import static java.util.Objects.requireNonNull;
 record UserId(long value) {
 }
 
-record UserSummary(UserId id, int age, boolean isActive) {
+record Age(int value) {
+}
+
+record UserSummary(UserId id, Age age, boolean isActive) {
     UserSummary {
         requireNonNull(id);
+        requireNonNull(age);
     }
 }
 ```
@@ -360,9 +416,26 @@ record Portfolio(String name,
 **Good:**
 
 ```java
-record Portfolio(String name,
-                 List<String> stocks,
-                 Map<String, Double> weights) {
+import static java.util.Objects.requireNonNull;
+
+record PortfolioName(String value) {
+    PortfolioName {
+        requireNonNull(value);
+    }
+}
+
+record StockSymbol(String value) {
+    StockSymbol {
+        requireNonNull(value);
+    }
+}
+
+record Weight(double value) {
+}
+
+record Portfolio(PortfolioName name,
+                 List<StockSymbol> stocks,
+                 Map<StockSymbol, Weight> weights) {
     Portfolio {
         requireNonNull(name);
         stocks = List.copyOf(requireNonNull(stocks));
