@@ -1,5 +1,7 @@
 # Method Naming Rules
 
+> **Note on examples:** the Good blocks in this file deliberately use classes to illustrate method-naming rules. In practice, a `final class` whose fields are all `final` and which has no behavior beyond getters should be a record — see [R-007a](R-007-record-design.md#r-007a).
+
 ## R-011a
 
 Method names must use `lowerCamelCase`.
@@ -155,7 +157,8 @@ final class OrderServiceTest {
 
 ## R-011f
 
-Getter-style methods for non-boolean properties must not use the `get` prefix. Use the property name directly. This follows the convention established by Java records.
+Getter-style methods for non-boolean properties must not use the `get` prefix. 
+Use the property name directly. This follows the convention established by Java records.
 
 **Bad:**
 
@@ -211,6 +214,11 @@ Boolean query (predicate) methods must start with one of the prefixes `is`, `has
 - `should` -  policy or recommendation checks (e.g. `shouldNotify()`, `shouldRetry()`)
 - `was` -  past-state checks (e.g. `wasAcknowledged()`, `wasModified()`)
 - `contains` -  containment checks (e.g. `containsKey(Key key)`, `containsValue(Value value)`)
+
+**Scope:** this rule applies only to pure predicates — methods that ask a question
+without side effects. Action methods that return a boolean to signal whether the
+action succeeded (the `tryXxx` / `compareAndSet` idiom, e.g. `tryStart(Instant now)`,
+`offer(Item item)`) are not predicates and are named as verbs per [R-011b](#r-011b).
 
 **Bad:**
 

@@ -326,3 +326,53 @@ final class PriceService {
 ```
 
 ---
+
+## R-015i
+
+A parameter of a domain type must be named either (a) by lowercasing the first
+letter of the type name — `Currency currency`, `Isin isin`, `OrderId orderId` — or
+(b) by a role name that adds semantic meaning beyond the type itself — `Money price`,
+`Money total`, `User customer`. Mere synonyms of the type (`Isin identifier`,
+`Currency denomination`, `Money value`, `Money amount`) are forbidden — `amount`
+is reserved for the `BigDecimal` component *inside* `Money` (`money.amount()`),
+so `Money amount` shadows that component and obscures the distinction between
+the whole and the part. Use a qualified variant
+(e.g. `sourceCurrency`, `targetCurrency`) only when two parameters of the same
+type coexist and need disambiguation. This is the parameter-scoped companion
+to [R-003p](R-003-class-field.md#r-003p).
+
+**Bad:**
+
+```java
+final class TradeService {
+    void save(Isin identifier) {
+        // ...
+    }
+}
+```
+
+**Good:**
+
+```java
+final class TradeService {
+    void save(Isin isin) {
+        // ...
+    }
+}
+```
+
+**Good (disambiguation — constructor parameters are exempt from [R-015e](#r-015e)):**
+
+```java
+import static java.util.Objects.requireNonNull;
+
+record ConversionRequest(Money total, Currency sourceCurrency, Currency targetCurrency) {
+    ConversionRequest {
+        requireNonNull(total);
+        requireNonNull(sourceCurrency);
+        requireNonNull(targetCurrency);
+    }
+}
+```
+
+---

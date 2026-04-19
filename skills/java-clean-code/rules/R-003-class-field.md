@@ -444,3 +444,64 @@ final class ReportService {
 }
 ```
 
+---
+
+## R-003p
+
+A field of a domain type must be named either (a) by lowercasing the first letter
+of the type name — `Currency currency`, `Isin isin`, `OrderId orderId` — or
+(b) by a role name that adds semantic meaning beyond the type itself — `Money price`,
+`Money total`, `User customer`. Mere synonyms of the type that add no information
+(`Isin identifier`, `Currency denomination`, `Money value`, `Money amount`) are
+forbidden — `amount` is reserved for the `BigDecimal` component *inside* `Money`
+(`money.amount()`), so `Money amount` shadows that component and obscures the
+distinction between the whole and the part. Use a qualified variant
+(e.g. `primaryIsin`, `baseCurrency`) only when multiple fields of
+the same type coexist in the same class and need disambiguation.
+
+**Bad:**
+
+```java
+final class Quote {
+    private final Isin identifier;
+    private final Currency denomination;
+    private final Money value;
+
+    Quote(Isin identifier, Currency denomination, Money value) {
+        this.identifier = requireNonNull(identifier);
+        this.denomination = requireNonNull(denomination);
+        this.value = requireNonNull(value);
+    }
+}
+```
+
+**Good:**
+
+```java
+final class Quote {
+    private final Isin isin;
+    private final Currency currency;
+    private final Money price;
+
+    Quote(Isin isin, Currency currency, Money price) {
+        this.isin = requireNonNull(isin);
+        this.currency = requireNonNull(currency);
+        this.price = requireNonNull(price);
+    }
+}
+```
+
+**Good (disambiguation when multiple fields share a type):**
+
+```java
+final class CurrencyPair {
+    private final Currency baseCurrency;
+    private final Currency quoteCurrency;
+
+    CurrencyPair(Currency baseCurrency, Currency quoteCurrency) {
+        this.baseCurrency = requireNonNull(baseCurrency);
+        this.quoteCurrency = requireNonNull(quoteCurrency);
+    }
+}
+```
+

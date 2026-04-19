@@ -2,7 +2,8 @@
 
 ## R-023a
 
-Prefer a method reference to an equivalent lambda. A lambda that does nothing but delegate to a named method is just noise around the method reference.
+Prefer a method reference to an equivalent lambda. A lambda that does 
+nothing but delegate to a named method is just noise around the method reference.
 
 **Bad:**
 
@@ -11,8 +12,9 @@ List<String> upper = names.stream()
         .map(name -> name.toUpperCase())
         .toList();
 
-orders.forEach(
-        order -> process(order));
+List<Receipt> receipts = orders.stream()
+        .map(order -> toReceipt(order))
+        .toList();
 ```
 
 **Good:**
@@ -22,8 +24,9 @@ List<String> upper = names.stream()
         .map(String::toUpperCase)
         .toList();
 
-orders.forEach(
-        this::process);
+List<Receipt> receipts = orders.stream()
+        .map(this::toReceipt)
+        .toList();
 ```
 
 ---
@@ -67,7 +70,10 @@ final class OrderService {
 
 ## R-023c
 
-Streams and lambdas must be pure: no mutation of captured state, no I/O, no logging. A stream pipeline transforms and collects — it does not perform side effects. When side effects are genuinely required (e.g. iterating to call a void method), use a plain for-each loop instead of `forEach`.
+Streams and lambdas must be pure: no mutation of captured state, no I/O, 
+no logging. A stream pipeline transforms and collects — it does not perform 
+side effects. When side effects are genuinely required (e.g. iterating to 
+call a void method), use a plain for-each loop instead of `forEach`.
 
 **Bad:**
 
@@ -77,7 +83,7 @@ orders.stream()
         .filter(Order::isActive)
         .forEach(active::add); // mutates external list
 
-orders.forEach(order -> log.info("processing " + order)); // I/O in pipeline
+orders.forEach(order -> LOG.info("processing {}", order)); // I/O in pipeline
 ```
 
 **Good:**
@@ -88,7 +94,7 @@ List<Order> active = orders.stream()
         .toList();
 
 for (Order order : orders) {
-    log.info("processing " + order);
+    LOG.info("processing {}", order);
 }
 ```
 
@@ -226,7 +232,7 @@ List<Order> result = orders.stream()
 
 ```java
 final class OrderService {
-    List<Order> euOrdersWithPositiveTotal(List<Order> orders) {
+    List<Order> findEuOrdersWithPositiveTotal(List<Order> orders) {
         return orders.stream()
                 .filter(OrderService::isEuOrderWithPositiveTotal)
                 .toList();

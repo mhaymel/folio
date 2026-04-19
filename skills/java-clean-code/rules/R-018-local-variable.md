@@ -68,7 +68,9 @@ BigDecimal totalAmount = order.totalAmount();
 
 Local variable names must be more than one character long. Single-letter names like `x`, `s`, `a` are forbidden.
 
-**Exception:** loop variables in classic `for` loops may use `i`, `j`, or `k`.
+**Exceptions:**
+- loop variables in classic `for` loops may use `i`, `j`, or `k`
+- catch-clause variables may use the single letter `e` (e.g. `catch (IOException e)`)
 
 **Bad:**
 
@@ -89,6 +91,16 @@ Status status = order.status();
 ```java
 for (int i = 0; i < items.size(); i++) {
     process(items.get(i));
+}
+```
+
+**Good (catch exception):**
+
+```java
+try {
+    repository.save(order);
+} catch (PersistenceException e) {
+    LOG.error("failed to save order", e);
 }
 ```
 
@@ -164,7 +176,8 @@ boolean canRetry = retryCount < MAX_RETRIES;
 
 ## R-018h
 
-Local variables must be initialized at the point of declaration. Do not declare a variable and assign it later.
+Local variables must be initialized at the point of declaration. 
+Do not declare a variable and assign it later.
 
 **Exception:** in loops or `try` blocks where the variable needs to be declared before the block.
 
@@ -193,7 +206,7 @@ try {
     response = client.send(request);
     process(response);
 } catch (IOException exception) {
-    log.error("request failed with response: " + response, exception);
+    LOG.error("request failed with response: {}", response, exception);
 }
 ```
 
@@ -359,20 +372,32 @@ Enforcement and notes:
 
 ## R-018m
 
-Declare local variables as close as possible to their first usage. Do not declare all variables at the top of a method — this forces the reader to hold them in mental memory across many lines. Moving declarations next to their first use makes the code easier to read, reduces the mental scope of each variable, and simplifies future extraction into smaller methods.
+Declare local variables as close as possible to their first usage.
+Do not declare all variables at the top of a method.
 
 **Bad:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
+record Invoice(Money total, Currency currency, boolean hasDiscount) {
+    Invoice {
+        requireNonNull(total);
+        requireNonNull(currency);
+    }
+}
+
 final class InvoiceService {
+    private static final BigDecimal DISCOUNT_THRESHOLD = BigDecimal.valueOf(100);
+
     void process(List<Order> orders) {
-        BigDecimal total = calculateTotal(orders);
-        String currency = orders.get(0).currency();
-        boolean hasDiscount = total.compareTo(BigDecimal.valueOf(100)) > 0;
+        Money total = calculateTotal(orders);
+        Currency currency = orders.get(0).currency();
+        boolean hasDiscount = total.amount().compareTo(DISCOUNT_THRESHOLD) > 0;
 
         // ... 10 lines of unrelated logic that does not use total, currency, or hasDiscount ...
 
-        sendInvoice(total, currency, hasDiscount);
+        sendInvoice(new Invoice(total, currency, hasDiscount));
     }
 }
 ```
@@ -380,15 +405,74 @@ final class InvoiceService {
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
+record Invoice(Money total, Currency currency, boolean hasDiscount) {
+    Invoice {
+        requireNonNull(total);
+        requireNonNull(currency);
+    }
+}
+
 final class InvoiceService {
+    private static final BigDecimal DISCOUNT_THRESHOLD = BigDecimal.valueOf(100);
+
     void process(List<Order> orders) {
         // ... 10 lines of unrelated logic ...
 
-        BigDecimal total = calculateTotal(orders);
-        String currency = orders.get(0).currency();
-        boolean hasDiscount = total.compareTo(BigDecimal.valueOf(100)) > 0;
-        sendInvoice(total, currency, hasDiscount);
+        Money total = calculateTotal(orders);
+        Currency currency = orders.get(0).currency();
+        boolean hasDiscount = total.amount().compareTo(DISCOUNT_THRESHOLD) > 0;
+        sendInvoice(new Invoice(total, currency, hasDiscount));
     }
+}
+```
+
+---
+
+## R-018n
+
+A local variable of a domain type must be named either (a) by lowercasing the first
+letter of the type name — `Currency currency`, `Isin isin`, `OrderId orderId` — or
+(b) by a role name that adds semantic meaning beyond the type itself — `Money price`,
+`Money total`, `User customer`. Mere synonyms of the type (`Isin identifier`,
+`Currency denomination`, `Money value`, `Money amount`) are forbidden — `amount`
+is reserved for the `BigDecimal` component *inside* `Money` (`money.amount()`),
+so `Money amount` shadows that component and obscures the distinction between
+the whole and the part. Use a qualified variant
+(e.g. `primaryIsin`, `fallbackIsin`) only when two locals of the same type coexist
+in the same scope and need disambiguation. This is the local-scoped companion to
+[R-003p](R-003-class-field.md#r-003p).
+
+**Bad:**
+
+```java
+void settle(Order order) {
+    Isin identifier = order.isin();
+    Currency denomination = order.currency();
+    Money value = order.total();
+    // ...
+}
+```
+
+**Good:**
+
+```java
+void settle(Order order) {
+    Isin isin = order.isin();
+    Currency currency = order.currency();
+    Money price = order.total();
+    // ...
+}
+```
+
+**Good (disambiguation when two locals share a type):**
+
+```java
+void reconcile(Trade trade) {
+    Isin primaryIsin = trade.primaryLeg().isin();
+    Isin fallbackIsin = trade.fallbackLeg().isin();
+    // ...
 }
 ```
 

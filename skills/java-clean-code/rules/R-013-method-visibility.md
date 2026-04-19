@@ -65,7 +65,7 @@ enforce it.
 final class TaxCalculator {
     private static final BigDecimal TAX_RATE = BigDecimal.valueOf(0.19);
 
-    static Money calculateTax(Money amount) {
+    static Money calculateTax(Money price) {
         // ...
     }
 }
@@ -77,7 +77,7 @@ final class TaxCalculator {
 final class TaxCalculator {
     private static final BigDecimal TAX_RATE = BigDecimal.valueOf(0.19);
 
-    Money calculateTax(Money amount) {
+    Money calculateTax(Money price) {
         // ...
     }
 }
@@ -89,12 +89,12 @@ final class TaxCalculator {
 final class TaxCalculator {
     private static final BigDecimal TAX_RATE = BigDecimal.valueOf(0.19);
 
-    Money calculateTax(Money amount) {
-        return new Money(applyRate(amount.value()), amount.currency());
+    Money calculateTax(Money price) {
+        return new Money(applyRate(price.amount()), price.currency());
     }
 
-    private static BigDecimal applyRate(BigDecimal value) {
-        return value.multiply(TAX_RATE);
+    private static BigDecimal applyRate(BigDecimal amount) {
+        return amount.multiply(TAX_RATE);
     }
 }
 ```

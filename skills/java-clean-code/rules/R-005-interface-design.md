@@ -1,15 +1,14 @@
 ## Interface Design Rules
 
 ### R-005a
-Interfaces must be package-private by default
-
-Make interfaces public only if they must be used outside of the package.
+Interfaces must be package-private by default. Make interfaces 
+public only if they must be used outside the package.
 
 **Bad:**
 
 ```java
 public interface UserRepository {
-    User findById(UserId id);
+    Optional<User> findById(UserId id);
 }
 ```
 
@@ -17,7 +16,7 @@ public interface UserRepository {
 
 ```java
 interface UserRepository {
-    User findById(UserId id);
+    Optional<User> findById(UserId id);
 }
 ```
 
@@ -31,7 +30,7 @@ should model one clear capability.
 
 ```java
 interface UserOperations {
-    User findById(UserId id);
+    Optional<User> findById(UserId id);
     void sendResetEmail(Email email);
     void exportUsersCsv();
 }
@@ -41,7 +40,7 @@ interface UserOperations {
 
 ```java
 interface UserRepository {
-    User findById(UserId id);
+    Optional<User> findById(UserId id);
 }
 
 interface PasswordResetNotifier {
@@ -61,7 +60,7 @@ interfaces with a small number of related methods.
 interface OrderService {
     void createOrder(Order order);
     void cancelOrder(OrderId orderId);
-    Order findOrder(OrderId orderId);
+    Optional<Order> findOrder(OrderId orderId);
     List<Order> findAllOrders();
     void sendOrderEmail(OrderId orderId);
     void archiveOrder(OrderId orderId);
@@ -73,7 +72,7 @@ interface OrderService {
 ```java
 interface OrderRepository {
     void save(Order order);
-    Order findById(OrderId orderId);
+    Optional<Order> findById(OrderId orderId);
 }
 
 interface OrderCancellation {
@@ -178,6 +177,38 @@ interface PriceService {
         Money discountedPrice = price.subtract(defaultDiscount());
         return discountedPrice;
     }
+}
+```
+
+---
+
+### R-005g
+Interface methods that may not produce a result must return `Optional`. Interface methods
+are implicitly public, so [R-014b](R-014-method-body.md#r-014b) applies. Use the
+primitive-specialised variants (`OptionalInt`, `OptionalLong`, `OptionalDouble`) for
+primitive returns per [R-014e](R-014-method-body.md#r-014e).
+
+**Bad:**
+
+```java
+interface UserRepository {
+    User findByEmail(Email email); // returns null when not found
+}
+
+interface PortfolioService {
+    Integer countPositions(PortfolioId portfolioId); // returns null when missing
+}
+```
+
+**Good:**
+
+```java
+interface UserRepository {
+    Optional<User> findByEmail(Email email);
+}
+
+interface PortfolioService {
+    OptionalInt countPositions(PortfolioId portfolioId);
 }
 ```
 

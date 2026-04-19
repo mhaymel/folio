@@ -12,10 +12,16 @@ import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 
-final class UserService {
-    private final List<String> names;
+record Name(String value) {
+    Name {
+        requireNonNull(value);
+    }
+}
 
-    UserService(List<String> names) {
+final class UserService {
+    private final List<Name> names;
+
+    UserService(List<Name> names) {
         this.names = requireNonNull(names);
     }
 }
@@ -28,10 +34,16 @@ import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
-final class UserService {
-    private final List<String> names;
+record Name(String value) {
+    Name {
+        requireNonNull(value);
+    }
+}
 
-    UserService(List<String> names) {
+final class UserService {
+    private final List<Name> names;
+
+    UserService(List<Name> names) {
         this.names = requireNonNull(names);
     }
 }

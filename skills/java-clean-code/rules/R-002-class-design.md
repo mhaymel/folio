@@ -508,7 +508,8 @@ final class AdminUser implements Identifiable {
 ## R-002o
 
 Methods must have one or none parameters. If more are needed, 
-introduce a parameter object or rethink the design.
+introduce a parameter object (record) that encapsulates all parameters. 
+if the parameters can be seen as a collection, use a `List` or `Set` instead.
 
 **Bad:**
 
@@ -524,9 +525,13 @@ final class OrderService {
 ```java
 import static java.util.Objects.requireNonNull;
 
-record OrderRequest(Product product, int quantity, Money price) {
+record Quantity(int value) {
+}
+
+record OrderRequest(Product product, Quantity quantity, Money price) {
     OrderRequest {
         requireNonNull(product);
+        requireNonNull(quantity);
         requireNonNull(price);
     }
 }
@@ -680,6 +685,8 @@ A class without fields is allowed when the class exists solely to implement an i
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 interface OrderValidator {
     boolean isValid(Order order);
 }
@@ -687,6 +694,7 @@ interface OrderValidator {
 final class DefaultOrderValidator implements OrderValidator {
     @Override
     public boolean isValid(Order order) {
+        requireNonNull(order);
         return order.totalAmount().compareTo(BigDecimal.ZERO) > 0;
     }
 }

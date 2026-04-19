@@ -23,12 +23,12 @@ final class DiscountService {
 
     Money computeDiscount(Order order) {
         if (order.isPremium()) {
-            return order.amount().multiply(PREMIUM_DISCOUNT_RATE);
+            return order.price().multiply(PREMIUM_DISCOUNT_RATE);
         } else {
-            if (order.amount().value().compareTo(LARGE_ORDER_THRESHOLD) > 0) {
-                return order.amount().multiply(LARGE_ORDER_DISCOUNT_RATE);
+            if (order.price().amount().compareTo(LARGE_ORDER_THRESHOLD) > 0) {
+                return order.price().multiply(LARGE_ORDER_DISCOUNT_RATE);
             } else {
-                return order.amount().zero();
+                return order.price().zero();
             }
         }
     }
@@ -54,12 +54,12 @@ final class DiscountService {
 
     Money computeDiscount(Order order) {
         if (order.isPremium()) {
-            return order.amount().multiply(PREMIUM_DISCOUNT_RATE);
+            return order.price().multiply(PREMIUM_DISCOUNT_RATE);
         }
-        if (order.amount().value().compareTo(LARGE_ORDER_THRESHOLD) > 0) {
-            return order.amount().multiply(LARGE_ORDER_DISCOUNT_RATE);
+        if (order.price().amount().compareTo(LARGE_ORDER_THRESHOLD) > 0) {
+            return order.price().multiply(LARGE_ORDER_DISCOUNT_RATE);
         }
-        return order.amount().zero();
+        return order.price().zero();
     }
 }
 ```
@@ -68,7 +68,7 @@ final class DiscountService {
 
 ## R-014b
 
-Public methods that that may not produce a result must return `Optional`.  
+Public methods that may not produce a result must return `Optional`.  
 
 **Exception:** `Optional` produces an additional object. If object churn 
 matters `null` can be used as a return value. In this case a comment should 
@@ -88,6 +88,8 @@ public final class UserRepository {
 **Good:**
 
 ```java
+// public because callers outside this package rely on the repository contract;
+// the rule demands a public method, which requires a public class (R-002b exception).
 public final class UserRepository {
     public Optional<User> findByEmail(Email email) {
         // returns Optional.empty() when not found
@@ -201,7 +203,9 @@ final class PortfolioService {
 
 ## R-014f
 
-Avoid deeply nested code. A method must not exceed two levels of nesting (relative to the method body). Extract inner logic into private methods to flatten the structure.
+Avoid deeply nested code. A method must not exceed two levels of nesting 
+(relative to the method body). Extract inner logic into private methods 
+to flatten the structure.
 
 **Bad:**
 
@@ -252,16 +256,27 @@ final class OrderProcessor {
 
 ## R-014g
 
-Methods must not contain dead or unreachable code. Remove any code after an unconditional `return`, `throw`, or `break`.
+Methods must not contain dead or unreachable code. The compiler rejects
+code after a direct `return`, `throw`, or `break`, but it cannot detect
+code after a helper that always throws — remove those lines manually.
 
 **Bad:**
 
 ```java
+import org.slf4j.Logger;
+
+import static org.slf4j.LoggerFactory.getLogger;
+
 final class PaymentService {
-    BigDecimal charge(Order order) {
-        var amount = order.totalAmount();
-        return amount;
-        log.info("charged: " + amount); // unreachable
+    private static final Logger LOG = getLogger(PaymentService.class);
+
+    void charge(Order order) {
+        rejectBecauseDisabled();
+        LOG.info("charged: {}", order); // dead — helper above always throws
+    }
+
+    private void rejectBecauseDisabled() {
+        throw new IllegalStateException("charges disabled");
     }
 }
 ```
@@ -270,10 +285,12 @@ final class PaymentService {
 
 ```java
 final class PaymentService {
-    BigDecimal charge(Order order) {
-        var amount = order.totalAmount();
-        log.info("charged: " + amount);
-        return amount;
+    void charge(Order order) {
+        rejectBecauseDisabled();
+    }
+
+    private void rejectBecauseDisabled() {
+        throw new IllegalStateException("charges disabled");
     }
 }
 ```

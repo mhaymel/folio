@@ -24,8 +24,12 @@ record Name(String value) {
     }
 }
 
-record UserSummary(long id, Name name) {
+record UserId(long value) {
+}
+
+record UserSummary(UserId id, Name name) {
     UserSummary {
+        requireNonNull(id);
         requireNonNull(name);
     }
 }
@@ -60,8 +64,12 @@ record Name(String value) {
     }
 }
 
-record UserSummary(long id, Name name) {
+record UserId(long value) {
+}
+
+record UserSummary(UserId id, Name name) {
     UserSummary {
+        requireNonNull(id);
         requireNonNull(name);
     }
 }
@@ -139,15 +147,31 @@ record UserAccount(int userId, String userName, String password, Email email) {
 ```java
 import static java.util.Objects.requireNonNull;
 
-record UserCredentials(String userName, String password) {
+record Username(String value) {
+    Username {
+        requireNonNull(value);
+    }
+}
+
+record Password(String value) {
+    Password {
+        requireNonNull(value);
+    }
+}
+
+record UserId(long value) {
+}
+
+record UserCredentials(Username username, Password password) {
     UserCredentials {
-        requireNonNull(userName);
+        requireNonNull(username);
         requireNonNull(password);
     }
 }
 
-record UserService(int userId, UserCredentials credentials, Email email) {
-    UserService {
+record UserAccount(UserId userId, UserCredentials credentials, Email email) {
+    UserAccount {
+        requireNonNull(userId);
         requireNonNull(credentials);
         requireNonNull(email);
     }
@@ -192,14 +216,18 @@ record Name(String value) {
     }
 }
 
-record UserSummary(long id, Name name) {
+record UserId(long value) {
+}
+
+record UserSummary(UserId id, Name name) {
     UserSummary {
+        requireNonNull(id);
         requireNonNull(name);
     }
 }
 
 // usage:
-var summary = new UserSummary(1L, new Name("Alice"));
+var summary = new UserSummary(new UserId(1L), new Name("Alice"));
 ```
 
 ---
@@ -359,33 +387,14 @@ Boxed primitive types (`Integer`, `Long`, `Short`, `Byte`, `Float`, `Double`, `B
 **Bad:**
 
 ```java
-record UserSummary(Long id, Integer age, Boolean active) {
+record Metrics(Integer count, Long totalBytes, Boolean enabled) {
 }
 ```
 
 **Good:**
 
 ```java
-record UserSummary(long id, int age, boolean isActive) {
-}
-```
-
-**Good (with tiny types):**
-
-```java
-import static java.util.Objects.requireNonNull;
-
-record UserId(long value) {
-}
-
-record Age(int value) {
-}
-
-record UserSummary(UserId id, Age age, boolean isActive) {
-    UserSummary {
-        requireNonNull(id);
-        requireNonNull(age);
-    }
+record Metrics(int count, long totalBytes, boolean enabled) {
 }
 ```
 

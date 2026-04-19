@@ -38,8 +38,15 @@ record Isin(String value) {
 
 ## R-016b
 
-A tiny type must wrap exactly one value. If more than one field is needed, 
-it is no longer a tiny type - model it as a regular record or class instead.
+A tiny type must wrap exactly one **primitive-shaped** value — a `String`, 
+`int`, `long`, `BigDecimal`, `Instant`, `UUID`, enum, or similar. A record 
+whose single component is a collection (`List`, `Map`, `Set`), a domain 
+aggregate, or another record is **not** a tiny type — it is a regular 
+record and the tiny-type rules in this file (no business logic, no 
+interfaces, component named `value`, etc.) do not apply to it.
+
+If more than one field is needed, it is no longer a tiny type either — 
+model it as a regular record or class instead.
 
 **Bad:**
 
@@ -65,13 +72,7 @@ record Currency(String value) {
     }
 }
 
-record Amount(BigDecimal value) {
-    Amount {
-        requireNonNull(value);
-    }
-}
-
-record Money(Amount amount, Currency currency) {
+record Money(BigDecimal amount, Currency currency) {
     Money {
         requireNonNull(amount);
         requireNonNull(currency);
@@ -146,7 +147,10 @@ record Isin(String value) {
 
 ## R-016e
 
-A tiny type must not contain business logic. Its only responsibilities are holding a value and validating it at construction. Behavior that operates on the value belongs in a service or domain object, not in the tiny type itself.
+A tiny type must not contain business logic. Its only responsibilities 
+are holding a value and validating it at construction. Behavior that 
+operates on the value belongs in a service or domain object, not in the 
+tiny type itself.
 
 **Bad:**
 
@@ -281,7 +285,10 @@ record Isin(String value) {
 
 ## R-016i
 
-Every domain concept that is represented as a primitive (`String`, `int`, `long`, `BigDecimal`, etc.) must have its own dedicated tiny type. Do not reuse the same tiny type for different concepts even if the underlying primitive type is the same.
+Every domain concept that is represented as a primitive 
+(`String`, `int`, `long`, `BigDecimal`, etc.) must have its own 
+dedicated tiny type. Do not reuse the same tiny type for different 
+concepts even if the underlying primitive type is the same.
 
 **Bad:**
 

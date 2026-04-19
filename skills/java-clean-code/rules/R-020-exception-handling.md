@@ -250,7 +250,11 @@ final class UserRepository {
 
 ## R-020g
 
-Do not swallow exceptions silently. Every `catch` block must either rethrow the exception (wrapped or as-is), log it, or perform meaningful recovery. An empty `catch` block or one that only returns a default value without any record of the failure makes errors invisible and turns debugging into guesswork.
+Do not swallow exceptions silently. Every `catch` block must 
+either rethrow the exception (wrapped or as-is), log it, or 
+perform meaningful recovery. An empty `catch` block or one 
+that only returns a default value without any record of the 
+failure makes errors invisible and turns debugging into guesswork.
 
 **Bad:**
 
@@ -298,12 +302,25 @@ final class ConfigLoader {
 **Good (log and recover):**
 
 ```java
+import org.slf4j.Logger;
+
+import static java.util.Objects.requireNonNull;
+import static org.slf4j.LoggerFactory.getLogger;
+
 final class NotificationService {
+    private static final Logger LOG = getLogger(NotificationService.class);
+
+    private final Mailer mailer;
+
+    NotificationService(Mailer mailer) {
+        this.mailer = requireNonNull(mailer);
+    }
+
     void send(User user) {
         try {
             mailer.send(user.email());
         } catch (MailException exception) {
-            log.error("failed to send notification to {}", user.email(), exception);
+            LOG.error("failed to send notification to {}", user.email(), exception);
         }
     }
 }

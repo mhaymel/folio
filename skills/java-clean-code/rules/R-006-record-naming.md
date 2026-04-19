@@ -8,7 +8,7 @@ Record names must start with an uppercase letter and use CamelCase.
 
 ```java
 record userprofile(String name, String email) { }
-record orderDTO(String id) { }
+record orderDTO(String id, String customerName) { }
 ```
 
 **Good:**
@@ -41,9 +41,10 @@ record UserProfile(Name name, Email email) {
     }
 }
 
-record OrderDto(OrderId id) {
+record OrderDto(OrderId id, Name customerName) {
     OrderDto {
         requireNonNull(id);
+        requireNonNull(customerName);
     }
 }
 ```
@@ -98,10 +99,10 @@ record UserRegistration(Name name, Email email) {
     }
 }
 
-record PaymentRequest(PaymentId id, Money amount) {
+record PaymentRequest(PaymentId id, Money total) {
     PaymentRequest {
         requireNonNull(id);
-        requireNonNull(amount);
+        requireNonNull(total);
     }
 }
 ```

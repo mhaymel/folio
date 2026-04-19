@@ -48,8 +48,8 @@ final class OrderService {
         LOG.info("placing order {}", request);
         try {
             submitter.submit(request);
-        } catch (SubmitException e) {
-            LOG.error("failed to submit order {}", request, e);
+        } catch (SubmitException exception) {
+            LOG.error("failed to submit order {}", request, exception);
         }
     }
 }
@@ -80,7 +80,10 @@ LOG.info("processed {} orders in {} ms", count, durationMs);
 
 ## R-024c
 
-When logging an exception, pass the `Throwable` as the last argument. Do not concatenate `exception.getMessage()` into the message, and do not add a `{}` placeholder for the exception — SLF4J detects a trailing `Throwable` and renders the full stack trace.
+When logging an exception, pass the `Throwable` as the last argument. 
+Do not concatenate `exception.getMessage()` into the message, and do 
+not add a `{}` placeholder for the exception — SLF4J detects a trailing 
+`Throwable` and renders the full stack trace.
 
 **Bad:**
 
@@ -97,8 +100,8 @@ catch (IOException e) {
 **Good:**
 
 ```java
-catch (IOException e) {
-    LOG.error("failed to read config {}", path, e);
+catch (IOException exception) {
+    LOG.error("failed to read config {}", path, exception);
 }
 ```
 
@@ -137,9 +140,9 @@ and let the caller decide.
 ```java
 try {
     repository.save(order);
-} catch (PersistenceException e) {
-    LOG.error("failed to save order {}", order, e);
-    throw e;
+} catch (PersistenceException exception) {
+    LOG.error("failed to save order {}", order, exception);
+    throw exception;
 }
 ```
 
@@ -148,8 +151,8 @@ try {
 ```java
 try {
     repository.save(order);
-} catch (PersistenceException e) {
-    throw new OrderSaveException(order.id(), e);
+} catch (PersistenceException exception) {
+    throw new OrderSaveException(order.id(), exception);
 }
 ```
 

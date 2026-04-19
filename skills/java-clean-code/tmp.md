@@ -1,5 +1,11 @@
 this is just a scratchpad for possible rules to add to the skill, not yet organized or finalized
 
+
+----------------------------------------------------------------
+## R-021d ??????
+Do not synchronize on `this`, on a class literal, on a `String` literal,
+or on a boxed primitive. Use a dedicated `private final Object lock = new Object();`
+— a lock that no caller can see and therefore no caller can contend on by accident.
 ----------------------------------------------------------------
 R-023h
 Lambda parameter names follow the same rules as local variables (see R-018c, R-018d). Meaningful names are required as soon as the lambda body references the parameter more than once or in a non-trivial expression. Single-letter names are only acceptable when the lambda is a trivial one-liner whose type makes intent obvious.

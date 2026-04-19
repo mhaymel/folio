@@ -2,7 +2,10 @@
 
 ## R-021a
 
-Prefer immutability over synchronization. Immutable state is inherently thread-safe and needs no locks, atomics, or `volatile` at all. Reach for synchronization primitives only after you have confirmed that mutable shared state is unavoidable.
+Prefer immutability over synchronization. Immutable state is inherently 
+thread-safe and needs no locks, atomics, or `volatile` at all. Reach 
+for synchronization primitives only after you have confirmed that mutable 
+shared state is unavoidable.
 
 **Bad:**
 
@@ -47,6 +50,7 @@ record PriceSnapshot(Map<Isin, Money> prices) {
 
     Money findPrice(Isin isin) {
         requireNonNull(isin);
+        // returns null when the ISIN is not in this snapshot
         return prices.get(isin);
     }
 }
@@ -54,8 +58,12 @@ record PriceSnapshot(Map<Isin, Money> prices) {
 final class PriceCache {
     private final AtomicReference<PriceSnapshot> snapshot;
 
+    private PriceCache(AtomicReference<PriceSnapshot> snapshot) {
+        this.snapshot = requireNonNull(snapshot);
+    }
+
     PriceCache(PriceSnapshot initial) {
-        this.snapshot = new AtomicReference<>(requireNonNull(initial));
+        this(new AtomicReference<>(requireNonNull(initial)));
     }
 
     void replace(PriceSnapshot next) {
@@ -64,6 +72,7 @@ final class PriceCache {
 
     Money findPrice(Isin isin) {
         requireNonNull(isin);
+        // returns null when the ISIN is not in the current snapshot
         return snapshot.get().findPrice(isin);
     }
 }
@@ -73,9 +82,13 @@ final class PriceCache {
 
 ## R-021b
 
-For single-variable shared state, use the atomic types from `java.util.concurrent.atomic` (`AtomicBoolean`, `AtomicInteger`, `AtomicLong`, `AtomicReference`) instead of `synchronized` blocks or `volatile` fields.
+For single-variable shared state, use the atomic types from 
+`java.util.concurrent.atomic` (`AtomicBoolean`, `AtomicInteger`, 
+`AtomicLong`, `AtomicReference`) instead of `synchronized` blocks 
+or `volatile` fields.
 
-Reserve `synchronized` for the rare case where multiple fields must change together as one atomic unit.
+Reserve `synchronized` for the rare case where multiple fields must 
+change together as one atomic unit.
 
 **Bad:**
 
@@ -200,27 +213,44 @@ final class QuoteRegistry {
 
 ## R-021d
 
-Do not synchronize on `this`, on a class literal, on a `String` literal, or on a boxed primitive. Use a dedicated `private final Object lock = new Object();` — a lock that no caller can see and therefore no caller can contend on by accident.
+Do not synchronize on `this`, on a class literal, on a `String` literal,
+or on a boxed primitive. Use a dedicated `private final Object lock = new Object();` 
+— a lock that no caller can see and therefore no caller can contend on 
+by accident.
 
 **Bad:**
 
 ```java
-final class ExportService {
-    private final StringBuilder buffer;
+record Row(String value) {
+    Row {
+        requireNonNull(value);
+    }
+}
 
-    ExportService() {
-        this.buffer = new StringBuilder();
+final class ExportStats {
+    private long rowCount;
+    private long byteCount;
+
+    private ExportStats(long rowCount, long byteCount) {
+        this.rowCount = rowCount;
+        this.byteCount = byteCount;
     }
 
-    void append(String row) {
+    ExportStats() {
+        this(0L, 0L);
+    }
+
+    void record(Row row) {
+        requireNonNull(row);
         synchronized (this) { // callers can also lock on the instance
-            buffer.append(row);
+            rowCount++;
+            byteCount += row.value().length();
         }
     }
 
-    void appendId(Long id) {
-        synchronized (id) { // boxed primitive, shared across the JVM
-            buffer.append(id);
+    void recordBatch(Long batchSize) {
+        synchronized (batchSize) { // boxed primitive, shared across the JVM
+            rowCount += batchSize;
         }
     }
 }
@@ -229,22 +259,32 @@ final class ExportService {
 **Good:**
 
 ```java
-final class ExportService {
-    private final StringBuilder buffer;
-    private final Object bufferLock;
+record Row(String value) {
+    Row {
+        requireNonNull(value);
+    }
+}
 
-    private ExportService(StringBuilder buffer, Object bufferLock) {
-        this.buffer = requireNonNull(buffer);
-        this.bufferLock = requireNonNull(bufferLock);
+final class ExportStats {
+    private long rowCount;
+    private long byteCount;
+    private final Object statsLock;
+
+    private ExportStats(long rowCount, long byteCount, Object statsLock) {
+        this.rowCount = rowCount;
+        this.byteCount = byteCount;
+        this.statsLock = requireNonNull(statsLock);
     }
 
-    ExportService() {
-        this(new StringBuilder(), new Object());
+    ExportStats() {
+        this(0L, 0L, new Object());
     }
 
-    void append(String row) {
-        synchronized (bufferLock) {
-            buffer.append(row);
+    void record(Row row) {
+        requireNonNull(row);
+        synchronized (statsLock) {
+            rowCount++;
+            byteCount += row.value().length();
         }
     }
 }

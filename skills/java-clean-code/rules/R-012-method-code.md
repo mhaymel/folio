@@ -40,19 +40,16 @@ final class PaymentService {
 
 ## R-012b
 
-Empty blocks (catch, if, else, try, etc.) with no side effects are forbidden. Remove the block and its condition if applicable, or add meaningful logic. If intentionally empty (e.g., catching an exception that should be ignored), document why with a comment.
+Empty blocks (catch, if, else, try, etc.) with no side effects are forbidden. 
+Remove the block and its condition if applicable, or add meaningful logic. If 
+intentionally empty (e.g., catching an exception that should be ignored), 
+document why with a comment.
 
 **Bad:**
 
 ```java
 final class PaymentProcessor {
     void process(Payment payment) {
-        try {
-            validatePayment(payment);
-        } catch (ValidationException exception) {
-            // empty catch block — silently ignores errors
-        }
-
         if (payment.isOptional()) {
         } else {
             processPayment(payment);
@@ -66,14 +63,6 @@ final class PaymentProcessor {
 ```java
 final class PaymentProcessor {
     void process(Payment payment) {
-        try {
-            validatePayment(payment);
-        } catch (ValidationException exception) {
-            // Validation errors for optional payments are acceptable
-            // and should not prevent processing
-            logWarning("Optional payment validation failed", exception);
-        }
-
         if (!payment.isOptional()) {
             processPayment(payment);
         }
