@@ -38,16 +38,18 @@ Rules are organized by category in the `rules/` folder:
 - [R-010-programming-by-contract](rules/R-010-programming-by-contract.md)
 - [R-011-method-naming](rules/R-011-method-naming.md)
 - [R-012-method-code](rules/R-012-method-code.md)
-- [R-013-method-design](rules/R-013-method-design.md)
-- [R-014-tiny-type](rules/R-014-tiny-type.md)
-- [R-015-package-and-file-naming](rules/R-015-package-and-file-naming.md)
-- [R-016-local-variable](rules/R-016-local-variable.md)
-- [R-017-comment](rules/R-017-comment.md)
-- [R-018-exception-handling](rules/R-018-exception-handling.md)
-- [R-019-concurrency](rules/R-019-concurrency.md)
-- [R-020-unit-test](rules/R-020-unit-test.md)
-- [R-021-stream-lambdas](rules/R-021-stream-lambdas.md)
-- [R-022-logging](rules/R-022-logging.md)
+- [R-013-method-visibility](rules/R-013-method-visibility.md)
+- [R-014-method-body](rules/R-014-method-body.md)
+- [R-015-method-parameter](rules/R-015-method-parameter.md)
+- [R-016-tiny-type](rules/R-016-tiny-type.md)
+- [R-017-package-and-file-naming](rules/R-017-package-and-file-naming.md)
+- [R-018-local-variable](rules/R-018-local-variable.md)
+- [R-019-comment](rules/R-019-comment.md)
+- [R-020-exception-handling](rules/R-020-exception-handling.md)
+- [R-021-concurrency](rules/R-021-concurrency.md)
+- [R-022-unit-test](rules/R-022-unit-test.md)
+- [R-023-stream-lambdas](rules/R-023-stream-lambdas.md)
+- [R-024-logging](rules/R-024-logging.md)
 - [R-999-not-categorized](rules/R-999-not-categorized.md)
 
 ---
@@ -69,7 +71,7 @@ Follow these steps **in order** when applying clean code rules:
 
    1. Re-read the file with `read_file` (do not rely on your memory of what you wrote).
    2. Determine its type: class, record, enum, interface.
-   3. Walk every applicable rule file and every sub-rule (a, b, c, …). Rules that apply to all types (R-001, R-009, R-010, R-011, R-015, R-017) must be checked for every file; type-specific rules (R-002/R-003 for classes, R-006/R-007 for records, R-008 for enums, R-004/R-005 for interfaces, R-014 for tiny types) only for matching types.
+   3. Walk every applicable rule file and every sub-rule (a, b, c, …). Rules that apply to all types (R-001, R-009, R-010, R-011, R-017, R-019) must be checked for every file; type-specific rules (R-002/R-003 for classes, R-006/R-007 for records, R-008 for enums, R-004/R-005 for interfaces, R-016 for tiny types) only for matching types.
    4. Emit one row per (file × sub-rule) as a markdown table:
 
       | File | Rule | Sub-rule | Verdict | Note |

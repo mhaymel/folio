@@ -1,12 +1,12 @@
 # Exception Handling Rules
 
-## R-018a
+## R-020a
 
 All rules that apply to non-exception classes (naming, design, fields, etc.) also apply to exception classes unless explicitly stated otherwise in this file.
 
 ---
 
-## R-018b
+## R-020b
 
 Custom exception classes must extend `RuntimeException` and be `final`.
 
@@ -42,7 +42,7 @@ final class OrderException extends RuntimeException {
 
 ---
 
-## R-018c
+## R-020c
 
 Exception class names must end with `Exception`.
 
@@ -80,7 +80,7 @@ final class PaymentException extends RuntimeException {
 
 ---
 
-## R-018d
+## R-020d
 
 If new exception classes are necessary, they must be unchecked — extend `RuntimeException`, not `Exception`.
 
@@ -145,7 +145,7 @@ final class PaymentService {
 
 ---
 
-## R-018e
+## R-020e
 
 It is forbidden to use exceptions for control flow. Exceptions must only signal unexpected, abnormal situations — not replace `if`/`else`, `Optional`, or return values. 
 
@@ -214,7 +214,7 @@ final class CsvParser {
 
 ---
 
-## R-018f
+## R-020f
 
 Do not return `null` from a `catch` block. 
 
@@ -248,7 +248,7 @@ final class UserRepository {
 
 ---
 
-## R-018g
+## R-020g
 
 Do not swallow exceptions silently. Every `catch` block must either rethrow the exception (wrapped or as-is), log it, or perform meaningful recovery. An empty `catch` block or one that only returns a default value without any record of the failure makes errors invisible and turns debugging into guesswork.
 
@@ -311,7 +311,7 @@ final class NotificationService {
 
 ---
 
-## R-018h
+## R-020h
 
 Always preserve the original cause when wrapping exceptions. When catching an exception and throwing a new one, pass the original exception as the `cause` parameter.
 

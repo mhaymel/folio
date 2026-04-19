@@ -1,19 +1,40 @@
 this is just a scratchpad for possible rules to add to the skill, not yet organized or finalized
 
+----------------------------------------------------------------
+R-023h
+Lambda parameter names follow the same rules as local variables (see R-018c, R-018d). Meaningful names are required as soon as the lambda body references the parameter more than once or in a non-trivial expression. Single-letter names are only acceptable when the lambda is a trivial one-liner whose type makes intent obvious.
 
+Bad:
+
+List<Order> result = orders.stream()
+.filter(o -> o.customer().country().isEu() && o.total().value().signum() > 0)
+.toList();
+Good:
+
+List<Order> result = orders.stream()
+.filter(order -> order.customer().country().isEu() && order.total().value().signum() > 0)
+.toList();
+Good (trivial one-liner):
+
+List<String> upper = names.stream()
+.map(n -> n.toUpperCase())
+.toList();
+----------------------------------------------------------------
+
+
+sout.println
 
 Using Streams: CopyEdit
 List<String> names = employees.stream()
 .map(Employee::getName)
 .collect(Collectors.toList());
 
-
 https://dev.to/jackynote/improving-code-quality-in-java-best-practices-and-examples-2135
 
 https://gist.github.com/wojteklu/73c6914cc446146b8b533c0988cf8d29
 
 https://t2informatik.de/wissen-kompakt/clean-code/
-----------------------------------------------------------------
+    ----------------------------------------------------------------
 https://github.com/leonardolemie/clean-code-java
 Avoid positional markers
 They usually just add noise. Let the functions and variable names along with the proper indentation and formatting give the visual structure to your code.

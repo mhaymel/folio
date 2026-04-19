@@ -1,6 +1,6 @@
 # Local Variable Rules
 
-## R-016a
+## R-018a
 
 Local variable names must use `lowerCamelCase`.
 
@@ -20,7 +20,7 @@ BigDecimal price = BigDecimal.TEN;
 
 ---
 
-## R-016b
+## R-018b
 
 Do not use underscores in local variable names.
 
@@ -42,7 +42,7 @@ BigDecimal netPrice = BigDecimal.TEN;
 
 ---
 
-## R-016c
+## R-018c
 
 Local variable names must be meaningful and describe what they hold — a reader should understand the variable's purpose without looking at surrounding code.
 
@@ -64,7 +64,7 @@ BigDecimal totalAmount = order.totalAmount();
 
 ---
 
-## R-016d
+## R-018d
 
 Local variable names must be more than one character long. Single-letter names like `x`, `s`, `a` are forbidden.
 
@@ -94,7 +94,7 @@ for (int i = 0; i < items.size(); i++) {
 
 ---
 
-## R-016e
+## R-018e
 
 Do not use abbreviations or acronyms in variable names unless they are universally understood (e.g. `id`, `url`). Spell out the full word.
 
@@ -118,7 +118,7 @@ PortfolioManager manager = new PortfolioManager();
 
 ---
 
-## R-016f
+## R-018f
 
 Do not prefix or suffix variable names with type information (Hungarian notation). The type is already visible from the declaration.
 
@@ -140,7 +140,7 @@ int count = 0;
 
 ---
 
-## R-016g
+## R-018g
 
 Boolean local variables must start with `is`, `has`, `can`, `should`, or `contains` — consistent with boolean method naming (R-011g).
 
@@ -162,7 +162,7 @@ boolean canRetry = retryCount < MAX_RETRIES;
 
 ---
 
-## R-016h
+## R-018h
 
 Local variables must be initialized at the point of declaration. Do not declare a variable and assign it later.
 
@@ -208,7 +208,7 @@ while ((line = reader.readLine()) != null) {
 
 ---
 
-## R-016i
+## R-018i
 
 Local variables must not be reassigned. Treat every local variable as effectively final. If a different value is needed, create a new variable with a descriptive name.
 
@@ -261,9 +261,9 @@ while ((line = reader.readLine()) != null) {
 
 ---
 
-## R-016j
+## R-018j
 
-Local variables must not be declared `final`. Since local variables must not be reassigned (R-016i), adding `final` is redundant noise.
+Local variables must not be declared `final`. Since local variables must not be reassigned (R-018i), adding `final` is redundant noise.
 
 **Bad:**
 
@@ -283,7 +283,7 @@ List<Order> orders = repository.findAll();
 
 ---
 
-## R-016k
+## R-018k
 
 Avoid magic literals in expressions. Do not use unexplained numeric 
 or string literals directly in expressions — give them a descriptive 
@@ -314,7 +314,7 @@ Exceptions and notes:
 
 ---
 
-## R-016l
+## R-018l
 
 Unused local variables must be removed. A variable is unused if it is declared but never read after its declaration or assigned a value that is never read.
 
@@ -357,7 +357,7 @@ Enforcement and notes:
 
 ---
 
-## R-016m
+## R-018m
 
 Declare local variables as close as possible to their first usage. Do not declare all variables at the top of a method — this forces the reader to hold them in mental memory across many lines. Moving declarations next to their first use makes the code easier to read, reduces the mental scope of each variable, and simplifies future extraction into smaller methods.
 

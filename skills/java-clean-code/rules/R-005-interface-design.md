@@ -130,7 +130,7 @@ interface UserRepository {
 Interface methods must have zero or one parameter. Group related parameters into a
 record or — when the parameters are of the same type and represent a collection of
 similar elements — a `List`. This is the interface-scoped companion 
-to [R-013q](R-013-method-design.md#r-013q).
+to [R-015e](R-015-method-parameter.md#r-015e).
 
 **Bad:**
 
@@ -155,7 +155,7 @@ interface OrderService {
 ### R-005f
 Parameter of interface `default` methods must not be reassigned. `default` methods 
 in interfaces have a body, so the parameter-reassignment prohibition 
-from [R-013y](R-013-method-design.md#r-013y) applies to them as well. 
+from [R-015h](R-015-method-parameter.md#r-015h) applies to them as well. 
 Treat the parameter as effectively final and introduce a new local variable 
 with a descriptive name when a different value is needed.
 

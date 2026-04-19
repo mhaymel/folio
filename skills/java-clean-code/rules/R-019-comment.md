@@ -1,6 +1,6 @@
 # Comments
 
-## R-017a
+## R-019a
 
 Commented-out code is forbidden and must be removed.
 
@@ -32,7 +32,7 @@ final class Calculator {
 
 ---
 
-## R-017b
+## R-019b
 
 If a comment merely restates code, refactor the code to be self-documenting.
 
@@ -59,7 +59,7 @@ final class User {
 
 ---
 
-## R-017c
+## R-019c
 
 Avoid comments that explain obviously readable code. instead prefer clearer identifiers 
 and small methods.
@@ -83,7 +83,7 @@ private Money computeTotalWithTax(Invoice invoice) {
 
 ---
 
-## R-017d
+## R-019d
 
 Document non-obvious uses such as reflective access, framework requirements, or suppression of tools. When a method or field must remain for framework reasons, add a short comment explaining why and, if applicable, reference the framework or a ticket.
 
@@ -103,7 +103,7 @@ final class UserEntity {
 
 ---
 
-## R-017e
+## R-019e
 
 Use TODO and WARNING comments sparingly and include context and tracking information (ticket id or rationale). TODOs should be actionable and short-lived.
 

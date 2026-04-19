@@ -1,6 +1,6 @@
 # Unit Test Rules
 
-## R-020a
+## R-022a
 
 Unit test classes must be named `<ClassUnderTest>Test`. Integration test classes must be named `<ClassUnderTest>IntegrationTest`. Do not use the `Test` prefix, the `Tests` suffix (plural), or any other variation.
 
@@ -29,7 +29,7 @@ final class QuoteFetcherIntegrationTest {
 
 ---
 
-## R-020b
+## R-022b
 
 Test classes must be package-private and `final`. `public` test classes are forbidden.
 
@@ -49,7 +49,7 @@ final class StockServiceTest {
 
 ---
 
-## R-020c
+## R-022c
 
 Test method names must follow the pattern `should<ExpectedBehaviour>[When<Condition>]`. Do not use a `test` prefix and do not use underscores (see also [R-011e](R-011-method-naming.md#r-011e)).
 
@@ -87,7 +87,7 @@ final class StockServiceTest {
 
 ---
 
-## R-020d
+## R-022d
 
 Every test method must follow the **Given / When / Then** structure, marked with `// given`, `// when`, and `// then` line comments. This keeps the intent of the arrangement, action, and assertion explicit.
 
@@ -128,7 +128,7 @@ final class StockServiceTest {
 
 ---
 
-## R-020e
+## R-022e
 
 Use AssertJ's `assertThat(...)` exclusively for assertions. JUnit's `assertEquals`, `assertTrue`, `assertFalse`, `assertNotNull`, and similar assertions are forbidden. AssertJ offers richer, more readable failure messages and fluent chaining.
 
@@ -177,7 +177,7 @@ final class StockServiceTest {
 
 ---
 
-## R-020f
+## R-022f
 
 One concept per test. A test method verifies exactly one behaviour. Multiple `assertThat` calls are allowed only when they assert different facets of the same concept (e.g. all fields of a returned DTO).
 
@@ -230,7 +230,7 @@ final class StockServiceTest {
 
 ---
 
-## R-020g
+## R-022g
 
 Test methods must be independent. Do not share mutable state between test methods via non-`final` static fields, non-`final` instance fields, or external resources (files, shared database rows). Construct fresh fixtures inside each test method or in a `@BeforeEach` setup.
 
@@ -286,7 +286,7 @@ final class StockServiceTest {
 
 ---
 
-## R-020h
+## R-022h
 
 Do not use separator comments inside test classes (e.g. `// --- methodToBeTested ---`, `// === happy path ===`, `// --- edge cases ---`). Test method names are self-documenting. Let the method names and structure speak for themselves.
 
@@ -324,7 +324,7 @@ final class StockServiceTest {
 
 ---
 
-## R-020i
+## R-022i
 
 Mock external dependencies (repositories, HTTP clients, the file system, the clock, schedulers). A unit test must not perform real network calls, real disk I/O, or rely on the system clock.
 
@@ -370,7 +370,7 @@ final class QuoteFetcherTest {
 
 ---
 
-## R-020j
+## R-022j
 
 Every non-trivial production class must have a corresponding test class covering all public methods and constructors. "Trivial" means classes with no behaviour (pure marker interfaces, empty Spring configuration classes).
 
@@ -380,7 +380,7 @@ Every non-trivial production class must have a corresponding test class covering
 
 ---
 
-## R-020k
+## R-022k
 
 Disabled tests (`@Disabled`) must not be committed without an explicit reason given as the annotation value. A silently disabled test is dead code that rots.
 
@@ -408,7 +408,7 @@ final class StockServiceTest {
 
 ---
 
-## R-020l
+## R-022l
 
 Do not assert on fields or state that the test did not set up. A test that asserts "whatever the production code happened to produce" documents incidental behaviour, not intended behaviour. Either arrange the value in the **given** block or do not assert it.
 

@@ -1,6 +1,6 @@
 # Concurrency Rules
 
-## R-019a
+## R-021a
 
 Prefer immutability over synchronization. Immutable state is inherently thread-safe and needs no locks, atomics, or `volatile` at all. Reach for synchronization primitives only after you have confirmed that mutable shared state is unavoidable.
 
@@ -71,7 +71,7 @@ final class PriceCache {
 
 ---
 
-## R-019b
+## R-021b
 
 For single-variable shared state, use the atomic types from `java.util.concurrent.atomic` (`AtomicBoolean`, `AtomicInteger`, `AtomicLong`, `AtomicReference`) instead of `synchronized` blocks or `volatile` fields.
 
@@ -132,7 +132,7 @@ final class FetchTracker {
 
 ---
 
-## R-019c
+## R-021c
 
 Use the dedicated concurrent collections from `java.util.concurrent` (`ConcurrentHashMap`, `CopyOnWriteArrayList`, `ConcurrentLinkedQueue`, `BlockingQueue`, …) when a collection is shared across threads. Do not wrap a regular collection with `Collections.synchronizedXxx(...)` and do not guard a plain `HashMap`/`ArrayList` with an external lock.
 
@@ -198,7 +198,7 @@ final class QuoteRegistry {
 
 ---
 
-## R-019d
+## R-021d
 
 Do not synchronize on `this`, on a class literal, on a `String` literal, or on a boxed primitive. Use a dedicated `private final Object lock = new Object();` — a lock that no caller can see and therefore no caller can contend on by accident.
 
@@ -252,7 +252,7 @@ final class ExportService {
 
 ---
 
-## R-019e
+## R-021e
 
 Do not create threads directly with `new Thread(...)` or `Thread.ofPlatform().start(...)` in service code. Submit work to an `ExecutorService` (obtained from Spring or `Executors` factory methods) and let the pool own the thread lifecycle. Field types must be the interface (`Executor`, `ExecutorService`, `ScheduledExecutorService`), per [R-003o](R-003-class-field.md#r-003o).
 
@@ -284,7 +284,7 @@ final class ImportService {
 
 ---
 
-## R-019f
+## R-021f
 
 An `ExecutorService` that a class creates itself must be shut down by that class. Use try-with-resources (Java 19+ makes `ExecutorService` `AutoCloseable`) or an explicit `shutdown()` + `awaitTermination(...)` in a lifecycle method (`@PreDestroy`, `close()`). A pool whose owner disappears keeps its threads alive and leaks the JVM.
 
@@ -333,7 +333,7 @@ final class ReportRunner implements AutoCloseable {
 
 ---
 
-## R-019g
+## R-021g
 
 When you catch `InterruptedException` and do not rethrow it, you 
 must restore the interrupt status with `Thread.currentThread().interrupt()`. 
@@ -400,7 +400,7 @@ final class QuoteFetcher {
 
 ---
 
-## R-019h
+## R-021h
 
 `Thread.sleep` is forbidden to schedule future work or to poll for
 a condition. Use a `ScheduledExecutorService`, Spring's `@Scheduled`, 
@@ -443,7 +443,7 @@ final class PriceSync {
 
 ---
 
-## R-019i
+## R-021i
 
 Do not use `Object.wait`, `notify`, or `notifyAll`. They are 
 low-level, error-prone (spurious wakeups, missed signals, 
@@ -510,7 +510,7 @@ final class JobCoordinator {
 
 ---
 
-## R-019j
+## R-021j
 
 Do not implement double-checked locking for lazy initialization. It is
 easy to get wrong (missing `volatile`, partial publication) and 

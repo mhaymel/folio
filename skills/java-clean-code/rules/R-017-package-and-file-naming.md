@@ -1,6 +1,6 @@
 # Package and File Naming Rules
 
-## R-015a
+## R-017a
 
 Package names must be all lowercase. Do not use uppercase letters, underscores, or hyphens.
 
@@ -22,7 +22,7 @@ com.example.usermanagement
 
 ---
 
-## R-015b
+## R-017b
 
 Package names must be meaningful and reflect the domain or feature they contain. Avoid generic names like `util`, `misc`, `common`, or `general`.
 
@@ -45,7 +45,7 @@ com.example.authentication
 
 ---
 
-## R-015c
+## R-017c
 
 Each package must have a clear, single responsibility. Do not dump unrelated classes into the same package.
 
@@ -73,7 +73,7 @@ com.example.currency/
 
 ---
 
-## R-015d
+## R-017d
 
 Do not use plural package names. Use the singular form.
 
@@ -95,7 +95,7 @@ com.example.invoice
 
 ---
 
-## R-015e
+## R-017e
 
 The Java source file name must exactly match the name of the public (or package-private) top-level type it contains, including case. One top-level type per file.
 
@@ -117,7 +117,7 @@ OrderValidator.java     → contains class OrderValidator
 
 ---
 
-## R-015f
+## R-017f
 
 Do not use abbreviations or acronyms in package names unless the abbreviation is universally understood in the domain (e.g. `io`, `sql`). Spell out the full word.
 

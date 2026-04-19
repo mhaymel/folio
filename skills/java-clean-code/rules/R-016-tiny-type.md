@@ -1,6 +1,6 @@
 # Tiny Type Rules
 
-## R-014a
+## R-016a
 
 Tiny types must be implemented as Java records.
 
@@ -36,7 +36,7 @@ record Isin(String value) {
 
 ---
 
-## R-014b
+## R-016b
 
 A tiny type must wrap exactly one value. If more than one field is needed, 
 it is no longer a tiny type - model it as a regular record or class instead.
@@ -81,7 +81,7 @@ record Money(Amount amount, Currency currency) {
 
 ---
 
-## R-014c
+## R-016c
 
 The wrapped field must be named `value`.
 
@@ -117,7 +117,7 @@ record PortfolioId(long value) {
 
 ---
 
-## R-014d
+## R-016d
 
 A tiny type must validate its value in a compact constructor. Reject `null` 
 and any domain-invalid state at construction time. This ensures that once 
@@ -144,7 +144,7 @@ record Isin(String value) {
 
 ---
 
-## R-014e
+## R-016e
 
 A tiny type must not contain business logic. Its only responsibilities are holding a value and validating it at construction. Behavior that operates on the value belongs in a service or domain object, not in the tiny type itself.
 
@@ -182,7 +182,7 @@ record Isin(String value) {
 
 ---
 
-## R-014f
+## R-016f
 
 The compact constructor must only contain precondition checks (`if` + `throw`). It must not contain logging, side effects, or value transformation. Store the value exactly as received.
 
@@ -214,7 +214,7 @@ record Isin(String value) {
 
 ---
 
-## R-014g
+## R-016g
 
 Do not override `equals`, `hashCode`, or `toString` on a tiny type. The record-generated implementations based on the wrapped value are correct and sufficient.
 
@@ -249,7 +249,7 @@ record Isin(String value) {
 
 ---
 
-## R-014h
+## R-016h
 
 A tiny type must not implement any interface. Tiny types are pure value wrappers, not polymorphic abstractions. If polymorphism is needed, use a regular record or class.
 
@@ -279,7 +279,7 @@ record Isin(String value) {
 
 ---
 
-## R-014i
+## R-016i
 
 Every domain concept that is represented as a primitive (`String`, `int`, `long`, `BigDecimal`, etc.) must have its own dedicated tiny type. Do not reuse the same tiny type for different concepts even if the underlying primitive type is the same.
 
