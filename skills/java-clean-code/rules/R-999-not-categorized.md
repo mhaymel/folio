@@ -161,16 +161,30 @@ Do not name a variable, parameter, or record component after a domain type when 
 **Bad:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 // "isin" suggests the field holds a valid Isin, but it is actually a partial search string
 record TickerSymbolFilter(String isin, String tickerSymbol, String name) {
+    TickerSymbolFilter {
+        requireNonNull(isin);
+        requireNonNull(tickerSymbol);
+        requireNonNull(name);
+    }
 }
 ```
 
 **Good:**
 
 ```java
+import static java.util.Objects.requireNonNull;
+
 // Names make clear these are search fragments, not domain objects
 record TickerSymbolFilter(String isinFragment, String tickerSymbolFragment, String nameFragment) {
+    TickerSymbolFilter {
+        requireNonNull(isinFragment);
+        requireNonNull(tickerSymbolFragment);
+        requireNonNull(nameFragment);
+    }
 }
 ```
 

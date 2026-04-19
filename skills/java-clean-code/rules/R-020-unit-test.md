@@ -91,6 +91,8 @@ final class StockServiceTest {
 
 Every test method must follow the **Given / When / Then** structure, marked with `// given`, `// when`, and `// then` line comments. This keeps the intent of the arrangement, action, and assertion explicit.
 
+**Exception:** when a test has no distinct action — for instance, a test that asserts initial state — combine the setup and action into a single `// given / when` marker rather than adding an empty `// when` block.
+
 **Bad:**
 
 ```java
@@ -273,7 +275,7 @@ final class StockServiceTest {
 
     @Test
     void shouldStartEmpty() {
-        // given
+        // given / when
         var stocks = new ArrayList<Stock>();
 
         // then

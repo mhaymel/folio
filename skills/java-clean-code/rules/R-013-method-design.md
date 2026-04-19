@@ -593,6 +593,11 @@ parameters into a record or — when the parameters are of the same
 type and represent a collection of similar elements — a List. This 
 is the method-scoped companion to R-005e.
 
+**Scope:** this rule applies to regular methods only. Constructors and 
+record canonical constructors are exempt — their parameter count is 
+bounded by the field count (see [R-002f](R-002-class-design.md#r-002f) 
+and [R-003d](R-003-class-field.md#r-003d)).
+
 **Bad (group into a record):**
 
 ```java
@@ -649,10 +654,8 @@ final class NotificationService {
 
 Avoid primitive obsession in method parameter. Do not pass raw primitive 
 types (`String`, `int`, `long`, `BigDecimal`, etc.) when the value represents a 
-domain concept. Wrap it in a dedicated tiny type (record) instead. This 
-prevents accidental misuse, makes the API self-documenting, and lets the 
-compiler catch mistakes that primitive types cannot. Although R-013q already 
-limits methods to one parameter, this rule still applies: even a single `String` 
+domain concept. Wrap it in a dedicated tiny type (record) instead. Although R-013q 
+already limits methods to one parameter, this rule still applies: even a single `String` 
 that represents an ISIN, email address, or currency code should be a typed wrapper.
 
 **Bad:**
@@ -856,7 +859,7 @@ final class ReportService {
 
 Extract boolean conditions into private predicate methods (e.g. `isLoggedIn()`, `hasPermission()`, `isExpired()`). These methods serve as self-documenting code, replacing inline comments and improving readability. The method name **is** the comment.
 
-Name predicate methods with `is`, `has`, `can`, `should`, or `was` prefixes. Keep each predicate focused on a single condition. Visibility must be `private` (or package-private if reused within the package).
+Use one of the predicate prefixes listed in [R-011g](R-011-method-naming.md#r-011g) (`is`, `has`, `can`, `should`, `was`, `contains`). Keep each predicate focused on a single condition. Visibility must be `private` (or package-private if reused within the package).
 
 **Bad:**
 
@@ -864,11 +867,11 @@ Name predicate methods with `is`, `has`, `can`, `should`, or `was` prefixes. Kee
 final class OrderService {
     void process(OrderContext context) {
         // check if user is logged in and session is still valid
-        if (context.user().getToken() != null && !context.user().getToken().isBlank()
-                && context.session().getExpiry().isAfter(Instant.now())) {
-            // check if order qualifies for free shipping
-            if (context.order().getTotal().compareTo(FREE_SHIPPING_THRESHOLD) >= 0
-                    && context.order().getDestination().isInland()) {
+        if (context.user().token() != null && !context.user().token().value().isBlank()
+                && context.session().expiry().isAfter(Instant.now())) {
+            // check if order is eligible for free shipping
+            if (context.order().total().value().compareTo(FREE_SHIPPING_THRESHOLD) >= 0
+                    && context.order().destination().isInland()) {
                 // ...
             }
         }
@@ -882,23 +885,23 @@ final class OrderService {
 final class OrderService {
     void process(OrderContext context) {
         if (isLoggedIn(context.user()) && isSessionValid(context.session())) {
-            if (qualifiesForFreeShipping(context.order())) {
+            if (isEligibleForFreeShipping(context.order())) {
                 // ...
             }
         }
     }
 
     private boolean isLoggedIn(User user) {
-        return user.getToken() != null && !user.getToken().isBlank();
+        return user.token() != null && !user.token().value().isBlank();
     }
 
     private boolean isSessionValid(Session session) {
-        return session.getExpiry().isAfter(Instant.now());
+        return session.expiry().isAfter(Instant.now());
     }
 
-    private boolean qualifiesForFreeShipping(Order order) {
-        return order.getTotal().compareTo(FREE_SHIPPING_THRESHOLD) >= 0
-                && order.getDestination().isInland();
+    private boolean isEligibleForFreeShipping(Order order) {
+        return order.total().value().compareTo(FREE_SHIPPING_THRESHOLD) >= 0
+                && order.destination().isInland();
     }
 }
 ```
@@ -991,8 +994,10 @@ record is an exception — it is the idiomatic way to apply defensive copies
 
 ```java
 final class PriceService {
-    Money applyDiscount(Money price, Discount discount) {
-        price = price.subtract(discount.amount());
+    private static final BigDecimal DISCOUNT_MULTIPLIER = BigDecimal.valueOf(0.9);
+
+    Money applyDiscount(Money price) {
+        price = price.multiply(DISCOUNT_MULTIPLIER);
         return price;
     }
 }
@@ -1002,8 +1007,10 @@ final class PriceService {
 
 ```java
 final class PriceService {
-    Money applyDiscount(Money price, Discount discount) {
-        Money discountedPrice = price.subtract(discount.amount());
+    private static final BigDecimal DISCOUNT_MULTIPLIER = BigDecimal.valueOf(0.9);
+
+    Money applyDiscount(Money price) {
+        Money discountedPrice = price.multiply(DISCOUNT_MULTIPLIER);
         return discountedPrice;
     }
 }

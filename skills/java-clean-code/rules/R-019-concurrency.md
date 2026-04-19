@@ -8,10 +8,10 @@ Prefer immutability over synchronization. Immutable state is inherently thread-s
 
 ```java
 final class PriceCache {
-    private final Map<Isin, BigDecimal> prices;
+    private final Map<Isin, Money> prices;
     private final Object lock;
 
-    private PriceCache(Map<Isin, BigDecimal> prices, Object lock) {
+    private PriceCache(Map<Isin, Money> prices, Object lock) {
         this.prices = requireNonNull(prices);
         this.lock = requireNonNull(lock);
     }
@@ -20,7 +20,7 @@ final class PriceCache {
         this(new HashMap<>(), new Object());
     }
 
-    void replaceAll(Map<Isin, BigDecimal> snapshot) {
+    void replaceAll(Map<Isin, Money> snapshot) {
         requireNonNull(snapshot);
         synchronized (lock) {
             prices.clear();
@@ -28,7 +28,7 @@ final class PriceCache {
         }
     }
 
-    BigDecimal price(Isin isin) {
+    Money findPrice(Isin isin) {
         requireNonNull(isin);
         synchronized (lock) {
             return prices.get(isin);
@@ -40,12 +40,12 @@ final class PriceCache {
 **Good:**
 
 ```java
-record PriceSnapshot(Map<Isin, BigDecimal> prices) {
+record PriceSnapshot(Map<Isin, Money> prices) {
     PriceSnapshot {
         prices = Map.copyOf(requireNonNull(prices));
     }
 
-    BigDecimal price(Isin isin) {
+    Money findPrice(Isin isin) {
         requireNonNull(isin);
         return prices.get(isin);
     }
@@ -62,9 +62,9 @@ final class PriceCache {
         snapshot.set(requireNonNull(next));
     }
 
-    BigDecimal price(Isin isin) {
+    Money findPrice(Isin isin) {
         requireNonNull(isin);
-        return snapshot.get().price(isin);
+        return snapshot.get().findPrice(isin);
     }
 }
 ```
@@ -82,9 +82,9 @@ Reserve `synchronized` for the rare case where multiple fields must change toget
 ```java
 final class FetchTracker {
     private boolean inProgress;
-    private long lastScheduledFetch;
+    private Instant lastScheduledFetch;
 
-    synchronized boolean tryStart(long now) {
+    synchronized boolean tryStart(Instant now) {
         if (inProgress) {
             return false;
         }
@@ -104,18 +104,19 @@ final class FetchTracker {
 ```java
 final class FetchTracker {
     private final AtomicBoolean inProgress;
-    private final AtomicLong lastScheduledFetch;
+    private final AtomicReference<Instant> lastScheduledFetch;
 
-    private FetchTracker(AtomicBoolean inProgress, AtomicLong lastScheduledFetch) {
+    private FetchTracker(AtomicBoolean inProgress, AtomicReference<Instant> lastScheduledFetch) {
         this.inProgress = requireNonNull(inProgress);
         this.lastScheduledFetch = requireNonNull(lastScheduledFetch);
     }
 
     FetchTracker() {
-        this(new AtomicBoolean(false), new AtomicLong(0));
+        this(new AtomicBoolean(false), new AtomicReference<>());
     }
 
-    boolean tryStart(long now) {
+    boolean tryStart(Instant now) {
+        requireNonNull(now);
         if (!inProgress.compareAndSet(false, true)) {
             return false;
         }
@@ -138,6 +139,13 @@ Use the dedicated concurrent collections from `java.util.concurrent` (`Concurren
 **Bad:**
 
 ```java
+record QuoteEntry(Isin isin, Quote quote) {
+    QuoteEntry {
+        requireNonNull(isin);
+        requireNonNull(quote);
+    }
+}
+
 final class QuoteRegistry {
     private final Map<Isin, Quote> quotes;
 
@@ -145,11 +153,12 @@ final class QuoteRegistry {
         this.quotes = Collections.synchronizedMap(new HashMap<>());
     }
 
-    void put(Isin isin, Quote quote) {
-        quotes.put(isin, quote);
+    void put(QuoteEntry entry) {
+        requireNonNull(entry);
+        quotes.put(entry.isin(), entry.quote());
     }
 
-    Quote get(Isin isin) {
+    Quote quote(Isin isin) {
         return quotes.get(isin);
     }
 }
@@ -181,7 +190,7 @@ final class QuoteRegistry {
         quotes.put(entry.isin(), entry.quote());
     }
 
-    Quote get(Isin isin) {
+    Quote quote(Isin isin) {
         return quotes.get(isin);
     }
 }
@@ -507,7 +516,7 @@ final class QuoteClient {
         this(new AtomicReference<>());
     }
 
-    HttpClient client() {
+    HttpClient httpClient() {
         return httpClient.updateAndGet(existing -> existing != null ? existing : HttpClient.newHttpClient());
     }
 }

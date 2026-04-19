@@ -180,14 +180,20 @@ final class User {
 ```java
 import static java.util.Objects.requireNonNull;
 
-final class User {
-    private final String name;
+record Name(String value) {
+    Name {
+        requireNonNull(value);
+    }
+}
 
-    User(String name) {
+final class User {
+    private final Name name;
+
+    User(Name name) {
         this.name = requireNonNull(name);
     }
 
-    String name() {
+    Name name() {
         return name;
     }
 }
@@ -197,12 +203,13 @@ final class User {
 
 ## R-011g
 
-Boolean query (predicate) methods must start with one of the prefixes `is`, `has`, `can`, `should`, or `contains`. Choose the prefix that best expresses the question being asked:
+Boolean query (predicate) methods must start with one of the prefixes `is`, `has`, `can`, `should`, `was`, or `contains`. Choose the prefix that best expresses the question being asked:
 
 - `is` -  state or identity checks (e.g. `isEmpty()`, `isCancelled()`)
 - `has` -  ownership or presence checks (e.g. `hasPermission(User user)`, `hasItems()`)
 - `can` -  capability or permission checks (e.g. `canRetry()`, `canAccess()`)
 - `should` -  policy or recommendation checks (e.g. `shouldNotify()`, `shouldRetry()`)
+- `was` -  past-state checks (e.g. `wasAcknowledged()`, `wasModified()`)
 - `contains` -  containment checks (e.g. `containsKey(Key key)`, `containsValue(Value value)`)
 
 **Bad:**

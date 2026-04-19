@@ -339,6 +339,8 @@ final class UserService {
 
 The number of `public static final` fields (constants) in a class is not limited.
 
+**Note:** `public static final` constants are exempt from the tiny-type rules ([R-002s](R-002-class-design.md#r-002s), [R-013r](R-013-method-design.md#r-013r), [R-014i](R-014-tiny-type.md#r-014i)). A constant's name already documents the concept it represents, so a raw primitive is acceptable at the point of declaration. Prefer tiny types when the value is passed through an API, returned from a method, or stored as a non-constant field.
+
 **Good:**
 
 ```java

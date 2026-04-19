@@ -25,11 +25,11 @@ final class Isin {
 **Good:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 record Isin(String value) {
     Isin {
-        requireNotEmpty(value);
+        requireNonNull(value);
     }
 }
 ```
@@ -44,13 +44,12 @@ it is no longer a tiny type - model it as a regular record or class instead.
 **Bad:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
 import static java.util.Objects.requireNonNull;
 
 record Money(BigDecimal amount, String currency) {
     Money {
         requireNonNull(amount);
-        requireNotEmpty(currency);
+        requireNonNull(currency);
     }
 }
 ```
@@ -58,12 +57,11 @@ record Money(BigDecimal amount, String currency) {
 **Good:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
 import static java.util.Objects.requireNonNull;
 
 record Currency(String value) {
     Currency {
-        requireNotEmpty(value);
+        requireNonNull(value);
     }
 }
 
@@ -105,11 +103,11 @@ record PortfolioId(long id) {
 **Good:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 record Isin(String value) {
     Isin {
-        requireNotEmpty(value);
+        requireNonNull(value);
     }
 }
 
@@ -135,11 +133,11 @@ record Isin(String value) {
 **Good:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 record Isin(String value) {
     Isin {
-        requireNotEmpty(value);
+        requireNonNull(value);
     }
 }
 ```
@@ -153,11 +151,11 @@ A tiny type must not contain business logic. Its only responsibilities are holdi
 **Bad:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 record Isin(String value) {
     Isin {
-        requireNotEmpty(value);
+        requireNonNull(value);
     }
 
     String exchange() {
@@ -173,11 +171,11 @@ record Isin(String value) {
 **Good:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 record Isin(String value) {
     Isin {
-        requireNotEmpty(value);
+        requireNonNull(value);
     }
 }
 ```
@@ -191,11 +189,11 @@ The compact constructor must only contain precondition checks (`if` + `throw`). 
 **Bad:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 record Isin(String value) {
     Isin {
-        requireNotEmpty(value);
+        requireNonNull(value);
         value = value.toUpperCase().trim();
         log.info("Created ISIN: " + value);
     }
@@ -205,11 +203,11 @@ record Isin(String value) {
 **Good:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 record Isin(String value) {
     Isin {
-        requireNotEmpty(value);
+        requireNonNull(value);
     }
 }
 ```
@@ -223,11 +221,11 @@ Do not override `equals`, `hashCode`, or `toString` on a tiny type. The record-g
 **Bad:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 record Isin(String value) {
     Isin {
-        requireNotEmpty(value);
+        requireNonNull(value);
     }
 
     @Override
@@ -240,11 +238,11 @@ record Isin(String value) {
 **Good:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 record Isin(String value) {
     Isin {
-        requireNotEmpty(value);
+        requireNonNull(value);
     }
 }
 ```
@@ -258,11 +256,11 @@ A tiny type must not implement any interface. Tiny types are pure value wrappers
 **Bad:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 record Isin(String value) implements Identifier {
     Isin {
-        requireNotEmpty(value);
+        requireNonNull(value);
     }
 }
 ```
@@ -270,11 +268,11 @@ record Isin(String value) implements Identifier {
 **Good:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 record Isin(String value) {
     Isin {
-        requireNotEmpty(value);
+        requireNonNull(value);
     }
 }
 ```
@@ -288,11 +286,11 @@ Every domain concept that is represented as a primitive (`String`, `int`, `long`
 **Bad:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 record Identifier(String value) {
     Identifier {
-        requireNotEmpty(value);
+        requireNonNull(value);
     }
 }
 
@@ -306,17 +304,17 @@ final class Portfolio {
 **Good:**
 
 ```java
-import static com.dynatrace.deus.util.preconditions.Preconditions.requireNotEmpty;
+import static java.util.Objects.requireNonNull;
 
 record Isin(String value) {
     Isin {
-        requireNotEmpty(value);
+        requireNonNull(value);
     }
 }
 
 record PortfolioName(String value) {
     PortfolioName {
-        requireNotEmpty(value);
+        requireNonNull(value);
     }
 }
 

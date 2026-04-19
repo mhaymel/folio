@@ -18,7 +18,13 @@ final class UserSummary {
 ```java
 import static java.util.Objects.requireNonNull;
 
-record UserSummary(long id, String name) {
+record Name(String value) {
+    Name {
+        requireNonNull(value);
+    }
+}
+
+record UserSummary(long id, Name name) {
     UserSummary {
         requireNonNull(name);
     }

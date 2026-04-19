@@ -8,14 +8,14 @@ Commented-out code is forbidden and must be removed.
 
 ```java
 final class Calculator {
-    int add(int a, int b) {
-        return a + b;
+    int doubleValue(int value) {
+        return value * 2;
     }
 
     // old implementation — commented out, left behind
-    // private int addOld(int a, int b) {
+    // private int doubleValueOld(int value) {
     //     // complex legacy behavior
-    //     return computeLegacy(a, b);
+    //     return computeLegacy(value);
     // }
 }
 ```
@@ -24,8 +24,8 @@ final class Calculator {
 
 ```java
 final class Calculator {
-    int add(int a, int b) {
-        return a + b;
+    int doubleValue(int value) {
+        return value * 2;
     }
 }
 ```
@@ -61,7 +61,8 @@ final class User {
 
 ## R-017c
 
-Avoid comments that explain obviously readable code. instead prefer clearer identifiers and small methods.
+Avoid comments that explain obviously readable code. instead prefer clearer identifiers 
+and small methods.
 
 **Bad:**
 
@@ -73,10 +74,10 @@ BigDecimal total = price.add(price.multiply(taxRate));
 **Good:**
 
 ```java
-BigDecimal total = priceWithTax(price, taxRate);
+Money total = computeTotalWithTax(invoice);
 
-private BigDecimal priceWithTax(BigDecimal price, BigDecimal taxRate) {
-    return price.add(price.multiply(taxRate));
+private Money computeTotalWithTax(Invoice invoice) {
+    return invoice.price().add(invoice.tax());
 }
 ```
 
@@ -118,6 +119,14 @@ void risky() {
 **Good:**
 
 ```java
-// TODO(PROJ-1234): replace this in-memory cache with Redis to support clustering
-private final Map<String, Value> cache = new ConcurrentHashMap<>();
+import static java.util.Objects.requireNonNull;
+
+final class QuoteService {
+    // TODO(PROJ-1234): replace this in-memory cache with Redis to support clustering
+    private final Map<Isin, Quote> cache;
+
+    QuoteService(Map<Isin, Quote> cache) {
+        this.cache = requireNonNull(cache);
+    }
+}
 ```
