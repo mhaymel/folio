@@ -46,6 +46,8 @@ Rules are organized by category in the `rules/` folder:
 - [R-018-exception-handling](rules/R-018-exception-handling.md)
 - [R-019-concurrency](rules/R-019-concurrency.md)
 - [R-020-unit-test](rules/R-020-unit-test.md)
+- [R-021-stream-lambdas](rules/R-021-stream-lambdas.md)
+- [R-022-logging](rules/R-022-logging.md)
 - [R-999-not-categorized](rules/R-999-not-categorized.md)
 
 ---

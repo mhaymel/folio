@@ -1,6 +1,333 @@
 this is just a scratchpad for possible rules to add to the skill, not yet organized or finalized
 
 
+
+Using Streams: CopyEdit
+List<String> names = employees.stream()
+.map(Employee::getName)
+.collect(Collectors.toList());
+
+
+https://dev.to/jackynote/improving-code-quality-in-java-best-practices-and-examples-2135
+
+https://gist.github.com/wojteklu/73c6914cc446146b8b533c0988cf8d29
+
+https://t2informatik.de/wissen-kompakt/clean-code/
+----------------------------------------------------------------
+https://github.com/leonardolemie/clean-code-java
+Avoid positional markers
+They usually just add noise. Let the functions and variable names along with the proper indentation and formatting give the visual structure to your code.
+
+Bad:
+
+////////////////////////////////////////////////////////////////////////////////
+// Instantiate Order List
+////////////////////////////////////////////////////////////////////////////////
+List<Order> orders = new ArrayList();
+
+////////////////////////////////////////////////////////////////////////////////
+// Ship Orders that are eligible
+////////////////////////////////////////////////////////////////////////////////
+
+orders.filter(Order::isEligibleToShip).forEach(x -> ship(x));
+Good:
+
+List<Order> orders = new ArrayList();
+
+orders.filter(Order::isEligibleToShip).forEach(x -> ship(x));
+----------------------------------------------------------------
+https://github.com/leonardolemie/clean-code-java
+Don't have journal comments
+Remember, use version control! There's no need for dead code, commented code, and especially journal comments. Use git log to get history!
+
+Bad:
+
+/**
+* 2021-03-06: Renamed clean to cleanCode (DL)
+* 2020-01-03: Changed return value (LB)
+* 2019-05-12: Added clean method (DL)
+  */
+  cleanCode(String code) {
+  return null;
+  }
+  Good:
+
+cleanCode(String code) {
+return null;
+}
+----------------------------------------------------------------
+https://github.com/leonardolemie/clean-code-java
+Don't Use a Comment When You Can Use a Function or a Variable
+The best comment is no comment
+
+Bad:
+
+//Check to see if order is eligible to ship
+if((order.isPaid & order.isLabeled) && CUSTOMER_FLAG) {
+// ...
+}
+Good:
+
+if(order.isEligibleToShip()) {
+// ...
+}
+----------------------------------------------------------------
+https://github.com/leonardolemie/clean-code-java
+Don't ignore caught errors
+Doing nothing with a caught error doesn't give you the ability to ever fix or react to said error. Logging the error to the console (console.log) isn't much better as often times it can get lost in a sea of things printed to the console. If you wrap any bit of code in a try/catch it means you think an error may occur there and therefore you should have a plan, or create a code path, for when it occurs.
+----------------------------------------------------------------
+https://github.com/leonardolemie/clean-code-java
+Favor functional programming over imperative programming
+JavaScript isn't a functional language in the way that Haskell is, but it has a functional flavor to it. Functional languages are cleaner and easier to test. Favor this style of programming when you can.
+----------------------------------------------------------------
+https://github.com/leonardolemie/clean-code-java
+Functions should only be one level of abstraction
+When you have more than one level of abstraction your function is usually doing too much. Splitting up functions leads to reusability and easier testing.
+----------------------------------------------------------------
+https://github.com/leonardolemie/clean-code-java
+Functions should do one thing
+This is by far the most important rule in software engineering. When functions do more than one thing, they are harder to compose, test, and reason about. When you can isolate a function to just one action, they can be refactored easily and your code will read much cleaner. If you take nothing else away from this guide other than this, you'll be ahead of many developers.
+
+Bad:
+
+public void emailClients(List<Client> clients) {
+for (Client client : clients) {
+Client clientRecord = repository.findOne(client.getId());
+if (clientRecord.isActive()){
+email(client);
+}
+}
+}
+Good:
+
+public void emailClients(List<Client> clients) {
+for (Client client : clients) {
+if (isActiveClient(client)) {
+email(client);
+}
+}
+}
+
+private boolean isActiveClient(Client client) {
+Client clientRecord = repository.findOne(client.getId());
+return clientRecord.isActive();
+}
+----------------------------------------------------------------
+https://github.com/leonardolemie/clean-code-java
+Don't add unneeded context
+If your class/object name tells you something, don't repeat that in your variable name.
+
+Bad:
+
+class Car {
+public String carMake = "Honda";
+public String carModel = "Accord";
+public String carColor = "Blue";
+}
+
+void paintCar(Car car) {
+car.carColor = "Red";
+}
+Good:
+
+class Car {
+public String make = "Honda";
+public String model = "Accord";
+public String color = "Blue";
+}
+
+void paintCar(Car car) {
+car.color = "Red";
+}
+----------------------------------------------------------------
+https://github.com/leonardolemie/clean-code-java
+Avoid Mental Mapping
+Don’t force the reader of your code to translate what the variable means. Explicit is better than implicit. Bad:
+
+String [] l = {"Austin", "New York", "San Francisco"};
+
+for (int i = 0; i < l.length; i++) {
+String li = l[i];
+doStuff();
+doSomeOtherStuff();
+// ...
+// ...
+// ...
+// Wait, what is `$li` for again?
+dispatch(li);
+}
+Good:
+
+String[] locations = {"Austin", "New York", "San Francisco"};
+
+for (String location : locations) {
+doStuff();
+doSomeOtherStuff();
+// ...
+// ...
+// ...
+dispatch(location);
+}
+----------------------------------------------------------------
+https://github.com/leonardolemie/clean-code-java
+Use explanatory variables
+Bad:
+
+String address = "One Infinite Loop, Cupertino 95014";
+String cityZipCodeRegex = "/^[^,\\\\]+[,\\\\\\s]+(.+?)\\s*(\\d{5})?$/";
+
+saveCityZipCode(address.split(cityZipCodeRegex)[0],
+address.split(cityZipCodeRegex)[1]);
+Good:
+
+String address = "One Infinite Loop, Cupertino 95014";
+String cityZipCodeRegex = "/^[^,\\\\]+[,\\\\\\s]+(.+?)\\s*(\\d{5})?$/";
+
+String city = address.split(cityZipCodeRegex)[0];
+String zipCode = address.split(cityZipCodeRegex)[1];
+
+saveCityZipCode(city, zipCode);
+----------------------------------------------------------------
+method1
+   for() {
+   }
+
+   for() {
+   }
+
+method1
+   method2
+   method3
+
+
+----------------------------------------------------------------
+https://javapro.io/2025/11/25/best-practices-for-writing-clean-code-in-java/
+8. Avoid Over-Engineering (Embrace YAGNI)
+   Clean code inherently prioritizes simplicity. Resist the urge to add unnecessary complexity, over-the-top abstractions, or features that aren’t immediately required. This disciplined adherence to the “**You Aren’t Gonna Need It” (YAGNI) principle prevents wasted development effort and keeps your codebase lighter, more focused, and significantly easier to understand and maintain.
+
+🔴 Avoid
+
+1
+2
+3
+4
+5
+6
+7
+public double calculateTotalCost(double price, int quantity) {
+// Overly abstracted and unnecessary complexity for a simple calculation
+// This pattern might be useful in very specific, highly functional contexts,
+// but for a straightforward calculation, it adds significant cognitive overhead.
+Function&amp;amp;amp;amp;amp;lt;double, function&amp;amp;amp;amp;amp;gt; calculate = p -&amp;amp;amp;amp;amp;gt; q -&amp;amp;amp;amp;amp;gt; p * q;
+return calculate.apply(price).apply(quantity);
+}
+🟢 Good Example
+
+1
+2
+3
+public double calculateTotalCost(double price, int quantity) {
+return price * quantity;
+}
+----------------------------------------------------------------
+https://javapro.io/2025/11/25/best-practices-for-writing-clean-code-in-java/
+. Use Streams and Lambdas Wisely
+Java Streams and Lambdas (introduced in Java 8) offer powerful, concise ways to process collections declaratively. When used appropriately, they significantly enhance code readability and expressiveness. However, overusing them or creating overly complex, chained operations can paradoxically reduce clarity and make the code harder to follow.
+
+🔴 Avoid
+
+1
+2
+3
+4
+5
+List names = users.stream()
+.filter(user -&amp;amp;amp;amp;amp;gt; user.isActive()) // Using full lambda for simple method call
+.map(user -&amp;amp;amp;amp;amp;gt; user.getName()) // Using full lambda for simple method call
+.sorted((a, b) -&amp;amp;amp;amp;amp;gt; a.compareTo(b)) // Custom comparator for natural order
+.collect(Collectors.toList());
+🟢 Good Example
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+// For simple, direct method calls, use method references for conciseness
+List names = users.stream()
+.filter(User::isActive) // More concise method reference
+.map(User::getName) // More concise method reference
+.sorted() // Default natural order sorting for String
+.collect(Collectors.toList());
+
+// For complex stream operations, break them down or use traditional loops if more readable
+List expensiveActiveProducts = products.stream()
+.filter(Product::isActive)
+.filter(p -&amp;amp;amp;amp;amp;gt; p.getPrice() &amp;amp;amp;amp;amp;gt; THRESHOLD) // A lambda is good here for custom logic
+.toList(); // Java 16+ for .toList()
+
+----------------------------------------------------------------
+https://javapro.io/2025/11/25/best-practices-for-writing-clean-code-in-java/
+
+5. Use Proper Exception Handling
+   Exceptions should be reserved strictly for truly exceptional scenarios and must provide meaningful, actionable error information. A critical clean code practice is to avoid catching generic Exception types, as this can mask critical problems, lead to unexpected behavior, and hinder proper debugging. Always prefer specific, well-defined exception types.
+
+🔴 Avoid
+
+1
+2
+3
+4
+5
+try {
+userService.saveUser(user);
+} catch (Exception e) { // Catching a generic Exception is a major anti-pattern
+System.out.println(&amp;amp;amp;amp;quot;An error occurred.&amp;amp;amp;amp;quot;); // This provides no useful information for debugging or recovery.
+}
+🟢 Good Example
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+try {
+userService.saveUser(user);
+} catch (UserAlreadyExistsException e) { // Catching a specific business exception
+System.err.println(&amp;amp;amp;amp;quot;Error: User already exists with email: &amp;amp;amp;amp;quot; + user.getEmail() + &amp;amp;amp;amp;quot; Details: &amp;amp;amp;amp;quot; + e.getMessage());
+// Optionally, rethrow a more general custom exception or return a specific error response
+} catch (DatabaseConnectionException e) { // Catching a specific technical exception
+log.error(&amp;amp;amp;amp;quot;Failed to connect to database during user save: {}&amp;amp;amp;amp;quot;, e.getMessage(), e); // Log full stack trace
+throw new ServiceUnavailableException(&amp;amp;amp;amp;quot;Cannot process request due to database issue.&amp;amp;amp;amp;quot;, e); // Re-throw a more appropriate exception
+}
+Why?
+
+Targeted Handling: Specific exceptions enable precise error handling, making debugging easier and providing clear insight into the root cause.
+Preventing Masking: Catching generic `Exception` can inadvertently swallow critical errors (e.g., `NullPointerException`) and prevent proper recovery or logging, making issues incredibly hard to diagnose.
+Diagnostics: Providing meaningful error messages and logging full stack traces (using a logging framework) is crucial for effective diagnostics in production environments.
+Additional Tip: Always log exceptions using a robust logging framework like SLF4J/Logback or Log4j (e.g., log.error("...", e)). Avoid System.out.println or System.err.println for production logging, as they lack crucial features like log levels, appenders, and structured output.
+
+
+----------------------------------------------------------------
+https://raygun.com/blog/java-performance-optimization-tips/
+
+
+
+https://medium.com/swlh/clean-code-writing-functions-or-methods-4e6e53ff4ac2
+
+https://github.com/johnousterhout/aposd-vs-clean-code
+
 https://github.com/ertugrul-dmr/clean-code-skills/blob/main/skills/clean-comments/SKILL.md
 https://github.com/ertugrul-dmr/clean-code-skills/blob/main/skills/clean-general/SKILL.md
 ------------------------------

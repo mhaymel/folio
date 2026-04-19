@@ -1,5 +1,7 @@
 # Class Design Rules
 
+> **Note on examples:** the Good blocks in this file deliberately use classes to illustrate class-scoped rules. In practice, a `final class` whose fields are all `final` and which has no behavior beyond getters should be a record — see [R-007a](R-007-record-design.md#r-007a).
+
 ## R-002a
 
 Classes must be declared as `final`.

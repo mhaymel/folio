@@ -523,7 +523,14 @@ final class ReportService {
 
 ## R-013o
 
-`static` methods are forbidden. Static methods cannot be overridden, are hard to mock in tests, and create hidden coupling. Use instance methods instead.
+Non-private `static` methods are forbidden. Use instance methods instead.
+
+**Exception:** `private static` methods are allowed. They are 
+invisible outside the class, so they cannot be called or mocked 
+from elsewhere and introduce no hidden coupling. Use them for 
+pure helpers that do not depend on instance state — marking such 
+a helper `static` documents that independence and lets the compiler 
+enforce it.
 
 **Bad:**
 
@@ -545,6 +552,22 @@ final class TaxCalculator {
 
     Money calculateTax(Money amount) {
         // ...
+    }
+}
+```
+
+**Good (private static helper):**
+
+```java
+final class TaxCalculator {
+    private static final BigDecimal TAX_RATE = BigDecimal.valueOf(0.19);
+
+    Money calculateTax(Money amount) {
+        return new Money(applyRate(amount.value()), amount.currency());
+    }
+
+    private static BigDecimal applyRate(BigDecimal value) {
+        return value.multiply(TAX_RATE);
     }
 }
 ```
@@ -652,11 +675,16 @@ final class NotificationService {
 
 ## R-013r
 
-Avoid primitive obsession in method parameter. Do not pass raw primitive 
-types (`String`, `int`, `long`, `BigDecimal`, etc.) when the value represents a 
-domain concept. Wrap it in a dedicated tiny type (record) instead. Although R-013q 
-already limits methods to one parameter, this rule still applies: even a single `String` 
-that represents an ISIN, email address, or currency code should be a typed wrapper.
+Avoid primitive obsession in the method parameter. When the single parameter
+a method takes ([R-013q](#r-013q)) represents a domain concept, it must not 
+be a raw primitive (`String`, `int`, `long`, `BigDecimal`, etc.) — wrap it
+in a dedicated tiny type (record, see [R-014](R-014-tiny-type.md)).
+
+The one-parameter limit from R-013q and the tiny-type requirement here are 
+complementary: R-013q keeps the parameter list short; R-013r makes sure that 
+single parameter is self-describing. A lone `String` parameter hides what the
+value actually is (ISIN? ticker? email? currency code?), and the fact that 
+there is only one of it does not make it any less ambiguous.
 
 **Bad:**
 
@@ -981,8 +1009,8 @@ final class ReportService {
 
 ## R-013y
 
-Method and constructor parameter must not be reassigned. Treat every 
-the parameter as effectively final. If a different value is needed, 
+Method and constructor parameters must not be reassigned. Treat the 
+parameters as effectively final. If a different value is needed, 
 introduce a new local variable with a descriptive name. This is the 
 parameter-scoped companion to [R-016i](R-016-local-variable.md#r-016i).
 
@@ -1012,6 +1040,85 @@ final class PriceService {
     Money applyDiscount(Money price) {
         Money discountedPrice = price.multiply(DISCOUNT_MULTIPLIER);
         return discountedPrice;
+    }
+}
+```
+
+---
+
+## R-013z
+
+Lazy loading is forbidden by default. Initialize every dependency eagerly in the primary constructor so a fully constructed object is always ready to use. Lazy initialization adds complexity (thread-safety, null handling, first-call latency spikes) and hides startup cost from the caller.
+
+**Exception:** lazy loading is allowed only after profiling or benchmarking evidence shows that eager initialization has a measurable and unacceptable cost (startup time, memory, or an unused expensive resource). When the exception applies, a comment is required that names the measurement, ticket, or incident that justifies it — without that evidence the optimization is speculative.
+
+**Bad (lazy without evidence):**
+
+```java
+import static java.net.http.HttpClient.newHttpClient;
+
+final class QuoteClient {
+    private final AtomicReference<HttpClient> httpClient;
+
+    private QuoteClient(AtomicReference<HttpClient> httpClient) {
+        this.httpClient = requireNonNull(httpClient);
+    }
+
+    QuoteClient() {
+        this(new AtomicReference<>());
+    }
+
+    HttpClient resolveHttpClient() {
+        return httpClient.updateAndGet(this::reuseOrCreate);
+    }
+
+    private HttpClient reuseOrCreate(HttpClient existing) {
+        return existing != null ? existing : newHttpClient();
+    }
+}
+```
+
+**Good (eager):**
+
+```java
+final class QuoteClient {
+    private final HttpClient httpClient;
+
+    QuoteClient(HttpClient httpClient) {
+        this.httpClient = requireNonNull(httpClient);
+    }
+
+    HttpClient httpClient() {
+        return httpClient;
+    }
+}
+```
+
+**Good (lazy, with recorded evidence):**
+
+```java
+import static java.net.http.HttpClient.newHttpClient;
+
+final class QuoteClient {
+    // Lazy: startup profiling (PROJ-4321, trace 2026-03-12) showed
+    // newHttpClient() adds 180 ms to cold start for a client unused on
+    // 40% of request paths. Initialize on first resolve instead.
+    private final AtomicReference<HttpClient> httpClient;
+
+    private QuoteClient(AtomicReference<HttpClient> httpClient) {
+        this.httpClient = requireNonNull(httpClient);
+    }
+
+    QuoteClient() {
+        this(new AtomicReference<>());
+    }
+
+    HttpClient resolveHttpClient() {
+        return httpClient.updateAndGet(this::reuseOrCreate);
+    }
+
+    private HttpClient reuseOrCreate(HttpClient existing) {
+        return existing != null ? existing : newHttpClient();
     }
 }
 ```
