@@ -446,18 +446,25 @@ final class User {
 
 ## R-014k
 
-Getter methods must only return a value. They must not modify the state of the object and must not perform expensive or long-running operations.
+Getter methods must only return a value. They must not modify 
+the state of the object and must not perform expensive or long-running 
+operations.
 
 **Bad:**
 
 ```java
 final class Portfolio {
     private final List<Position> positions;
+    private final PositionPublisher publisher;
     private boolean accessed;
 
     List<Position> positions() {
         accessed = true; // mutates state
         return positions;
+    }
+
+    void publish() {
+        publisher.publish(positions);
     }
 }
 ```
@@ -467,9 +474,14 @@ final class Portfolio {
 ```java
 final class Portfolio {
     private final List<Position> positions;
+    private final PositionPublisher publisher;
 
     List<Position> positions() {
         return positions;
+    }
+
+    void publish() {
+        publisher.publish(positions);
     }
 }
 ```
@@ -683,8 +695,9 @@ final class QuoteClient {
         this.httpClient = requireNonNull(httpClient);
     }
 
-    HttpClient httpClient() {
-        return httpClient;
+    Quote fetch(Isin isin) {
+        requireNonNull(isin);
+        return send(httpClient, isin);
     }
 }
 ```
